@@ -12,9 +12,7 @@ plot and compare to original - calculate RMSE (?)
 """
 
 #Import libraries 
-from scipy.stats import linregress
 import matplotlib.pyplot as plt
-from datetime import datetime
 import numpy as np
 import cmocean.cm as cmo
 import glob
@@ -67,7 +65,7 @@ with h5py.File(cal_files[idx], 'r+') as f:
 
 # --- Example test correction (optional demo) ---
 with h5py.File(cal_files[1], 'r+') as test_file:
-    run = 5
+    run = 4
     exp_times = test_file['P_0 Measurements/Exposure Times'][:]
 
     test_imgs = {}
@@ -91,8 +89,9 @@ with h5py.File(cal_files[1], 'r+') as test_file:
     I, Q, U = Stokes
     
     dolp = (np.sqrt(Q**2 + U**2) / I)*100
-    dolp_mean = np.mean(dolp)
+    dolp_mean = np.average(dolp)
     dolp_std = np.std(dolp)
+    dolp_median = np.median(dolp)
     
     aolp = 0.5 * np.arctan2(U, Q)
     aolp = np.mod(np.degrees(aolp),180)
@@ -104,6 +103,7 @@ with h5py.File(cal_files[1], 'r+') as test_file:
     dolp_avg = np.sqrt((avgQ**2)+(avgU**2))*100
     dolpavg_mean = np.average(dolp_avg)
     dolpavg_std = np.std(dolp_avg)
+    dolpavg_median = np.median(dolp_avg)
 
     
     #-------Plots--------------------------------------------------------------
@@ -137,7 +137,7 @@ with h5py.File(cal_files[1], 'r+') as test_file:
     fig, axes = plt.subplots(1, 3, figsize=(16, 4))  # 1 row, 4 columns
     
     #Plot I
-    im0 = axes[0].imshow(I, cmap='gray', vmin=0, vmax=3000, interpolation = 'None')
+    im0 = axes[0].imshow(I, cmap='gray', vmin=0, vmax=np.max(I), interpolation = 'None')
     axes[0].set_title('I',fontsize=20)
     cbar0 = plt.colorbar(im0, ax=axes[0], fraction=0.046, pad=0.04)
     cbar0.ax.tick_params(labelsize=14)
@@ -159,19 +159,23 @@ with h5py.File(cal_files[1], 'r+') as test_file:
 
     plt.tight_layout()
     plt.show()
-    
+
+    # Create figure
     fig, axes = plt.subplots(1, 2, figsize=(12, 5))  # 1 row, 2 columns
-    im = axes[0].imshow(aolp, cmap=cmo.phase, interpolation='none',vmin=0,vmax=180)
+
+    # Image plot
+    im = axes[0].imshow(aolp, cmap=cmo.phase, interpolation='none', vmin=0, vmax=180)
     cbar = fig.colorbar(im, ax=axes[0])
     cbar.ax.tick_params(labelsize=14)
     axes[0].set_xticks([]); axes[0].set_yticks([])
 
-    axes[1].hist(aolp.flatten(), bins=50, edgecolor='black')
-    #axes[1].set_xlabel('AoLP [deg]', fontsize=14)
-    axes[1].set_ylabel('Frequency', fontsize=14)
-    axes[1].tick_params(axis='both', labelsize=12) 
-    plt.suptitle('AoLP Corrected [deg]', fontsize=20)
+    # Histogram plot
+    axes[1].hist(aolp.flatten(), bins=50, edgecolor='black',range=(0,180))
 
+    axes[1].set_ylabel('Frequency', fontsize=14)
+    axes[1].tick_params(axis='both', labelsize=12)
+
+    plt.suptitle('AoLP Corrected [deg]', fontsize=20)
     plt.tight_layout()
     plt.show()
         
@@ -189,7 +193,7 @@ with h5py.File(cal_files[1], 'r+') as test_file:
     axes[1].tick_params(axis='both', labelsize=12)
 
     # Add text box with mean and std in upper right
-    textstr = f"Mean = {dolp_mean:.2f}%\nStd = {dolp_std:.2f}%"
+    textstr = f"Mean = {dolp_mean:.2f}%\nStd = {dolp_std:.2f}%\nMed = {dolp_median:.2f}%"
     axes[1].text(0.95, 0.95, textstr, transform=axes[1].transAxes,
              fontsize=12, verticalalignment='top', horizontalalignment='right',
              bbox=dict(facecolor='white', alpha=0.8, edgecolor='black'))
@@ -207,7 +211,7 @@ with h5py.File(cal_files[1], 'r+') as test_file:
     ax.set_title(r'DoLP from $\bar{c}_{U},\bar{r}_{Q}$', fontsize=16)
     
     # Add text box to the right of plot
-    textstr = f"Mean = {dolpavg_mean:.2f}%\nStd = {dolpavg_std:.2f}%"
+    textstr = f"Mean = {dolpavg_mean:.2f}%\nStd = {dolpavg_std:.2f}%\nMed = {dolpavg_median:.2f}%"
     ax.text(1.05, 0.5, textstr, transform=ax.transAxes, fontsize=14,
             verticalalignment='center', bbox=dict(facecolor='white', alpha=0.8, edgecolor='black'))
 

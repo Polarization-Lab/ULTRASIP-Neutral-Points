@@ -42,7 +42,7 @@ meas.attrs['UV Bandpass'] = uv_wavelength
 
 if Calibration_Type == 'NUC':
     
-    uv_exposures = np.linspace(8e2, 1e6, 80)
+    uv_exposures = np.linspace(4e2, 1e6, 120)
     angles = [0,45,90,135]
     
     #Connect to Rotation Motor
