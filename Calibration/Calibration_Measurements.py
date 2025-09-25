@@ -20,7 +20,7 @@ import os
 #--------Constants and Metadata--------------------#
 uv_wavelength = '355 10 nm FWHM'
 
-outpath = 'D:/Calibration/'
+outpath = 'E:/Calibration/'
 Calibration_Type = 'NUC'
 #Set filename for measurement using date/time
 dt = datetime.now()
@@ -29,7 +29,7 @@ date = date_time[0:10].replace('-','')
 timestamp = date_time[11:19].replace(':','_')
 
 filename = Calibration_Type+'_'+date+'_'+timestamp+'.h5'
-datapath = os.path.join(outpath,str(date_time[0:10].replace('-','_')))
+datapath = os.path.join(outpath,'Data')
 if not os.path.exists(datapath):
         os.makedirs(datapath)
 filename=os.path.join(datapath,filename)
@@ -38,6 +38,7 @@ meas = hdf5_file.create_group("Measurement_Metadata")
 meas.attrs['Timestamp'] = timestamp
 meas.attrs['Date'] = date
 meas.attrs['Calibration Type'] = Calibration_Type
+meas.attrs['UV Bandpass'] = uv_wavelength
 
 if Calibration_Type == 'NUC':
     
@@ -84,7 +85,6 @@ if Calibration_Type == 'NUC':
         print('saving')
         uvimg = hdf5_file.create_group(f"P_{ang} Measurements")
         uvimg.attrs['Angle of Linear Polarizer'] = meas_angle
-        uvimg.attrs['UV Bandpass'] = uv_wavelength
         uvimg.attrs['UV Image Capture Time'] = uvmeastime
         uvimg.create_dataset('UV Raw Images', data = uvimage_data)
         uvimg.create_dataset('Exposure Times', data = uv_exposures)
@@ -96,7 +96,7 @@ hdf5_file.close()
 if Calibration_Type == 'Malus':
     
     uv_exp = 1e6 
-    angles = np.r_[0:360:45]
+    angles = np.r_[0:360:15]
     runs = 5
     
     #Connect to Rotation Motor

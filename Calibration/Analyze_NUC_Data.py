@@ -27,7 +27,7 @@ Nj = 2848
 
 #Datapath
 cal_path = 'E:/2025_06_29/' #DO NOT CHANGE
-cal_file = glob.glob('E:/Calibration/2025_08_12/NUC*16*.h5')
+cal_file = glob.glob('E:/Calibration/2025_09_24/*.h5')
 Calibration_Type = 'NUC'
 meas_file = glob.glob(f'{cal_path}/NUC*19_54*.h5')
 #files = glob.glob(f'{folderdate}/{Calibration_Type}*11_*.h5')

@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun Jun 29 19:55:40 2025
+Created on Wed Sep 24 12:20:38 2025
 
-@author: C.M.DeLeon
-Analyze Calibration Data
+@author: Clarissa M. DeLeon 
+Analyze and Visualize Calibration Data (not applied to measurements)
+NUC: Create Slope and intercept images and save to hdf file - then  
+analyze aolp and dolp images
+
+Malus: Calculate average flux images then make intensity over polarizer angle 
+plot and compare to original - calculate RMSE (?)
 """
 
 #Import libraries 
@@ -11,129 +16,202 @@ from scipy.stats import linregress
 import matplotlib.pyplot as plt
 from datetime import datetime
 import numpy as np
+import cmocean.cm as cmo
 import glob
 import h5py
 import os
+# Define W-matrix of ULTRASIP (rows = analyzer vectors P0, P90, P45, P135)
+W = 0.5 * np.array([[1, 1, 0],[1, -1, 0],[1, 0, 1],[1, 0, -1]])
 
-#Image Size 
-Ni = 2848
-Nj = 2848
+# --- Config ---
+cal_type = 'NUC'  # 'NUC' or 'Malus'
+cal_path = 'E:/Calibration/Data'
+cal_files = glob.glob(f'{cal_path}/{cal_type}*.h5')
 
-Rij0 = np.zeros((Ni, Nj))
-Bij0 = np.zeros((Ni, Nj))
+idx = len(cal_files) - 3  # choose file index
+Ni, Nj = 2848, 2848       # image size
 
-Rij45 = np.zeros((Ni, Nj))
-Bij45 = np.zeros((Ni, Nj))
+with h5py.File(cal_files[idx], 'r+') as f:
 
-Rij90 = np.zeros((Ni, Nj))
-Bij90 = np.zeros((Ni, Nj))
+    if cal_type == 'NUC':
+        # --- Load exposures once ---
+        exp_times = f['P_0 Measurements/Exposure Times'][:]
 
-Rij135 = np.zeros((Ni, Nj))
-Bij135 = np.zeros((Ni, Nj))
+        # --- Loop over angles ---
+        angles = [0, 45, 90, 135]
+        Rij, Bij = {}, {}
 
-#Datapath
-basepath = 'E:/'
-date = '2025_06_29'
-Calibration_Type = 'NUC'
-folderdate = os.path.join(basepath,date)
-files = glob.glob(f'{folderdate}/{Calibration_Type}*19_54*.h5')
-idx = len(files)-1 # Set file index you want to view - default is set to the last one (len(files)-1)
-f = h5py.File(files[idx],'r+')
-exp = f['Measurement_Metadata/P_0 Measurements/Exposure Times'][:]
+        for ang in angles:
+            uvimgs = f[f'P_{ang} Measurements/UV Raw Images'][:]
+            meas = uvimgs.reshape(len(exp_times), Ni, Nj)
 
+            # Linear regression via least squares (vectorized)
+            A = np.vstack([exp_times, np.ones_like(exp_times)]).T  # shape (n,2)
+            coeffs, _, _, _ = np.linalg.lstsq(A, meas.reshape(len(exp_times), -1), rcond=None)
+            slope = coeffs[0].reshape(Ni, Nj)
+            intercept = coeffs[1].reshape(Ni, Nj)
 
-uvimgs0 = f['Measurement_Metadata/P_0 Measurements/UV Raw Images'][:]
-P0_meas = uvimgs0.reshape(len(exp),Ni,Nj)
+            Rij[ang], Bij[ang] = slope, intercept
 
-uvimgs45 = f['Measurement_Metadata/P_45 Measurements/UV Raw Images'][:]
-P45_meas = uvimgs45.reshape(len(exp),Ni,Nj)
+        print('Saving...')
 
-uvimgs90 = f['Measurement_Metadata/P_90 Measurements/UV Raw Images'][:]
-P90_meas = uvimgs90.reshape(len(exp),Ni,Nj)
+        # --- Save to HDF5 ---
+        if 'NUC Images' not in f: 
+            nuc = f.create_group("NUC Images")
+        else:
+            del f["NUC Images"]
+            nuc = f.create_group("NUC Images")
+        for ang in angles:
+            nuc.create_dataset(f'P{ang} Rij', data=Rij[ang])
+            nuc.create_dataset(f'P{ang} Bij', data=Bij[ang])
 
-uvimgs135 = f['Measurement_Metadata/P_135 Measurements/UV Raw Images'][:]
-P135_meas = uvimgs135.reshape(len(exp),Ni,Nj)
+# --- Example test correction (optional demo) ---
+with h5py.File(cal_files[1], 'r+') as test_file:
+    run = 5
+    exp_times = test_file['P_0 Measurements/Exposure Times'][:]
 
+    test_imgs = {}
+    for ang in angles:
+        uvimgs = test_file[f'P_{ang} Measurements/UV Raw Images'][:]
+        test_imgs[ang] = uvimgs.reshape(len(exp_times), Ni, Nj)[run, :, :]
 
+    # Get global averages
+    R_avg = {ang: np.mean(Rij[ang]) for ang in angles}
+    B_avg = {ang: np.mean(Bij[ang]) for ang in angles}
 
-for i in range(0,Ni):
-    for j in range(0,Nj):
-        pixel_values0 = P0_meas[:,i,j]
-        slope0, intercept0, *_ = linregress(exp, pixel_values0)
-        Rij0[i, j] = slope0
-        Bij0[i, j] = intercept0
+    # Apply correction
+    Cij = {}
+    for ang in angles:
+        Cij[ang] = (R_avg[ang] / Rij[ang]) * (test_imgs[ang] - Bij[ang]) + B_avg[ang]
+    
+    Cstack = np.stack([Cij[0], Cij[90], Cij[45], Cij[135]], axis=0) 
+    Stokes = np.linalg.pinv(W)@(Cstack.reshape(4, 2848*2848))
+    Stokes = Stokes.reshape(3, 2848, 2848)
 
-        pixel_values45 = P45_meas[:,i,j]
-        slope45, intercept45, *_ = linregress(exp, pixel_values45)
-        Rij45[i, j] = slope45
-        Bij45[i, j] = intercept45
+    I, Q, U = Stokes
+    
+    dolp = (np.sqrt(Q**2 + U**2) / I)*100
+    dolp_mean = np.mean(dolp)
+    dolp_std = np.std(dolp)
+    
+    aolp = 0.5 * np.arctan2(U, Q)
+    aolp = np.mod(np.degrees(aolp),180)
+    
+    #Averages
+    avgQ = np.flip(np.average(Q/I,axis=1)) #row avg
+    avgU = np.average(U/I,axis=0)#col avg
+
+    dolp_avg = np.sqrt((avgQ**2)+(avgU**2))*100
+    dolpavg_mean = np.average(dolp_avg)
+    dolpavg_std = np.std(dolp_avg)
+
+    
+    #-------Plots--------------------------------------------------------------
+    
+    # 2x2 grid of Cij images
+    fig, axes = plt.subplots(2, 2, figsize=(10, 10))
+    fig.subplots_adjust(top=0.88, wspace=0.05, hspace=0.15)
+
+    # Flatten axes array for easy iteration
+    axes = axes.ravel()
+
+    # Normalize colormap limits across all Cij images
+    vmin = min(np.min(Cij[ang]) for ang in angles)
+    vmax = max(np.max(Cij[ang]) for ang in angles)
+
+    for idx, ang in enumerate(angles):
+        im = axes[idx].imshow(Cij[ang], cmap='gray', vmin=vmin, vmax=vmax)
+        axes[idx].set_title(f"P{ang}", fontsize=14)
+        axes[idx].set_xticks([]); axes[idx].set_yticks([])
+
+    # Shared colorbar along the top
+    cbar_ax = fig.add_axes([0.14, 0.94, 0.75, 0.02])  # [left, bottom, width, height]
+    cbar = fig.colorbar(im, cax=cbar_ax, orientation='horizontal')
+    cbar.ax.tick_params(labelsize=12)
+
+    # Suptitle with exposure time
+    fig.suptitle(f"Cij Images — Exposure Time = {exp_times[run]:.6f} us", fontsize=18, y=1.03)
+
+    plt.show()
+
+    fig, axes = plt.subplots(1, 3, figsize=(16, 4))  # 1 row, 4 columns
+    
+    #Plot I
+    im0 = axes[0].imshow(I, cmap='gray', vmin=0, vmax=3000, interpolation = 'None')
+    axes[0].set_title('I',fontsize=20)
+    cbar0 = plt.colorbar(im0, ax=axes[0], fraction=0.046, pad=0.04)
+    cbar0.ax.tick_params(labelsize=14)
+    axes[0].set_xticks([]); axes[0].set_yticks([])
+    
+    # Plot Q/I
+    im1 = axes[1].imshow(Q/I, cmap=cmo.curl, interpolation = 'None',vmin=-0.1,vmax=0.1)
+    axes[1].set_title('Q/I',fontsize=20)
+    cbar1 = plt.colorbar(im1, ax=axes[1], fraction=0.046, pad=0.04)
+    cbar1.ax.tick_params(labelsize=14)
+    axes[1].set_xticks([]); axes[1].set_yticks([])
+
+    # Plot U/I
+    im2 = axes[2].imshow(U/I, cmap=cmo.curl, interpolation = 'None',vmin=-0.1,vmax=0.1)
+    axes[2].set_title('U/I',fontsize=20)
+    cbar2 = plt.colorbar(im2, ax=axes[2], fraction=0.046, pad=0.04)
+    cbar2.ax.tick_params(labelsize=14)
+    axes[2].set_xticks([]); axes[2].set_yticks([])
+
+    plt.tight_layout()
+    plt.show()
+    
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))  # 1 row, 2 columns
+    im = axes[0].imshow(aolp, cmap=cmo.phase, interpolation='none',vmin=0,vmax=180)
+    cbar = fig.colorbar(im, ax=axes[0])
+    cbar.ax.tick_params(labelsize=14)
+    axes[0].set_xticks([]); axes[0].set_yticks([])
+
+    axes[1].hist(aolp.flatten(), bins=50, edgecolor='black')
+    #axes[1].set_xlabel('AoLP [deg]', fontsize=14)
+    axes[1].set_ylabel('Frequency', fontsize=14)
+    axes[1].tick_params(axis='both', labelsize=12) 
+    plt.suptitle('AoLP Corrected [deg]', fontsize=20)
+
+    plt.tight_layout()
+    plt.show()
         
-        pixel_values90 = P90_meas[:,i,j]
-        slope90, intercept90, *_ = linregress(exp, pixel_values90)
-        Rij90[i, j] = slope90
-        Bij90[i, j] = intercept90
-        
-        pixel_values135 = P135_meas[:,i,j]
-        slope135, intercept135, *_ = linregress(exp, pixel_values135)
-        Rij135[i, j] = slope135
-        Bij135[i, j] = intercept135
-        
-print('saving')   
-#Save
-nuc = f.create_group("NUC Images")
-nuc = f['NUC Images']
-nuc.create_dataset('P0 Rij', data = Rij0)
-nuc.create_dataset('P45 Rij', data = Rij45)
-nuc.create_dataset('P90 Rij', data = Rij90)
-nuc.create_dataset('P135 Rij', data = Rij135)
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))  # 1 row, 2 columns
 
-nuc.create_dataset('P0 Bij', data = Bij0)
-nuc.create_dataset('P45 Bij', data = Bij45)
-nuc.create_dataset('P90 Bij', data = Bij90)
-nuc.create_dataset('P135 Bij', data = Bij135)
+    # Left: DoLP image
+    im = axes[0].imshow(dolp, cmap='hot', interpolation='none', vmin=0, vmax=10)
+    cbar = fig.colorbar(im, ax=axes[0])
+    cbar.ax.tick_params(labelsize=14)
+    axes[0].set_xticks([]); axes[0].set_yticks([])
 
-        
-# Get global slope/intercept
-R_avg = np.mean(Rij0)
-B_avg = np.mean(Bij0)
+    # Right: histogram
+    axes[1].hist(dolp.flatten(), bins=50, edgecolor='black')
+    axes[1].set_ylabel('Frequency', fontsize=14)
+    axes[1].tick_params(axis='both', labelsize=12)
 
-Pij = P0_meas[10,:,:]
-# Apply NUC correction
-Cij = (R_avg / Rij0) * (Pij - Bij0) + B_avg
+    # Add text box with mean and std in upper right
+    textstr = f"Mean = {dolp_mean:.2f}%\nStd = {dolp_std:.2f}%"
+    axes[1].text(0.95, 0.95, textstr, transform=axes[1].transAxes,
+             fontsize=12, verticalalignment='top', horizontalalignment='right',
+             bbox=dict(facecolor='white', alpha=0.8, edgecolor='black'))
 
+    plt.suptitle('DoLP Corrected [%]', fontsize=20)
+    plt.tight_layout()
+    plt.show()
+    
+    fig, ax = plt.subplots(figsize=(8, 6))
 
-plt.figure()
-plt.scatter(exp, pixel_values0, color='blue')
-plt.xlabel('Exposure Value')
-plt.ylabel(f'Pixel Intensity at ({i},{j})')
-plt.title(f'Pixel Response: ({i},{j})')
-plt.grid(True)
-plt.tight_layout()
-plt.show()
+    # Scatter plot
+    ax.scatter(dolp_avg, range(len(dolp_avg)), color='green')
+    ax.set_xlabel(r'$DoLP_{rc} [\%]$', fontsize=15)
+    ax.set_ylabel('Pixel Index', fontsize=15)
+    ax.set_title(r'DoLP from $\bar{c}_{U},\bar{r}_{Q}$', fontsize=16)
+    
+    # Add text box to the right of plot
+    textstr = f"Mean = {dolpavg_mean:.2f}%\nStd = {dolpavg_std:.2f}%"
+    ax.text(1.05, 0.5, textstr, transform=ax.transAxes, fontsize=14,
+            verticalalignment='center', bbox=dict(facecolor='white', alpha=0.8, edgecolor='black'))
 
-# Plotting
-plt.figure()
-plt.imshow(Rij0, interpolation='None', cmap='gray')
-plt.colorbar()
-plt.title('R$_{ij}$')
-plt.show()
+    plt.tight_layout()
+    plt.show()
+    
 
-plt.figure()
-plt.imshow(Bij0, interpolation='None', cmap='gray',vmin=0,vmax=10)
-plt.colorbar()
-plt.title('B$_{ij}$')
-plt.show()
-
-plt.figure()
-plt.hist(Pij.flatten())
-plt.show()
-
-plt.figure()
-plt.imshow(Cij, interpolation='None', cmap='gray',vmin=1000,vmax=2500)
-plt.colorbar()
-plt.title('Corrected Image C$_{ij}$')
-plt.show()
-
-plt.figure()
-plt.hist(Cij.flatten())
-plt.show()
