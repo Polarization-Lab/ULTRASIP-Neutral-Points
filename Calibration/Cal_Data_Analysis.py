@@ -26,7 +26,7 @@ cal_type = 'NUC'  # 'NUC' or 'Malus'
 cal_path = 'E:/Calibration/Data'
 cal_files = glob.glob(f'{cal_path}/{cal_type}*.h5')
 
-idx = len(cal_files) - 3  # choose file index
+idx = len(cal_files) - 1  # choose file index
 Ni, Nj = 2848, 2848       # image size
 
 with h5py.File(cal_files[idx], 'r+') as f:
@@ -64,8 +64,8 @@ with h5py.File(cal_files[idx], 'r+') as f:
             nuc.create_dataset(f'P{ang} Bij', data=Bij[ang])
 
 # --- Example test correction (optional demo) ---
-with h5py.File(cal_files[1], 'r+') as test_file:
-    run = 4
+with h5py.File(cal_files[4], 'r+') as test_file:
+    run = 79
     exp_times = test_file['P_0 Measurements/Exposure Times'][:]
 
     test_imgs = {}

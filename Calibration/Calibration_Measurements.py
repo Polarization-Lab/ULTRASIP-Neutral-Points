@@ -21,7 +21,7 @@ import os
 uv_wavelength = '355 10 nm FWHM'
 
 outpath = 'E:/Calibration/'
-Calibration_Type = 'NUC'
+Calibration_Type = 'Malus'
 #Set filename for measurement using date/time
 dt = datetime.now()
 date_time = str(dt)
@@ -42,7 +42,7 @@ meas.attrs['UV Bandpass'] = uv_wavelength
 
 if Calibration_Type == 'NUC':
     
-    uv_exposures = np.linspace(4e2, 1e6, 120)
+    uv_exposures = np.linspace(4e2, 1e6, 150)
     angles = [0,45,90,135]
     
     #Connect to Rotation Motor
@@ -89,15 +89,17 @@ if Calibration_Type == 'NUC':
         uvimg.create_dataset('UV Raw Images', data = uvimage_data)
         uvimg.create_dataset('Exposure Times', data = uv_exposures)
        
-connection.close()
-# Close the HDF5 file
-hdf5_file.close()
+    connection.close()
+    # Close the HDF5 file
+    hdf5_file.close()
+
 
 if Calibration_Type == 'Malus':
     
     uv_exp = 1e6 
-    angles = np.r_[0:360:15]
+    angles = np.r_[0:363:3]
     runs = 5
+    gt_angle = 'Vertical'
     
     #Connect to Rotation Motor
     connection = Connection.open_serial_port("COM6")
@@ -131,18 +133,20 @@ if Calibration_Type == 'Malus':
                     time2 = time.time()
                     
                 finally:
+                    uvmeastime = time2-time1
                     print('saving')
                     
                     uvimg = hdf5_file.create_group(f"P_{ang} Measurements")
-                    uvimg.attrs['Angle of Linear Polarizer'] = meas_angle
+                    uvimg.attrs['Angle of Analyzer Linear Polarizer'] = meas_angle
+                    uvimg.attrs['Angle of Generator Linear Polarizer'] = gt_angle
                     uvimg.attrs['UV Bandpass'] = uv_wavelength
                     uvimg.attrs['UV Image Capture Time'] = uvmeastime
                     uvimg.attrs['Exposure Time'] = uv_exp
                     uvimg.create_dataset('UV Raw Images', data = uvimage_data)
                
-connection.close()
-# Close the HDF5 file
-hdf5_file.close()
+    connection.close()
+    # Close the HDF5 file
+    hdf5_file.close()
                 
     
     
