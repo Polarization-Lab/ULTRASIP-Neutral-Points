@@ -219,6 +219,36 @@ with h5py.File(cal_files[idx], 'r+') as f:
             plt.show()
     
     if cal_type == 'Malus':
-        #Load dataset for each angle 
+        # Load dataset for each angle 
+        angles = np.r_[0:363
+                       :3]  # 0, 3, 6, ..., 360
+        avg_intensity = []
+        gen_ang = f['P_0 Measurements'].attrs['Angle of Generator Linear Polarizer']
+        for angle in angles:
+            # Construct dataset name dynamically
+            dataset_name = f"P_{angle} Measurements/UV Raw Images"
+    
+            # Load and reshape (5, 2848, 2848)
+            data = f[dataset_name][:].reshape(5, 2848, 2848)
+    
+            # Average across the 5 runs
+            mean_image = np.mean(data, axis=0)
+    
+            # Compute overall average pixel value
+            avg_val = np.mean(mean_image)
+    
+            # Store result
+            avg_intensity.append(avg_val)
+
+        # Plot average intensity vs angle
+        plt.figure(figsize=(8, 5))
+        plt.plot(angles, avg_intensity/np.max(avg_intensity), 'o-', color='darkblue')
+        plt.xlabel('Analyzer Linear Polarizer Angle (degrees)', fontsize=12)
+        plt.ylabel('Average Pixel Value', fontsize=12)
+        plt.title(f'Generator Angle: {gen_ang}', fontsize=14)
+        plt.grid(True)
         
-        P0 = f["P0_Measurements/UV Raw Images"][:]
+        
+        plt.xticks(np.arange(0, 361, 45))
+        plt.yticks(np.arange(0,1.25,0.25))
+        plt.show()

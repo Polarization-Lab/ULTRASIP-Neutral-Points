@@ -100,6 +100,10 @@ if Calibration_Type == 'Malus':
     angles = np.r_[0:363:3]
     runs = 5
     gt_angle = 'Vertical'
+    meas.attrs['Angle of Generator Linear Polarizer'] = gt_angle
+    meas.attrs["Runs for each angle"] = runs
+    meas.attrs['Sampled Angles'] = angles
+
     
     #Connect to Rotation Motor
     connection = Connection.open_serial_port("COM6")
@@ -138,7 +142,6 @@ if Calibration_Type == 'Malus':
                     
                     uvimg = hdf5_file.create_group(f"P_{ang} Measurements")
                     uvimg.attrs['Angle of Analyzer Linear Polarizer'] = meas_angle
-                    uvimg.attrs['Angle of Generator Linear Polarizer'] = gt_angle
                     uvimg.attrs['UV Bandpass'] = uv_wavelength
                     uvimg.attrs['UV Image Capture Time'] = uvmeastime
                     uvimg.attrs['Exposure Time'] = uv_exp
