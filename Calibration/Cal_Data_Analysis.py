@@ -22,8 +22,8 @@ import os
 W = 0.5 * np.array([[1, 1, 0],[1, -1, 0],[1, 0, 1],[1, 0, -1]])
 
 # --- Config ---
-cal_type = 'NUC'  # 'NUC' or 'Malus'
-cal_path = 'E:/Calibration/Data'
+cal_type = 'Malus'  # 'NUC' or 'Malus'
+cal_path = 'D:/Calibration/Data'
 cal_files = glob.glob(f'{cal_path}/{cal_type}*.h5')
 
 idx = len(cal_files) - 1  # choose file index
@@ -63,159 +63,162 @@ with h5py.File(cal_files[idx], 'r+') as f:
             nuc.create_dataset(f'P{ang} Rij', data=Rij[ang])
             nuc.create_dataset(f'P{ang} Bij', data=Bij[ang])
 
-# --- Example test correction (optional demo) ---
-with h5py.File(cal_files[4], 'r+') as test_file:
-    run = 79
-    exp_times = test_file['P_0 Measurements/Exposure Times'][:]
+        # --- Example test correction (optional demo) ---
+        with h5py.File(cal_files[4], 'r+') as test_file:
+            run = 79
+            exp_times = test_file['P_0 Measurements/Exposure Times'][:]
 
-    test_imgs = {}
-    for ang in angles:
-        uvimgs = test_file[f'P_{ang} Measurements/UV Raw Images'][:]
-        test_imgs[ang] = uvimgs.reshape(len(exp_times), Ni, Nj)[run, :, :]
+            test_imgs = {}
+            for ang in angles:
+                uvimgs = test_file[f'P_{ang} Measurements/UV Raw Images'][:]
+                test_imgs[ang] = uvimgs.reshape(len(exp_times), Ni, Nj)[run, :, :]
 
-    # Get global averages
-    R_avg = {ang: np.mean(Rij[ang]) for ang in angles}
-    B_avg = {ang: np.mean(Bij[ang]) for ang in angles}
+            # Get global averages
+            R_avg = {ang: np.mean(Rij[ang]) for ang in angles}
+            B_avg = {ang: np.mean(Bij[ang]) for ang in angles}
 
-    # Apply correction
-    Cij = {}
-    for ang in angles:
-        Cij[ang] = (R_avg[ang] / Rij[ang]) * (test_imgs[ang] - Bij[ang]) + B_avg[ang]
+            # Apply correction
+            Cij = {}
+            for ang in angles:
+                Cij[ang] = (R_avg[ang] / Rij[ang]) * (test_imgs[ang] - Bij[ang]) + B_avg[ang]
     
-    Cstack = np.stack([Cij[0], Cij[90], Cij[45], Cij[135]], axis=0) 
-    Stokes = np.linalg.pinv(W)@(Cstack.reshape(4, 2848*2848))
-    Stokes = Stokes.reshape(3, 2848, 2848)
+            Cstack = np.stack([Cij[0], Cij[90], Cij[45], Cij[135]], axis=0) 
+            Stokes = np.linalg.pinv(W)@(Cstack.reshape(4, 2848*2848))
+            Stokes = Stokes.reshape(3, 2848, 2848)
 
-    I, Q, U = Stokes
+            I, Q, U = Stokes
     
-    dolp = (np.sqrt(Q**2 + U**2) / I)*100
-    dolp_mean = np.average(dolp)
-    dolp_std = np.std(dolp)
-    dolp_median = np.median(dolp)
+            dolp = (np.sqrt(Q**2 + U**2) / I)*100
+            dolp_mean = np.average(dolp)
+            dolp_std = np.std(dolp)
+            dolp_median  = np.median(dolp)
     
-    aolp = 0.5 * np.arctan2(U, Q)
-    aolp = np.mod(np.degrees(aolp),180)
+            aolp = 0.5 * np.arctan2(U, Q)
+            aolp = np.mod(np.degrees(aolp),180)
     
-    #Averages
-    avgQ = np.flip(np.average(Q/I,axis=1)) #row avg
-    avgU = np.average(U/I,axis=0)#col avg
+            #Averages
+            avgQ = np.flip(np.average(Q/I,axis=1)) #row avg
+            avgU = np.average(U/I,axis=0)#col avg
 
-    dolp_avg = np.sqrt((avgQ**2)+(avgU**2))*100
-    dolpavg_mean = np.average(dolp_avg)
-    dolpavg_std = np.std(dolp_avg)
-    dolpavg_median = np.median(dolp_avg)
+            dolp_avg = np.sqrt((avgQ**2)+(avgU**2))*100
+            dolpavg_mean = np.average(dolp_avg)
+            dolpavg_std = np.std(dolp_avg)
+            dolpavg_median = np.median(dolp_avg)
 
     
-    #-------Plots--------------------------------------------------------------
+            #-------Plots--------------------------------------------------------------
     
-    # 2x2 grid of Cij images
-    fig, axes = plt.subplots(2, 2, figsize=(10, 10))
-    fig.subplots_adjust(top=0.88, wspace=0.05, hspace=0.15)
+            # 2x2 grid of Cij images
+            fig, axes = plt.subplots(2, 2, figsize=(10, 10))
+            fig.subplots_adjust(top=0.88, wspace=0.05, hspace=0.15)
 
-    # Flatten axes array for easy iteration
-    axes = axes.ravel()
+            # Flatten axes array for easy iteration
+            axes = axes.ravel()
 
-    # Normalize colormap limits across all Cij images
-    vmin = min(np.min(Cij[ang]) for ang in angles)
-    vmax = max(np.max(Cij[ang]) for ang in angles)
+            # Normalize colormap limits across all Cij images
+            vmin = min(np.min(Cij[ang]) for ang in angles)
+            vmax = max(np.max(Cij[ang]) for ang in angles)
 
-    for idx, ang in enumerate(angles):
-        im = axes[idx].imshow(Cij[ang], cmap='gray', vmin=vmin, vmax=vmax)
-        axes[idx].set_title(f"P{ang}", fontsize=14)
-        axes[idx].set_xticks([]); axes[idx].set_yticks([])
+            for idx, ang in enumerate(angles):
+                im = axes[idx].imshow(Cij[ang], cmap='gray', vmin=vmin, vmax=vmax)
+                axes[idx].set_title(f"P{ang}", fontsize=14)
+                axes[idx].set_xticks([]); axes[idx].set_yticks([])
 
-    # Shared colorbar along the top
-    cbar_ax = fig.add_axes([0.14, 0.94, 0.75, 0.02])  # [left, bottom, width, height]
-    cbar = fig.colorbar(im, cax=cbar_ax, orientation='horizontal')
-    cbar.ax.tick_params(labelsize=12)
+            # Shared colorbar along the top
+            cbar_ax = fig.add_axes([0.14, 0.94, 0.75, 0.02])  # [left, bottom, width, height]
+            cbar = fig.colorbar(im, cax=cbar_ax, orientation='horizontal')
+            cbar.ax.tick_params(labelsize=12)
 
-    # Suptitle with exposure time
-    fig.suptitle(f"Cij Images — Exposure Time = {exp_times[run]:.6f} us", fontsize=18, y=1.03)
+            # Suptitle with exposure time
+            fig.suptitle(f"Cij Images — Exposure Time = {exp_times[run]:.6f} us", fontsize=18, y=1.03)
 
-    plt.show()
+            plt.show()
 
-    fig, axes = plt.subplots(1, 3, figsize=(16, 4))  # 1 row, 4 columns
+            fig, axes = plt.subplots(1, 3, figsize=(16, 4))  # 1 row, 4 columns
     
-    #Plot I
-    im0 = axes[0].imshow(I, cmap='gray', vmin=0, vmax=np.max(I), interpolation = 'None')
-    axes[0].set_title('I',fontsize=20)
-    cbar0 = plt.colorbar(im0, ax=axes[0], fraction=0.046, pad=0.04)
-    cbar0.ax.tick_params(labelsize=14)
-    axes[0].set_xticks([]); axes[0].set_yticks([])
+            #Plot I
+            im0 = axes[0].imshow(I, cmap='gray', vmin=0, vmax=np.max(I), interpolation = 'None')
+            axes[0].set_title('I',fontsize=20)
+            cbar0 = plt.colorbar(im0, ax=axes[0], fraction=0.046, pad=0.04)
+            cbar0.ax.tick_params(labelsize=14)
+            axes[0].set_xticks([]); axes[0].set_yticks([])
     
-    # Plot Q/I
-    im1 = axes[1].imshow(Q/I, cmap=cmo.curl, interpolation = 'None',vmin=-0.1,vmax=0.1)
-    axes[1].set_title('Q/I',fontsize=20)
-    cbar1 = plt.colorbar(im1, ax=axes[1], fraction=0.046, pad=0.04)
-    cbar1.ax.tick_params(labelsize=14)
-    axes[1].set_xticks([]); axes[1].set_yticks([])
+            # Plot Q/I
+            im1 = axes[1].imshow(Q/I, cmap=cmo.curl, interpolation = 'None',vmin=-0.1,vmax=0.1)
+            axes[1].set_title('Q/I',fontsize=20)
+            cbar1 = plt.colorbar(im1, ax=axes[1], fraction=0.046, pad=0.04)
+            cbar1.ax.tick_params(labelsize=14)
+            axes[1].set_xticks([]); axes[1].set_yticks([])
 
-    # Plot U/I
-    im2 = axes[2].imshow(U/I, cmap=cmo.curl, interpolation = 'None',vmin=-0.1,vmax=0.1)
-    axes[2].set_title('U/I',fontsize=20)
-    cbar2 = plt.colorbar(im2, ax=axes[2], fraction=0.046, pad=0.04)
-    cbar2.ax.tick_params(labelsize=14)
-    axes[2].set_xticks([]); axes[2].set_yticks([])
+            # Plot U/I
+            im2 = axes[2].imshow(U/I, cmap=cmo.curl, interpolation = 'None',vmin=-0.1,vmax=0.1)
+            axes[2].set_title('U/I',fontsize=20)
+            cbar2 = plt.colorbar(im2, ax=axes[2], fraction=0.046, pad=0.04)
+            cbar2.ax.tick_params(labelsize=14)
+            axes[2].set_xticks([]); axes[2].set_yticks([])
 
-    plt.tight_layout()
-    plt.show()
+            plt.tight_layout()
+            plt.show()
 
-    # Create figure
-    fig, axes = plt.subplots(1, 2, figsize=(12, 5))  # 1 row, 2 columns
+            # Create figure
+            fig, axes = plt.subplots(1, 2, figsize=(12, 5))  # 1 row, 2 columns
 
-    # Image plot
-    im = axes[0].imshow(aolp, cmap=cmo.phase, interpolation='none', vmin=0, vmax=180)
-    cbar = fig.colorbar(im, ax=axes[0])
-    cbar.ax.tick_params(labelsize=14)
-    axes[0].set_xticks([]); axes[0].set_yticks([])
+            # Image plot
+            im = axes[0].imshow(aolp, cmap=cmo.phase, interpolation='none', vmin=0, vmax=180)
+            cbar = fig.colorbar(im, ax=axes[0])
+            cbar.ax.tick_params(labelsize=14)
+            axes[0].set_xticks([]); axes[0].set_yticks([])
 
-    # Histogram plot
-    axes[1].hist(aolp.flatten(), bins=50, edgecolor='black',range=(0,180))
+            # Histogram plot
+            axes[1].hist(aolp.flatten(), bins=50, edgecolor='black',range=(0,180))
 
-    axes[1].set_ylabel('Frequency', fontsize=14)
-    axes[1].tick_params(axis='both', labelsize=12)
+            axes[1].set_ylabel('Frequency', fontsize=14)
+            axes[1].tick_params(axis='both', labelsize=12)
 
-    plt.suptitle('AoLP Corrected [deg]', fontsize=20)
-    plt.tight_layout()
-    plt.show()
+            plt.suptitle('AoLP Corrected [deg]', fontsize=20)
+            plt.tight_layout()
+            plt.show()
         
-    fig, axes = plt.subplots(1, 2, figsize=(12, 5))  # 1 row, 2 columns
+            fig, axes = plt.subplots(1, 2, figsize=(12, 5))  # 1 row, 2 columns
+            
+            # Left: DoLP image
+            im = axes[0].imshow(dolp, cmap='hot', interpolation='none', vmin=0, vmax=10)
+            cbar = fig.colorbar(im, ax=axes[0])
+            cbar.ax.tick_params(labelsize=14)
+            axes[0].set_xticks([]); axes[0].set_yticks([])
 
-    # Left: DoLP image
-    im = axes[0].imshow(dolp, cmap='hot', interpolation='none', vmin=0, vmax=10)
-    cbar = fig.colorbar(im, ax=axes[0])
-    cbar.ax.tick_params(labelsize=14)
-    axes[0].set_xticks([]); axes[0].set_yticks([])
-
-    # Right: histogram
-    axes[1].hist(dolp.flatten(), bins=50, edgecolor='black')
-    axes[1].set_ylabel('Frequency', fontsize=14)
-    axes[1].tick_params(axis='both', labelsize=12)
-
-    # Add text box with mean and std in upper right
-    textstr = f"Mean = {dolp_mean:.2f}%\nStd = {dolp_std:.2f}%\nMed = {dolp_median:.2f}%"
-    axes[1].text(0.95, 0.95, textstr, transform=axes[1].transAxes,
-             fontsize=12, verticalalignment='top', horizontalalignment='right',
+            # Right: histogram
+            axes[1].hist(dolp.flatten(), bins=50, edgecolor='black')
+            axes[1].set_ylabel('Frequency', fontsize=14)
+            axes[1].tick_params(axis='both', labelsize=12)
+            
+            # Add text box with mean and std in upper right
+            textstr = f"Mean = {dolp_mean:.2f}%\nStd = {dolp_std:.2f}%\nMed = {dolp_median:.2f}%"
+            axes[1].text(0.95, 0.95, textstr, transform=axes[1].transAxes,
+                         fontsize=12, verticalalignment='top', horizontalalignment='right',
              bbox=dict(facecolor='white', alpha=0.8, edgecolor='black'))
 
-    plt.suptitle('DoLP Corrected [%]', fontsize=20)
-    plt.tight_layout()
-    plt.show()
+            plt.suptitle('DoLP Corrected [%]', fontsize=20)
+            plt.tight_layout()
+            plt.show()
     
-    fig, ax = plt.subplots(figsize=(8, 6))
-
-    # Scatter plot
-    ax.scatter(dolp_avg, range(len(dolp_avg)), color='green')
-    ax.set_xlabel(r'$DoLP_{rc} [\%]$', fontsize=15)
-    ax.set_ylabel('Pixel Index', fontsize=15)
-    ax.set_title(r'DoLP from $\bar{c}_{U},\bar{r}_{Q}$', fontsize=16)
-    
-    # Add text box to the right of plot
-    textstr = f"Mean = {dolpavg_mean:.2f}%\nStd = {dolpavg_std:.2f}%\nMed = {dolpavg_median:.2f}%"
-    ax.text(1.05, 0.5, textstr, transform=ax.transAxes, fontsize=14,
+            fig, ax = plt.subplots(figsize=(8, 6))
+            
+            # Scatter plot
+            ax.scatter(dolp_avg, range(len(dolp_avg)), color='green')
+            ax.set_xlabel(r'$DoLP_{rc} [\%]$', fontsize=15)
+            ax.set_ylabel('Pixel Index', fontsize=15)
+            ax.set_title(r'DoLP from $\bar{c}_{U},\bar{r}_{Q}$', fontsize=16)
+            
+            # Add text box to the right of plot
+            textstr = f"Mean = {dolpavg_mean:.2f}%\nStd = {dolpavg_std:.2f}%\nMed = {dolpavg_median:.2f}%"
+            ax.text(1.05, 0.5, textstr, transform=ax.transAxes, fontsize=14,
             verticalalignment='center', bbox=dict(facecolor='white', alpha=0.8, edgecolor='black'))
 
-    plt.tight_layout()
-    plt.show()
+            plt.tight_layout()
+            plt.show()
     
-
+    if cal_type == 'Malus':
+        #Load dataset for each angle 
+        
+        P0 = f["P0_Measurements/UV Raw Images"][:]
