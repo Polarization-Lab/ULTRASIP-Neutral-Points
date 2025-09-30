@@ -13,6 +13,7 @@ plot and compare to original - calculate RMSE (?)
 
 #Import libraries 
 import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
 import numpy as np
 import cmocean.cm as cmo
 import glob
@@ -21,12 +22,17 @@ import os
 # Define W-matrix of ULTRASIP (rows = analyzer vectors P0, P90, P45, P135)
 W = 0.5 * np.array([[1, 1, 0],[1, -1, 0],[1, 0, 1],[1, 0, -1]])
 
+# Define model: I = cos^2(theta - theta0)
+def malus_fixed(theta_deg, theta0_deg):
+    theta_rad = np.deg2rad(theta_deg - theta0_deg)
+    return np.cos(theta_rad)**2
+
 # --- Config ---
-cal_type = 'Malus'  # 'NUC' or 'Malus'
-cal_path = 'E:/Calibration/Data'
+cal_type = 'NUC'  # 'NUC' or 'Malus'
+cal_path = 'D:/Calibration/Data'
 cal_files = glob.glob(f'{cal_path}/{cal_type}*.h5')
 
-idx = len(cal_files) - 1  # choose file index
+idx = 7#len(cal_files) - 1  # choose file index #8,7,6,5
 Ni, Nj = 2848, 2848       # image size
 
 with h5py.File(cal_files[idx], 'r+') as f:
@@ -62,16 +68,29 @@ with h5py.File(cal_files[idx], 'r+') as f:
         for ang in angles:
             nuc.create_dataset(f'P{ang} Rij', data=Rij[ang])
             nuc.create_dataset(f'P{ang} Bij', data=Bij[ang])
+            
+            plt.figure()
+            plt.imshow(Rij[ang],cmap='gray',vmin=0,vmax=0.003)
+            plt.title(f'P{ang} Rij')
+            plt.colorbar()
+            plt.xticks([])
+            plt.yticks([])
+            plt.figure()
+            plt.imshow(Bij[ang],cmap='gray',vmin=0,vmax=100)
+            plt.title(f'P{ang} Bij')
+            plt.colorbar()
+            plt.xticks([])
+            plt.yticks([])
 
         # --- Example test correction (optional demo) ---
-        with h5py.File(cal_files[4], 'r+') as test_file:
-            run = 79
+        with h5py.File(cal_files[5], 'r+') as test_file:
+            run = 119
             exp_times = test_file['P_0 Measurements/Exposure Times'][:]
 
             test_imgs = {}
             for ang in angles:
-                uvimgs = test_file[f'P_{ang} Measurements/UV Raw Images'][:]
-                test_imgs[ang] = uvimgs.reshape(len(exp_times), Ni, Nj)[run, :, :]
+                test_uvimgs = test_file[f'P_{ang} Measurements/UV Raw Images'][:]
+                test_imgs[ang] = test_uvimgs.reshape(len(exp_times), Ni, Nj)[run, :, :]
 
             # Get global averages
             R_avg = {ang: np.mean(Rij[ang]) for ang in angles}
@@ -188,7 +207,7 @@ with h5py.File(cal_files[idx], 'r+') as f:
             axes[0].set_xticks([]); axes[0].set_yticks([])
 
             # Right: histogram
-            axes[1].hist(dolp.flatten(), bins=50, edgecolor='black')
+            axes[1].hist(dolp.flatten(), bins=50, edgecolor='black',range=(0,15))
             axes[1].set_ylabel('Frequency', fontsize=14)
             axes[1].tick_params(axis='both', labelsize=12)
             
@@ -232,16 +251,24 @@ with h5py.File(cal_files[idx], 'r+') as f:
     
             # Average across the 5 runs
             mean_image = np.mean(data, axis=0)
+            
+            if angle in [0,45,90,135]:
+                plt.figure()
+                plt.imshow(mean_image,cmap='gray',vmin=0,vmax=2300)
+                plt.title(f'P_gen: {gen_ang}, Avg P_{angle}')
+                plt.colorbar()
     
             # Compute overall average pixel value
             avg_val = np.mean(mean_image)
     
             # Store result
             avg_intensity.append(avg_val)
+            
+        norm_intensity = avg_intensity/np.max(avg_intensity)
 
         # Plot average intensity vs angle
         plt.figure(figsize=(8, 5))
-        plt.plot(angles, avg_intensity/np.max(avg_intensity), 'o-', color='darkblue')
+        plt.plot(angles,norm_intensity, 'o-', color='darkblue')
         plt.xlabel('Analyzer Linear Polarizer Angle (degrees)', fontsize=12)
         plt.ylabel('Average Pixel Value', fontsize=12)
         plt.title(f'Generator Angle: {gen_ang}', fontsize=14)
@@ -250,4 +277,36 @@ with h5py.File(cal_files[idx], 'r+') as f:
         
         plt.xticks(np.arange(0, 361, 45))
         plt.yticks(np.arange(0,1.25,0.25))
+        plt.show()
+        
+        # Initial guess: angle of maximum intensity
+        theta0_guess = angles[np.argmax(norm_intensity)]
+
+        # Fit only theta0
+        popt, pcov = curve_fit(malus_fixed, angles, norm_intensity, p0=[theta0_guess])
+        theta0_fit = popt[0]
+        theta0_err = np.sqrt(np.diag(pcov))[0]
+
+        # Theoretical fit
+        fit_intensity = malus_fixed(angles, theta0_fit)
+
+        fig, ax = plt.subplots(figsize=(8,5))
+
+        # Plot measured normalized intensity
+        ax.plot(angles, norm_intensity, 'o-', color='darkblue', label='Measured')
+
+        # Plot fitted Malus curve
+        ax.plot(angles, fit_intensity, '--', color='red',
+        label=fr'Fit: $\theta_0$ = {theta0_fit-180:.2f}°')
+
+        # Labels, title, legend
+        ax.set_xlabel('Analyzer Linear Polarizer Angle (degrees)', fontsize=14)
+        ax.set_ylabel('Normalized Intensity', fontsize=14)
+        ax.set_title(f'Generator Angle: {gen_ang}', fontsize=14)
+        ax.legend(fontsize=12,loc='upper left')
+        ax.grid(True)
+        plt.xticks(np.arange(0, 361, 45))
+        ax.set_yticks(np.arange(0, 1.25, 0.25))
+    
+        plt.tight_layout()
         plt.show()
