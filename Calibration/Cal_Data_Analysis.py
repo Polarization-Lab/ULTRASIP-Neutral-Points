@@ -23,7 +23,7 @@ W = 0.5 * np.array([[1, 1, 0],[1, -1, 0],[1, 0, 1],[1, 0, -1]])
 
 # --- Config ---
 cal_type = 'Malus'  # 'NUC' or 'Malus'
-cal_path = 'D:/Calibration/Data'
+cal_path = 'E:/Calibration/Data'
 cal_files = glob.glob(f'{cal_path}/{cal_type}*.h5')
 
 idx = len(cal_files) - 1  # choose file index
@@ -220,10 +220,9 @@ with h5py.File(cal_files[idx], 'r+') as f:
     
     if cal_type == 'Malus':
         # Load dataset for each angle 
-        angles = np.r_[0:363
-                       :3]  # 0, 3, 6, ..., 360
+        angles = np.r_[0:363:3]  # 0, 3, 6, ..., 360
         avg_intensity = []
-        gen_ang = f['P_0 Measurements'].attrs['Angle of Generator Linear Polarizer']
+        gen_ang = f['Measurement_Metadata'].attrs['Angle of Generator Linear Polarizer']
         for angle in angles:
             # Construct dataset name dynamically
             dataset_name = f"P_{angle} Measurements/UV Raw Images"
