@@ -29,10 +29,10 @@ def malus_fixed(theta_deg, theta0_deg):
 
 # --- Config ---
 cal_type = 'NUC'  # 'NUC' or 'Malus'
-cal_path = 'D:/Calibration/Data'
+cal_path = 'E:/Calibration/Data'
 cal_files = glob.glob(f'{cal_path}/{cal_type}*.h5')
 
-idx = 7#len(cal_files) - 1  # choose file index #8,7,6,5
+idx = 1#len(cal_files) - 1  # choose file index #8,7,6,5
 Ni, Nj = 2848, 2848       # image size
 
 with h5py.File(cal_files[idx], 'r+') as f:
@@ -83,14 +83,48 @@ with h5py.File(cal_files[idx], 'r+') as f:
             plt.yticks([])
 
         # --- Example test correction (optional demo) ---
-        with h5py.File(cal_files[5], 'r+') as test_file:
-            run = 119
+        with h5py.File(cal_files[3], 'r+') as test_file:
+            run = 72
             exp_times = test_file['P_0 Measurements/Exposure Times'][:]
 
             test_imgs = {}
             for ang in angles:
                 test_uvimgs = test_file[f'P_{ang} Measurements/UV Raw Images'][:]
                 test_imgs[ang] = test_uvimgs.reshape(len(exp_times), Ni, Nj)[run, :, :]
+                
+            # --- Compute uncorrected Stokes parameters ---
+            # Stack images in order: 0°, 90°, 45°, 135°
+            test_stack = np.stack([test_imgs[0], test_imgs[90], test_imgs[45], test_imgs[135]], axis=0)
+            
+            # Apply inverse of modulation matrix to get Stokes
+            Stokes_uncorr = np.linalg.pinv(W) @ (test_stack.reshape(4, Ni * Nj))
+            Stokes_uncorr = Stokes_uncorr.reshape(3, Ni, Nj)
+
+            I_uncorr, Q_uncorr, U_uncorr = Stokes_uncorr
+            
+            aolp_uncorr = 0.5 * np.arctan2(U_uncorr, Q_uncorr)
+            aolp_uncorr = np.mod(np.degrees(aolp_uncorr),180)
+            
+            dolp_uncorr = (np.sqrt(Q_uncorr**2 + U_uncorr**2) / I_uncorr)*100
+            
+            # Create figure
+            fig, axes = plt.subplots(1, 2, figsize=(12, 5))  # 1 row, 2 columns
+
+            im = axes[0].imshow(aolp_uncorr, cmap=cmo.phase, interpolation='none', vmin=0, vmax=180)
+            cbar = fig.colorbar(im, ax=axes[0])
+            cbar.ax.tick_params(labelsize=14)
+            axes[0].set_xticks([]); axes[0].set_yticks([])
+            axes[0].set_title('AoLP Uncorrected [deg]',fontsize=12)
+
+            im1 = axes[1].imshow(dolp_uncorr, cmap='hot', interpolation='none', vmin=0, vmax=10)
+            cbar = fig.colorbar(im1, ax=axes[1])
+            cbar.ax.tick_params(labelsize=14)
+            axes[1].set_xticks([]); axes[1].set_yticks([])
+            axes[1].set_title('DoLP Uncorrected [%]',fontsize=12)
+
+            plt.tight_layout()
+            plt.show()
+
 
             # Get global averages
             R_avg = {ang: np.mean(Rij[ang]) for ang in angles}
@@ -102,8 +136,8 @@ with h5py.File(cal_files[idx], 'r+') as f:
                 Cij[ang] = (R_avg[ang] / Rij[ang]) * (test_imgs[ang] - Bij[ang]) + B_avg[ang]
     
             Cstack = np.stack([Cij[0], Cij[90], Cij[45], Cij[135]], axis=0) 
-            Stokes = np.linalg.pinv(W)@(Cstack.reshape(4, 2848*2848))
-            Stokes = Stokes.reshape(3, 2848, 2848)
+            Stokes = np.linalg.pinv(W)@(Cstack.reshape(4, 712*712))
+            Stokes = Stokes.reshape(3, 712, 712)
 
             I, Q, U = Stokes
     
@@ -152,6 +186,29 @@ with h5py.File(cal_files[idx], 'r+') as f:
             fig.suptitle(f"Cij Images — Exposure Time = {exp_times[run]:.6f} us", fontsize=18, y=1.03)
 
             plt.show()
+            
+            # 2x2 grid of Cij histograms — all share same x and y limits
+            fig, axes = plt.subplots(2, 2, figsize=(10, 10), sharex=True, sharey=True)
+            fig.subplots_adjust(top=0.88, wspace=0.3, hspace=0.15)  # increased wspace
+
+            # Flatten axes array for easy iteration
+            axes = axes.ravel()
+
+            for idx, ang in enumerate(angles):
+                axes[idx].hist(Cij[ang].flatten(), bins=50, edgecolor='black')
+                axes[idx].set_title(f"P{ang}", fontsize=14)
+
+            # --- Set global limits ---
+            xlim = (2100, 3000)
+            #ylim = (0, 11e5)
+            axes[0].set_xlim(xlim)
+            #axes[0].set_ylim(ylim)
+
+            # Suptitle with exposure time
+            #fig.suptitle(f"Cij Histograms — Exposure Time = {exp_times[run]:.6f} μs", fontsize=18, y=1.03)
+
+            plt.show()
+
 
             fig, axes = plt.subplots(1, 3, figsize=(16, 4))  # 1 row, 4 columns
     
@@ -178,6 +235,23 @@ with h5py.File(cal_files[idx], 'r+') as f:
 
             plt.tight_layout()
             plt.show()
+            
+            fig, axes = plt.subplots(1, 3, figsize=(16, 4), sharey=True)  # 1 row, 4 columns
+    
+            #Plot I
+            im0 = axes[0].hist(I.flatten(),  bins=50, edgecolor='black')
+            axes[0].set_title('I',fontsize=20)
+    
+            # Plot Q/I
+            im1 = axes[1].hist((Q/I).flatten(),bins=50, edgecolor='black')
+            axes[1].set_title('Q/I',fontsize=20)
+
+            # Plot U/I
+            im2 = axes[2].hist((U/I).flatten(),bins=50, edgecolor='black')
+            axes[2].set_title('U/I',fontsize=20)
+
+            plt.tight_layout()
+            plt.show()
 
             # Create figure
             fig, axes = plt.subplots(1, 2, figsize=(12, 5))  # 1 row, 2 columns
@@ -186,7 +260,7 @@ with h5py.File(cal_files[idx], 'r+') as f:
             im = axes[0].imshow(aolp, cmap=cmo.phase, interpolation='none', vmin=0, vmax=180)
             cbar = fig.colorbar(im, ax=axes[0])
             cbar.ax.tick_params(labelsize=14)
-            axes[0].set_xticks([]); axes[0].set_yticks([])
+            #axes[0].set_xticks([]); axes[0].set_yticks([])
 
             # Histogram plot
             axes[1].hist(aolp.flatten(), bins=50, edgecolor='black',range=(0,180))
@@ -204,7 +278,7 @@ with h5py.File(cal_files[idx], 'r+') as f:
             im = axes[0].imshow(dolp, cmap='hot', interpolation='none', vmin=0, vmax=10)
             cbar = fig.colorbar(im, ax=axes[0])
             cbar.ax.tick_params(labelsize=14)
-            axes[0].set_xticks([]); axes[0].set_yticks([])
+            #axes[0].set_xticks([]); axes[0].set_yticks([])
 
             # Right: histogram
             axes[1].hist(dolp.flatten(), bins=50, edgecolor='black',range=(0,15))
@@ -251,6 +325,8 @@ with h5py.File(cal_files[idx], 'r+') as f:
     
             # Average across the 5 runs
             mean_image = np.mean(data, axis=0)
+            
+            mean_image = mean_image[500:2000,500:2000]
             
             if angle in [0,45,90,135]:
                 plt.figure()
