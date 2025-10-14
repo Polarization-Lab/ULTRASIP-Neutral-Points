@@ -28,11 +28,11 @@ def malus_fixed(theta_deg, theta0_deg):
     return np.cos(theta_rad)**2
 
 # --- Config ---
-cal_type = 'NUC'  # 'NUC' or 'Malus'
+cal_type = 'Malus'  # 'NUC' or 'Malus'
 cal_path = 'E:/Calibration/Data'
 cal_files = glob.glob(f'{cal_path}/{cal_type}*.h5')
 
-idx = 1#len(cal_files) - 1  # choose file index #8,7,6,5
+idx = len(cal_files) - 3  # choose file index #8,7,6,5
 Ni, Nj = 2848, 2848       # image size
 
 with h5py.File(cal_files[idx], 'r+') as f:
@@ -313,7 +313,7 @@ with h5py.File(cal_files[idx], 'r+') as f:
     
     if cal_type == 'Malus':
         # Load dataset for each angle 
-        angles = np.r_[0:363:3]  # 0, 3, 6, ..., 360
+        angles = np.r_[0:363:5]  # 0, 3, 6, ..., 360
         avg_intensity = []
         gen_ang = f['Measurement_Metadata'].attrs['Angle of Generator Linear Polarizer']
         for angle in angles:
@@ -326,11 +326,11 @@ with h5py.File(cal_files[idx], 'r+') as f:
             # Average across the 5 runs
             mean_image = np.mean(data, axis=0)
             
-            mean_image = mean_image[500:2000,500:2000]
+           # mean_image = mean_image[500:2000,500:2000]
             
             if angle in [0,45,90,135]:
                 plt.figure()
-                plt.imshow(mean_image,cmap='gray',vmin=0,vmax=2300)
+                plt.imshow(mean_image,cmap='gray',vmin=0,vmax=2300,interpolation='None')
                 plt.title(f'P_gen: {gen_ang}, Avg P_{angle}')
                 plt.colorbar()
     
