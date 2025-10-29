@@ -33,23 +33,23 @@ uv_wavelength = '355 FWHM 10nm'
 aq_num = -1 #index for later
 angles = [0,45,90,135]
 #angles = [135,90,45,0]
-Location = 'NormRoof'
+Location = 'Lubrecht_Test_smokenoscan'
 #Get from Garmin GPS
-latitude = 45.66487 #32.23134;
-longitude = -111.04800 #-110.94712;
+latitude = 46.892995#45.66487 #32.23134;
+longitude = -113.449814#-111.04800 #-110.94712;
 
 #Offsets needed -- from homing procedure (subtracted from calculated sun position)
 tilt_offset = 0
-pan_offset = 1.5 #to set origin to sun azimuth
+pan_offset = 32 #to set origin to sun azimuth
 #Scan range from sun, 0 is sun
 start_tilt = 0
-end_tilt = 4
+end_tilt = 2
 step_tilt = 2
 
 #Exposures
 uv_exp_initial = 8e2
 uv_exp_mid =  1e4
-uv_exp_max = 1e5
+uv_exp_max = 1e6
 
 #Data main directory 
 outpath = 'D:/Data'
@@ -118,10 +118,10 @@ for dtilt in range(start_tilt,end_tilt,step_tilt):
     aq_num = aq_num + 1
     
     if dtilt == 0:
-        uv_exp = uv_exp_initial
+        uv_exp = uv_exp_max
         
     if dtilt > 4 or dtilt < 0:
-        uv_exp = uv_exp_mid
+        uv_exp = uv_exp_max
         
     if dtilt > 12:
         uv_exp = uv_exp_max

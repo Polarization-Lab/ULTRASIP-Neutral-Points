@@ -18,13 +18,14 @@ from hex_stop_button import HexStopButton
 # Constants and Metadata
 uv_wavelength = '355 FWHM 10nm'
 angles = [0, 45, 90, 135]
-Location = 'NormRoof'
-latitude = 45.66487
-longitude = -111.04800
+Location = 'Lubrecht'
+#Get from Garmin GPS
+latitude = 46.892995#45.66487 #32.23134;
+longitude = -113.449814#-111.04800 #-110.94712;
 
 # Offsets
 tilt_offset = 0
-pan_offset = 2
+pan_offset = 32
 start_tilt = 0
 step_tilt = 2
 # Exposure settings
@@ -33,8 +34,8 @@ outpath = 'D:/Data'
 
 def auto_exposure_all_angles(camera, axis, angles, 
                               target_median=2600, 
-                              initial_exp=1e4, 
-                              max_exp=9e5,
+                              initial_exp=1e5, 
+                              max_exp=1e6,
                               min_exp=500,
                               saturation_thresh=0.97, 
                               bit_depth=12):
@@ -83,28 +84,48 @@ class DataCollectorApp:
         self.canvas = tk.Canvas(root, width=200, height=200, bg='white')
         self.canvas.pack()
 
+        # --- Control Variables ---
         self.running = True
+        self.sun_targets = list(np.arange(10, 80, 0.5))  # Zenith angles to trigger at
+        self.tolerance = 0.1  # degrees
+        self.completed_targets = set()
         self.aq_num = 0
 
+        # --- Stop Button ---
         self.stop_button = HexStopButton(
             canvas=self.canvas,
             cx=100, cy=100, size=80,
             command=self.stop_loop
-        )
+            )
 
-        self.run_measurement_loop()
+        # --- Start monitoring loop ---
+        self.check_sun_angle_loop()
 
     def stop_loop(self):
         print("STOP button pressed!")
         self.running = False
 
-    def run_measurement_loop(self):
+    def check_sun_angle_loop(self):
+        """Continuously check the Sun’s zenith angle and trigger acquisitions."""
         if not self.running:
             print("Loop stopped.")
             return
 
-        self.acquire_data()
-        self.root.after(10 * 60 * 1000, self.run_measurement_loop)
+        dt = datetime.now()
+        sun_pos = get_position(dt, longitude, latitude)
+        sun_alt = np.degrees(sun_pos['altitude'])
+        sun_zenith = sun_alt  # Convert altitude to zenith
+
+        # Check if within tolerance of any target
+        for target in self.sun_targets:
+            if abs(sun_zenith - target) < self.tolerance and target not in self.completed_targets:
+                print(f"Hit target zenith {target:.1f}° at {dt}, actual = {sun_zenith:.2f}°")
+                self.acquire_data()
+                self.completed_targets.add(target)
+                break  # Avoid multiple triggers at once
+
+        # Continue checking every 10 seconds
+        self.root.after(10_000, self.check_sun_angle_loop)
 
     def acquire_data(self):
         # ----------------------------#Connect to motors#-------------------------#
@@ -159,7 +180,7 @@ class DataCollectorApp:
         pan = np.degrees(sun_pos['azimuth'])
         tilt = np.degrees(sun_pos['altitude']) 
         
-        end_tilt = int(80-tilt)
+        end_tilt = int(75-tilt)
         print(end_tilt)
 
         #Move Moog to Sun Position

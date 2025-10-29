@@ -25,7 +25,7 @@ W = 0.5*np.array([[1,1,0],[1,-1,0],[1,0,1],[1,0,-1]])
 
 #Load observations 
 #Set Date of Measurements 
-date = '2025_07_21'
+date = '2025_10_24'
 
 #Datapath
 basepath = 'D:/Data'
@@ -38,7 +38,7 @@ print(files[idx])
 
 for aqnum in range(0,len(f.keys())-1):
     
-    timestamp = files[idx][38:46]
+    timestamp = files[idx][38:56]
     #Set aquisition to view
     aq = f[f'Aquistion_{aqnum}']
     
@@ -76,7 +76,7 @@ for aqnum in range(0,len(f.keys())-1):
     #Polarized flux
     fig, axes = plt.subplots(1, 4, figsize=(16, 5), sharex=True, sharey=True)
 
-    vmin, vmax = 1000, 4200
+    vmin, vmax = 1000, 2200
     cmap = 'gray'
 
     im = axes[0].imshow(P0, cmap=cmap, vmin=vmin, vmax=vmax, interpolation = 'None')
