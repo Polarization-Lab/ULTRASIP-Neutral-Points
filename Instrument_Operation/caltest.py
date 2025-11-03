@@ -37,12 +37,25 @@ thirty_P135 = np.ones((10,10))
 
 
 
-flux_matrix = np.array([[hor_P0,vert_P0,forty_P0,thirty_P0],
-                       [hor_P90,vert_P90,forty_P90,thirty_P90],
-                       [hor_P45,vert_P45,forty_P45,thirty_P45],
-                       [hor_P135,vert_P135,forty_P135,thirty_P135]]).T
+flux_matrix = np.array([[hor_P0,hor_P90,hor_P45,hor_P135],[vert_P0,vert_P90,vert_P45,vert_P135],
+                        [forty_P0,forty_P90,forty_P45,forty_P135],
+                        [thirty_P0,thirty_P90,thirty_P45,thirty_P135]
+                        ])
 
-W_meas = 0.5*( flux_matrix.reshape(4,4,10*10).T@np.linalg.pinv(Stokes_ideal))
+#flatten flux matrix
+flux_matrix = flux_matrix.reshape(4,4,10*10)
+
+W = flux_matrix.T@np.linalg.pinv(Stokes_ideal)
+
+#Simple example
+
+fluxes = np.array([[1,0,0.5,0.5],[0,1,0.5,0.5],
+                        [0.5,0.5,1,0],
+                        [0.5,0.5,0,1]
+                        ])
+W_sim = fluxes.T@np.linalg.pinv(Stokes_ideal)
+
+
 
 
 
