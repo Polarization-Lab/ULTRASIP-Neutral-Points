@@ -19,21 +19,25 @@ import os
 
 #Define W-matrix of ULTRASIP 
 #The analyzer vectors (P0,P90,P45,P135) are the rows of the W-matrix (pg 230 of PL&OS)
-W = 0.5*np.array([[1,1,0],[1,-1,0],[1,0,1],[1,0,-1]])
+#W = 0.5*np.array([[1,1,0],[1,-1,0],[1,0,1],[1,0,-1]])
+#Use measured W-matrix
+W = np.load('D:/ULTRASIP_Wmatrix.npy')
+
 
 #Image Size 
 Ni = 2848
 Nj = 2848
 
 #Datapath
-cal_path = 'E:/2025_06_29/' #DO NOT CHANGE
-cal_file = glob.glob('E:/Calibration/2025_09_24/*.h5')
+# cal_path = 'E:/2025_06_29/' #DO NOT CHANGE
+cal_path = 'D:/Calibration/Data'
+cal_file = glob.glob(f'{cal_path}/NUC*813_16_48*.h5')
 Calibration_Type = 'NUC'
 meas_file = glob.glob(f'{cal_path}/NUC*19_54*.h5')
 #files = glob.glob(f'{folderdate}/{Calibration_Type}*11_*.h5')
 idx = len(cal_file)-1 # Set file index you want to view - default is set to the last one (len(files)-1)
-f = h5py.File(cal_file[idx],'r+')
-m= h5py.File(meas_file[idx],'r+')
+f = h5py.File(cal_file[0],'r+')
+m= h5py.File(meas_file[0],'r+')
 
 
 #exp = f['Measurement_Metadata/P_0 Measurements/Exposure Times'][:]

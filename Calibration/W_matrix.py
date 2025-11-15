@@ -68,4 +68,6 @@ flux_matrix = np.array([[P_00,P_090,P_045,P_0135],[P_900,P_9090,P_9045,P_90135],
 W = flux_matrix.T@np.linalg.pinv(Stokes_ideal)
 W = W.reshape(2848,2848,4,3)
 
+pW = np.linalg.pinv(W)
+
 np.save('ULTRASIP_Wmatrix.npy', W)
