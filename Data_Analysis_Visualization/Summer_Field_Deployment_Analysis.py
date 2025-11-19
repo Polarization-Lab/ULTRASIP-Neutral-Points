@@ -12,7 +12,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 
-dates = np.array(["6/30", "7/1", "7/8", "7/9", "7/10", "7/13", "7/17", "7/18"])
+date = np.array(["6/30", "7/1", "7/8", "7/9", "7/10", "7/13", "7/17", "7/18"])
 
 
 r1 = np.array([0.163, 0.137, 0.144, 0.133, 0.145, 0.155, 0.149, 0.138])
@@ -37,6 +37,7 @@ intercept_sim = np.array([-0.891, -2.748, -0.924, 0.163, -3.612, -0.300, -1.885,
 intercept_delta = intercept_sim - intercept_obs  
 
 df = pd.DataFrame({
+    'date': date,
     "slope_obs": slope_obs,
     "intercept_obs": intercept_obs,
     "r1": r1,
@@ -56,3 +57,4 @@ df.corr(method='pearson')
 plt.figure(figsize = (15,5))
 sns.heatmap(df.corr(), annot=True, cmap="coolwarm")
 plt.show()
+

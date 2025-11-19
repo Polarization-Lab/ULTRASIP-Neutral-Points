@@ -20,7 +20,7 @@ import os
 #--------Constants and Metadata--------------------#
 uv_wavelength = '355 10 nm FWHM'
 
-outpath = 'E:/Calibration/'
+outpath = 'D:/Calibration/'
 Calibration_Type = 'Malus'
 #Set filename for measurement using date/time
 dt = datetime.now()
@@ -97,9 +97,9 @@ if Calibration_Type == 'NUC':
 if Calibration_Type == 'Malus':
     
     uv_exp = 1e6 
-    angles = np.r_[0:365:5]
+    angles = np.r_[0:365:45]
     runs = 5
-    gt_angle = '45'
+    gt_angle = '135' #CHANGE
     meas.attrs['Angle of Generator Linear Polarizer'] = gt_angle
     meas.attrs["Runs for each angle"] = runs
     meas.attrs['Sampled Angles'] = angles
