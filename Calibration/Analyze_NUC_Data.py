@@ -79,27 +79,27 @@ P135 = P_images[135]
 P = np.stack([P0, P90, P45, P135], axis=-1)
 
 
-fig=plt.figure(figsize=(15,5))
+fig=plt.figure(figsize=(17,5))
 
 plt.subplot(1,4,1)
 plt.title("P0")
-plt.imshow(P0, cmap='gray',interpolation = 'None',vmin=0,vmax=4000)
+plt.imshow(P0, cmap='gray',interpolation = 'None',vmin=1000,vmax=4000)
 plt.colorbar(shrink=0.5)
 
 plt.subplot(1,4,2)
 plt.title("P90")
-plt.imshow(P90, cmap='gray',interpolation ='None',vmin=0,vmax=4000)
+plt.imshow(P90, cmap='gray',interpolation ='None',vmin=1000,vmax=4000)
 plt.colorbar(shrink=0.5)
 
 plt.subplot(1,4,3)
 plt.title("P45")
-plt.imshow(P45, cmap='gray',interpolation ='None',vmin=0,vmax=4000)
+plt.imshow(P45, cmap='gray',interpolation ='None',vmin=1000,vmax=4000)
 plt.colorbar(shrink=0.5)
 
 
 plt.subplot(1,4,4)
 plt.title("P135")
-plt.imshow(P135, cmap='gray',interpolation ='None',vmin=0,vmax=4000)
+plt.imshow(P135, cmap='gray',interpolation ='None',vmin=1000,vmax=4000)
 plt.colorbar(shrink=0.5)
 
 # fig.suptitle(f"Cij Images — Exposure Time = {exp_times[run]:.6f} us", fontsize=18, y=0.8)
@@ -107,16 +107,15 @@ plt.colorbar(shrink=0.5)
 # plt.show()
 
 # Load pixel-wise W matrix
-Wi = np.load('D:/ULTRASIP_Wmatrix.npy')       # shape = (H, W, 4, 3)
-# Wi = 0.5 * np.array([
-#     [1,  1,  0],
-#     [1, -1,  0],
-#     [1,  0,  1],
-#     [1,  0, -1]
-# ])  # shape (4, 3)
-W = (Wi / np.linalg.norm(Wi, axis=(3), keepdims=True))
+#W = np.load('D:/ULTRASIP_Wmatrix.npy')       # shape = (H, W, 4, 3)
+Wi = 0.5 * np.array([
+    [1,  1,  0],
+    [1, -1,  0],
+    [1,  0,  1],
+    [1,  0, -1]
+])  # shape (4, 3)
 #Broadcast W to a full 2848 x 2848 grid
-#W = np.broadcast_to(Wi, (2848, 2848, 4, 3)).copy()
+W = np.broadcast_to(Wi, (2848, 2848, 4, 3)).copy()
 H, Wd = P.shape[0], P.shape[1]
 # # --- Pixelwise pseudoinverse via SVD ---
 # Compute SVD of each 4x3 matrix
@@ -149,6 +148,9 @@ avgU = np.average(U/I,axis=0)#col avg
 
 
 dolp = (np.sqrt((Q**2)+(U**2))/I)*100
+dolp_mean = np.average(dolp)
+dolp_std = np.std(dolp)
+dolp_median = np.median(dolp)
 
 dolp_avg = np.sqrt((avgQ**2)+(avgU**2))*100
 dolpavg_mean = np.average(dolp_avg)
@@ -162,17 +164,17 @@ plt.figure(figsize=(15,5))
 
 plt.subplot(1,3,1)
 plt.title(" I")
-plt.imshow(I, cmap='gray',interpolation = 'None')
+plt.imshow(I, cmap='gray',interpolation = 'None',vmin=1000,vmax=6000)
 plt.colorbar(shrink=0.75)
 
 plt.subplot(1,3,2)
 plt.title(" Q/I")
-plt.imshow(Q/I, cmap=cmo.curl,interpolation ='None')
+plt.imshow(Q/I, cmap=cmo.curl,interpolation ='None',vmin=-0.1,vmax=0.1)
 plt.colorbar(shrink=0.75)
 
 plt.subplot(1,3,3)
 plt.title(" U/I")
-plt.imshow(U/I, cmap=cmo.curl,interpolation ='None')
+plt.imshow(U/I, cmap=cmo.curl,interpolation ='None',vmin=-0.1,vmax=0.1)
 plt.colorbar(shrink=0.75)
 
 plt.tight_layout()
@@ -184,7 +186,7 @@ plt.title('DoLP [%]',fontsize=20)
 plt.colorbar()
 
 plt.figure()
-plt.imshow(aolp, cmap=cmo.phase, interpolation = 'None')
+plt.imshow(aolp, cmap=cmo.phase, interpolation = 'None',vmin=0,vmax=180)
 plt.title('AoLP  [deg]',fontsize=20)
 plt.colorbar()
 
@@ -194,9 +196,13 @@ plt.title('AoLP [deg]')
 plt.show()
 
 
-plt.figure()
-plt.hist(dolp.flatten())
-plt.title('DoLP  [%]')
+fig, ax = plt.subplots(figsize=(8, 6))
+ax.hist(dolp.flatten())
+ax.set_title('DoLP  [%]')
+# Add text box to the right of plot
+textstr = f"Mean = {dolp_mean:.4f}%\nStd = {dolp_std:.4f}%\nMed = {dolp_median:.4f}%"
+ax.text(0.5, 0.5, textstr, transform=ax.transAxes, fontsize=14,
+verticalalignment='center', bbox=dict(facecolor='white', alpha=0.8, edgecolor='black'))
 plt.show()
 
 fig, ax = plt.subplots(figsize=(8, 6))
@@ -208,7 +214,7 @@ ax.set_xlabel('Pixel Index', fontsize=15)
 ax.set_title(r'DoLP from $\bar{c}_{U},\bar{r}_{Q}$', fontsize=16)
             
 # Add text box to the right of plot
-textstr = f"Mean = {dolpavg_mean:.2f}%\nStd = {dolpavg_std:.2f}%\nMed = {dolpavg_median:.2f}%"
+textstr = f"Mean = {dolpavg_mean:.4f}%\nStd = {dolpavg_std:.4f}%\nMed = {dolpavg_median:.4f}%"
 ax.text(1.05, 0.5, textstr, transform=ax.transAxes, fontsize=14,
 verticalalignment='center', bbox=dict(facecolor='white', alpha=0.8, edgecolor='black'))
 

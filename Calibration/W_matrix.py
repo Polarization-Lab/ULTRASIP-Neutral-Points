@@ -34,10 +34,15 @@ def correct_img(Pij,Rij,Bij):
 
 
 cal_path = 'D:/Calibration/Data'
-generator_0_file = glob.glob(f'{cal_path}/Malus*1001_10_57*.h5')
-generator_90_file = glob.glob(f'{cal_path}/Malus*1007_08_30*.h5')
-generator_45_file = glob.glob(f'{cal_path}/Malus*1007_11_33*.h5')
-generator_135_file = glob.glob(f'{cal_path}/Malus*1007_10_40*.h5')
+# generator_0_file = glob.glob(f'{cal_path}/Malus*1001_10_57*.h5')
+# generator_90_file = glob.glob(f'{cal_path}/Malus*1007_08_30*.h5')
+# generator_45_file = glob.glob(f'{cal_path}/Malus*1007_11_33*.h5')
+# generator_135_file = glob.glob(f'{cal_path}/Malus*1007_10_40*.h5')
+
+generator_0_file = glob.glob(f'{cal_path}/Malus*1118_15_15_58*.h5')
+generator_90_file = glob.glob(f'{cal_path}/Malus*1118_15_57_15*.h5')
+generator_45_file = glob.glob(f'{cal_path}/Malus*1118_15_51_41*.h5')
+generator_135_file = glob.glob(f'{cal_path}/Malus*1118_16_02_07*.h5')
 
 g0 = h5py.File(generator_0_file[0],'r+')
 g90 = h5py.File(generator_90_file[0],'r+')
@@ -61,23 +66,23 @@ fig=plt.figure(figsize=(15,5))
 
 plt.subplot(1,4,1)
 plt.title("P0")
-plt.imshow(C_00, cmap='gray',interpolation = 'None',vmin=0,vmax=4000)
+plt.imshow(C_00, cmap='gray',interpolation = 'None',vmin=0,vmax=3000)
 plt.colorbar(shrink=0.5)
 
 plt.subplot(1,4,2)
 plt.title("P90")
-plt.imshow(C_090, cmap='gray',interpolation ='None',vmin=0,vmax=4000)
+plt.imshow(C_090, cmap='gray',interpolation ='None',vmin=0,vmax=3000)
 plt.colorbar(shrink=0.5)
 
 plt.subplot(1,4,3)
 plt.title("P45")
-plt.imshow(C_045, cmap='gray',interpolation ='None',vmin=0,vmax=4000)
+plt.imshow(C_045, cmap='gray',interpolation ='None',vmin=0,vmax=3000)
 plt.colorbar(shrink=0.5)
 
 
 plt.subplot(1,4,4)
 plt.title("P135")
-plt.imshow(C_0135, cmap='gray',interpolation ='None',vmin=0,vmax=4000)
+plt.imshow(C_0135, cmap='gray',interpolation ='None',vmin=0,vmax=3000)
 plt.colorbar(shrink=0.5)
 
 fig.suptitle("Cij Images — Horizontal Generator", fontsize=18, y=0.8)
@@ -103,23 +108,23 @@ fig=plt.figure(figsize=(15,5))
 
 plt.subplot(1,4,1)
 plt.title("P0")
-plt.imshow(C_900, cmap='gray',interpolation = 'None',vmin=0,vmax=4000)
+plt.imshow(C_900, cmap='gray',interpolation = 'None',vmin=0,vmax=3000)
 plt.colorbar(shrink=0.5)
 
 plt.subplot(1,4,2)
 plt.title("P90")
-plt.imshow(C_9090, cmap='gray',interpolation ='None',vmin=0,vmax=4000)
+plt.imshow(C_9090, cmap='gray',interpolation ='None',vmin=0,vmax=3000)
 plt.colorbar(shrink=0.5)
 
 plt.subplot(1,4,3)
 plt.title("P45")
-plt.imshow(C_9045, cmap='gray',interpolation ='None',vmin=0,vmax=4000)
+plt.imshow(C_9045, cmap='gray',interpolation ='None',vmin=0,vmax=3000)
 plt.colorbar(shrink=0.5)
 
 
 plt.subplot(1,4,4)
 plt.title("P135")
-plt.imshow(C_90135, cmap='gray',interpolation ='None',vmin=0,vmax=4000)
+plt.imshow(C_90135, cmap='gray',interpolation ='None',vmin=0,vmax=3000)
 plt.colorbar(shrink=0.5)
 
 fig.suptitle("Cij Images — Vertical Generator", fontsize=18, y=0.8)
@@ -143,23 +148,23 @@ fig=plt.figure(figsize=(15,5))
 
 plt.subplot(1,4,1)
 plt.title("P0")
-plt.imshow(C_450, cmap='gray',interpolation = 'None',vmin=0,vmax=4000)
+plt.imshow(C_450, cmap='gray',interpolation = 'None',vmin=0,vmax=3000)
 plt.colorbar(shrink=0.5)
 
 plt.subplot(1,4,2)
 plt.title("P90")
-plt.imshow(C_4590, cmap='gray',interpolation ='None',vmin=0,vmax=4000)
+plt.imshow(C_4590, cmap='gray',interpolation ='None',vmin=0,vmax=3000)
 plt.colorbar(shrink=0.5)
 
 plt.subplot(1,4,3)
 plt.title("P45")
-plt.imshow(C_4545, cmap='gray',interpolation ='None',vmin=0,vmax=4000)
+plt.imshow(C_4545, cmap='gray',interpolation ='None',vmin=0,vmax=3000)
 plt.colorbar(shrink=0.5)
 
 
 plt.subplot(1,4,4)
 plt.title("P135")
-plt.imshow(C_45135, cmap='gray',interpolation ='None',vmin=0,vmax=4000)
+plt.imshow(C_45135, cmap='gray',interpolation ='None',vmin=0,vmax=3000)
 plt.colorbar(shrink=0.5)
 
 fig.suptitle("Cij Images — 45 deg Generator", fontsize=18, y=0.8)
@@ -183,23 +188,23 @@ fig=plt.figure(figsize=(15,5))
 
 plt.subplot(1,4,1)
 plt.title("P0")
-plt.imshow(C_1350, cmap='gray',interpolation = 'None',vmin=0,vmax=4000)
+plt.imshow(C_1350, cmap='gray',interpolation = 'None',vmin=0,vmax=3000)
 plt.colorbar(shrink=0.5)
 
 plt.subplot(1,4,2)
 plt.title("P90")
-plt.imshow(C_13590, cmap='gray',interpolation ='None',vmin=0,vmax=4000)
+plt.imshow(C_13590, cmap='gray',interpolation ='None',vmin=0,vmax=3000)
 plt.colorbar(shrink=0.5)
 
 plt.subplot(1,4,3)
 plt.title("P45")
-plt.imshow(C_13545, cmap='gray',interpolation ='None',vmin=0,vmax=4000)
+plt.imshow(C_13545, cmap='gray',interpolation ='None',vmin=0,vmax=3000)
 plt.colorbar(shrink=0.5)
 
 
 plt.subplot(1,4,4)
 plt.title("P135")
-plt.imshow(C_135135, cmap='gray',interpolation ='None',vmin=0,vmax=4000)
+plt.imshow(C_135135, cmap='gray',interpolation ='None',vmin=0,vmax=3000)
 plt.colorbar(shrink=0.5)
 
 fig.suptitle("Cij Images — 135 deg Generator", fontsize=18, y=0.8)
@@ -214,5 +219,7 @@ flux_matrix = np.array([[C_00,C_090,C_045,C_0135],[C_900,C_9090,C_9045,C_90135],
 W = flux_matrix.T@np.linalg.pinv(Stokes_ideal)
 W = W.reshape(2848,2848,4,3)
 
+W =  W / W[..., :, :1]
 
-np.save('ULTRASIP_Wmatrix.npy', W)
+
+#np.save('D:/ULTRASIP_Wmatrix.npy', W)
