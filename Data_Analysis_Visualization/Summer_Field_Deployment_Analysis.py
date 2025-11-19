@@ -7,13 +7,12 @@ Created on Mon Nov 17 15:58:03 2025
 """
 import numpy as np
 import pandas as pd
+import statsmodels.formula.api as smf
 import seaborn as sns
 import matplotlib.pyplot as plt
-from statsmodels.formula.api import ols, mixedlm
 
 
-
-dates = np.array(["6/30", "7/1", "7/8", "7/9", "7/10", "7/13", "7/17", "7/18"])
+date = np.array(["6/30", "7/1", "7/8", "7/9", "7/10", "7/13", "7/17", "7/18"])
 
 
 r1 = np.array([0.163, 0.137, 0.144, 0.133, 0.145, 0.155, 0.149, 0.138])
@@ -37,11 +36,8 @@ intercept_obs = np.array([ 2.316, -0.383, 5.904, 6.725, 3.030, 4.921, 6.270, 6.7
 intercept_sim = np.array([-0.891, -2.748, -0.924, 0.163, -3.612, -0.300, -1.885, -2.351])
 intercept_delta = intercept_sim - intercept_obs  
 
-dates_dt = pd.to_datetime("2024-" + dates)
-dates_num = dates_dt.map(pd.Timestamp.toordinal)
-
 df = pd.DataFrame({
-    "date": dates_num,
+    'date': date,
     "slope_obs": slope_obs,
     "intercept_obs": intercept_obs,
     "r1": r1,
@@ -56,18 +52,9 @@ df = pd.DataFrame({
     "SSA355": SSA_355,
 })
 
-
-
 df.corr(method='pearson')
 
 plt.figure(figsize = (15,5))
 sns.heatmap(df.corr(), annot=True, cmap="coolwarm")
 plt.show()
-
-# Fit the fixed effects model
-fixed_effects_model = ols('slope_obs ~ sphericity + r2', data=df).fit()
-
-
-# Summary of the fixed effects model
-print(fixed_effects_model.summary())
 
