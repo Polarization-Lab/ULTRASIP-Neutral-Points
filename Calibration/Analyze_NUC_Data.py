@@ -26,8 +26,7 @@ Bij = data['arr2'].item()
 def correct_img(Pij,Rij,Bij):
     R_avg = np.mean(Rij)
     B_avg = np.mean(Bij)
-    Cij = (R_avg / Rij) * (Pij - Bij) + B_avg
-    
+    Cij = (R_avg / Rij) * (Pij - Bij) + B_avg  
     return Cij
 # P0 = 1500*np.ones((2848,2848))
 # P45 = 0.5*1500*np.ones((2848,2848))
@@ -103,9 +102,9 @@ plt.title("P135")
 plt.imshow(P135, cmap='gray',interpolation ='None',vmin=0,vmax=4000)
 plt.colorbar(shrink=0.5)
 
-fig.suptitle(f"Cij Images — Exposure Time = {exp_times[run]:.6f} us", fontsize=18, y=0.8)
-plt.tight_layout()
-plt.show()
+# fig.suptitle(f"Cij Images — Exposure Time = {exp_times[run]:.6f} us", fontsize=18, y=0.8)
+# plt.tight_layout()
+# plt.show()
 
 # Load pixel-wise W matrix
 Wi = np.load('D:/ULTRASIP_Wmatrix.npy')       # shape = (H, W, 4, 3)
