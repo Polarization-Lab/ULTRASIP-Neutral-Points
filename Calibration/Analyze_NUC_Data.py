@@ -107,15 +107,15 @@ plt.colorbar(shrink=0.5)
 # plt.show()
 
 # Load pixel-wise W matrix
-#W = np.load('D:/ULTRASIP_Wmatrix.npy')       # shape = (H, W, 4, 3)
-Wi = 0.5 * np.array([
-    [1,  1,  0],
-    [1, -1,  0],
-    [1,  0,  1],
-    [1,  0, -1]
-])  # shape (4, 3)
-#Broadcast W to a full 2848 x 2848 grid
-W = np.broadcast_to(Wi, (2848, 2848, 4, 3)).copy()
+W = np.load('D:/ULTRASIP_Wmatrix.npy')       # shape = (H, W, 4, 3)
+# Wi = 0.5 * np.array([
+#     [1,  1,  0],
+#     [1, -1,  0],
+#     [1,  0,  1],
+#     [1,  0, -1]
+# ])  # shape (4, 3)
+# #Broadcast W to a full 2848 x 2848 grid
+# W = np.broadcast_to(Wi, (2848, 2848, 4, 3)).copy()
 H, Wd = P.shape[0], P.shape[1]
 # # --- Pixelwise pseudoinverse via SVD ---
 # Compute SVD of each 4x3 matrix

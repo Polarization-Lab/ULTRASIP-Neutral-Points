@@ -219,7 +219,7 @@ flux_matrix = np.array([[C_00,C_090,C_045,C_0135],[C_900,C_9090,C_9045,C_90135],
 W = flux_matrix.T@np.linalg.pinv(Stokes_ideal)
 W = W.reshape(2848,2848,4,3)
 
-W =  W / W[..., :, :1]
+#W =  W / W[..., :, :1]
 
 
-#np.save('D:/ULTRASIP_Wmatrix.npy', W)
+np.save('D:/ULTRASIP_Wmatrix.npy', W)
