@@ -9,7 +9,6 @@ Find W-matrix
 
 #Import libraries 
 import matplotlib.pyplot as plt
-from scipy.optimize import curve_fit
 import numpy as np
 import cmocean.cm as cmo
 import glob
@@ -222,4 +221,11 @@ W = W.reshape(2848,2848,4,3)
 #W =  W / W[..., :, :1]
 
 
+<<<<<<< Updated upstream
 np.save('D:/ULTRASIP_Wmatrix.npy', W)
+=======
+Wnew =  W / W[..., :, :1]
+
+
+np.save('ULTRASIP_Wmatrix.npy', W)
+>>>>>>> Stashed changes

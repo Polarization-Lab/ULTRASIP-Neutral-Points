@@ -114,8 +114,13 @@ W = np.load('D:/ULTRASIP_Wmatrix.npy')       # shape = (H, W, 4, 3)
 #     [1,  0,  1],
 #     [1,  0, -1]
 # ])  # shape (4, 3)
+<<<<<<< Updated upstream
 # #Broadcast W to a full 2848 x 2848 grid
 # W = np.broadcast_to(Wi, (2848, 2848, 4, 3)).copy()
+=======
+#Broadcast W to a full 2848 x 2848 grid
+#W = np.broadcast_to(Wi, (2848, 2848, 4, 3)).copy()
+>>>>>>> Stashed changes
 H, Wd = P.shape[0], P.shape[1]
 # # --- Pixelwise pseudoinverse via SVD ---
 # Compute SVD of each 4x3 matrix
