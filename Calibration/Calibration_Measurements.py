@@ -98,8 +98,8 @@ if Calibration_Type == 'Malus':
     
     uv_exp = 1e6 
     angles = np.r_[0:365:45]
-    runs = 5
-    gt_angle = '135' #CHANGE
+    runs = 10
+    gt_angle = '360' #CHANGE
     meas.attrs['Angle of Generator Linear Polarizer'] = gt_angle
     meas.attrs["Runs for each angle"] = runs
     meas.attrs['Sampled Angles'] = angles
