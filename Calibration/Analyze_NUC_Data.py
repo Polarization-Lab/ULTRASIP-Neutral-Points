@@ -78,49 +78,49 @@ P135 = P_images[135]
 # Stack into Stokes order (I,Q,U)
 P = np.stack([P0, P90, P45, P135], axis=-1)
 
-
+cmin=2400
+cmax=3000
 fig=plt.figure(figsize=(17,5))
 
 plt.subplot(1,4,1)
 plt.title("P0")
-plt.imshow(P0, cmap='gray',interpolation = 'None',vmin=1000,vmax=4000)
+plt.imshow(P0, cmap='gray',interpolation = 'None',vmin=cmin,vmax=cmax)
 plt.colorbar(shrink=0.5)
 
 plt.subplot(1,4,2)
 plt.title("P90")
-plt.imshow(P90, cmap='gray',interpolation ='None',vmin=1000,vmax=4000)
+plt.imshow(P90, cmap='gray',interpolation ='None',vmin=cmin,vmax=cmax)
 plt.colorbar(shrink=0.5)
 
 plt.subplot(1,4,3)
 plt.title("P45")
-plt.imshow(P45, cmap='gray',interpolation ='None',vmin=1000,vmax=4000)
+plt.imshow(P45, cmap='gray',interpolation ='None',vmin=cmin,vmax=cmax)
 plt.colorbar(shrink=0.5)
 
 
 plt.subplot(1,4,4)
 plt.title("P135")
-plt.imshow(P135, cmap='gray',interpolation ='None',vmin=1000,vmax=4000)
+plt.imshow(P135, cmap='gray',interpolation ='None',vmin=cmin,vmax=cmax)
 plt.colorbar(shrink=0.5)
 
-# fig.suptitle(f"Cij Images — Exposure Time = {exp_times[run]:.6f} us", fontsize=18, y=0.8)
+# fig.suptitle(f"Cij Images — Exposure Time = {exp_times[run]:.6f} us", fontsize=18, y=0.9)
 # plt.tight_layout()
-# plt.show()
+plt.show()
 
 # Load pixel-wise W matrix
-W = np.load('D:/ULTRASIP_Wmatrix.npy')       # shape = (H, W, 4, 3)
+W = np.load('D:/ULTRASIP_Wmatrix_mas.npy')       # shape = (H, W, 4, 3)
+
+W_average = W[800:1700, 800:1700,:,:].mean(axis=(0, 1)) #800-1700?
 # Wi = 0.5 * np.array([
 #     [1,  1,  0],
 #     [1, -1,  0],
 #     [1,  0,  1],
 #     [1,  0, -1]
 # ])  # shape (4, 3)
-<<<<<<< Updated upstream
 # #Broadcast W to a full 2848 x 2848 grid
-# W = np.broadcast_to(Wi, (2848, 2848, 4, 3)).copy()
-=======
-#Broadcast W to a full 2848 x 2848 grid
-#W = np.broadcast_to(Wi, (2848, 2848, 4, 3)).copy()
->>>>>>> Stashed changes
+W = np.broadcast_to(W_average, (2848, 2848, 4, 3)).copy()
+
+
 H, Wd = P.shape[0], P.shape[1]
 # # --- Pixelwise pseudoinverse via SVD ---
 # Compute SVD of each 4x3 matrix
@@ -169,7 +169,7 @@ plt.figure(figsize=(15,5))
 
 plt.subplot(1,3,1)
 plt.title(" I")
-plt.imshow(I, cmap='gray',interpolation = 'None',vmin=1000,vmax=6000)
+plt.imshow(I, cmap='gray',interpolation = 'None')
 plt.colorbar(shrink=0.75)
 
 plt.subplot(1,3,2)
@@ -202,7 +202,7 @@ plt.show()
 
 
 fig, ax = plt.subplots(figsize=(8, 6))
-ax.hist(dolp.flatten())
+ax.hist(dolp.flatten(),range=(0, 8))
 ax.set_title('DoLP  [%]')
 # Add text box to the right of plot
 textstr = f"Mean = {dolp_mean:.4f}%\nStd = {dolp_std:.4f}%\nMed = {dolp_median:.4f}%"
@@ -225,3 +225,5 @@ verticalalignment='center', bbox=dict(facecolor='white', alpha=0.8, edgecolor='b
 
 plt.tight_layout()
 plt.show()
+
+#np.save('D:/ULTRASIP_Avg_Wmatrix.npy', W)
