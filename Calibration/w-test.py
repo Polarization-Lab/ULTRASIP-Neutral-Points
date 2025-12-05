@@ -111,5 +111,5 @@ for f in files:
 W = Cmat.T@np.linalg.pinv(Stokes_ideal)
 W = W.reshape(2848,2848,4,3)
 
-np.save('D:/ULTRASIP_Wmatrix_mas.npy', W)
+#np.save('D:/ULTRASIP_Wmatrix_mas.npy', W)
 

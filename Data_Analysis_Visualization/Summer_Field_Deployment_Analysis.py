@@ -37,7 +37,7 @@ intercept_sim = np.array([-0.891, -2.748, -0.924, 0.163, -3.612, -0.300, -1.885,
 intercept_delta = intercept_sim - intercept_obs  
 
 df = pd.DataFrame({
-    'date': date,
+   # 'date': date,
     "slope_obs": slope_obs,
     "intercept_obs": intercept_obs,
     "r1": r1,
@@ -54,7 +54,7 @@ df = pd.DataFrame({
 
 df.corr(method='pearson')
 
-plt.figure(figsize = (15,5))
+plt.figure(figsize = (12,5))
 sns.heatmap(df.corr(), annot=True, cmap="coolwarm")
 plt.show()
 

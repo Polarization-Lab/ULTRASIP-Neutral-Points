@@ -103,8 +103,8 @@ plt.title("P135")
 plt.imshow(P135, cmap='gray',interpolation ='None',vmin=cmin,vmax=cmax)
 plt.colorbar(shrink=0.5)
 
-# fig.suptitle(f"Cij Images — Exposure Time = {exp_times[run]:.6f} us", fontsize=18, y=0.9)
-# plt.tight_layout()
+fig.suptitle(f"Cij Images — Exposure Time = {exp_times[run]:.6f} us", fontsize=18, y=0.9)
+plt.tight_layout()
 plt.show()
 
 # Load pixel-wise W matrix
