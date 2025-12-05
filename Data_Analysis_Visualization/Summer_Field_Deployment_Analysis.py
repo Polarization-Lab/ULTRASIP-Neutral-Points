@@ -38,23 +38,138 @@ intercept_delta = intercept_sim - intercept_obs
 
 df = pd.DataFrame({
    # 'date': date,
-    "slope_obs": slope_obs,
-    "intercept_obs": intercept_obs,
-    "r1": r1,
-    "sigma1": sigma1,
-    "r2": r2,
-    "sigma2": sigma2,
-    "C_ratio": C_ratio,
-    "sphericity": sphericity,
-    "n440": n_440,
-    "k440": k_440,
-    "AOD355": AOD_355,
-    "SSA355": SSA_355,
+    "$m_o$": slope_obs,
+    "$b_o$": intercept_obs,
+    "$r_1$": r1,
+    "$\sigma_1$": sigma1,
+    "$r_2$": r2,
+    "$\sigma_2$": sigma2,
+    "$C_r$": C_ratio,
+    "$Sph\%$": sphericity,
+    "$n_{440}$": n_440,
+    "$\kappa_{440}$": k_440,
+    "$AOD_{355}$": AOD_355,
+    "$SSA_{355}$": SSA_355,
 })
 
 df.corr(method='pearson')
 
 plt.figure(figsize = (12,5))
 sns.heatmap(df.corr(), annot=True, cmap="coolwarm")
+plt.show()
+
+
+corr = df.corr()
+
+# Create annotation matrix and remove diagonal labels
+annot = corr.round(2).astype(str)
+np.fill_diagonal(annot.values, "")
+
+# Mask upper triangle (keep diagonal)
+mask = np.triu(np.ones_like(corr, dtype=bool), k=1)
+
+fig, ax = plt.subplots(figsize=(17,12))
+
+hm = sns.heatmap(
+    corr,
+    mask=mask,
+    annot=annot,
+    fmt="",
+    cmap="coolwarm",
+    vmin=-1, vmax=1,
+    linewidths=1.3,
+    linecolor="white",
+    square=True,
+    annot_kws={"size":18, "weight":"bold"},
+    cbar=False      # ← important
+)
+
+# Create a new axis *above* the heatmap for the colorbar
+cbar_ax = fig.add_axes([0.25, 0.90, 0.5, 0.02])  
+# [left, bottom, width, height]
+
+# Add colorbar manually
+cbar = fig.colorbar(hm.collections[0], cax=cbar_ax, orientation="horizontal")
+
+# Put ticks ABOVE the colorbar
+cbar.ax.xaxis.set_label_position('top')
+cbar.ax.xaxis.tick_top()
+
+#cbar.set_label("Correlation", fontsize=14, weight="bold", labelpad=8)
+cbar.ax.tick_params(labelsize=20)
+
+# Axes labels formatting
+ax.set_xticklabels(ax.get_xticklabels(), rotation=35, ha="right", fontsize=20)
+ax.set_yticklabels(ax.get_yticklabels(),rotation =35, fontsize=20)
+
+plt.show()
+
+corr = df.corr()
+
+# Create annotation matrix and remove diagonal labels
+annot = corr.round(2).astype(str)
+np.fill_diagonal(annot.values, "1")
+
+# Mask upper triangle (keep diagonal)
+mask = np.triu(np.ones_like(corr, dtype=bool), k=1)
+
+fig, ax = plt.subplots(figsize=(17,13))
+
+hm = sns.heatmap(
+    corr,
+    mask=mask,
+    annot=annot,
+    fmt="",
+    cmap="coolwarm",
+    vmin=-1, vmax=1,
+    linewidths=1.3,
+    linecolor="white",
+    square=True,
+    annot_kws={"size":18, "weight":"bold"},
+    cbar=False
+)
+
+# # Create colorbar on top
+# cbar_ax = fig.add_axes([0.25, 0.90, 0.9, 0.02])
+# cbar = fig.colorbar(hm.collections[0], cax=cbar_ax, orientation="horizontal")
+# cbar.ax.xaxis.set_label_position('top')
+# cbar.ax.xaxis.tick_top()
+# cbar.ax.tick_params(labelsize=25)
+
+# Axis labels
+ax.set_xticklabels(ax.get_xticklabels(), rotation=35, ha="right", fontsize=25)
+ax.set_yticklabels(ax.get_yticklabels(), rotation=35, fontsize=25)
+
+# ----------------------------------------------------------
+# ADD TEXTBOX (adjust text and position as needed)
+# ----------------------------------------------------------
+
+textbox_text = (
+    "Parameter Definitions\n"
+    "$r_1$, $r_2$: Fine/coarse mode median radius [$\mu m$]\n"
+    "$\sigma_1\,\sigma_2$: Width of fine/coarse mode \n size distribution [$\mu m$]\n"
+    "$C_r$: Coarse/Fine Mode Ratio\n"
+    "$Sph\%$: Percent of Spherical Aerosols\n"
+    "$n_{400}$,$\kappa_{400}$: Complex refractive index at 440nm\n"
+    "$AOD_{355}$: Aerosol Optical Depth at 355nm\n"
+    "$SSA_{355}$: Single Scatter Albedo at 355nm\n"
+    "$m_o$/$b_o$: Observed regression slope/intercept"
+)
+
+fig.text(
+    0.63, 0.66,             # (x, y) position in figure coords
+    textbox_text,
+    fontsize=25,
+    va="center",
+    ha="left",
+    linespacing=1.8,
+    bbox=dict(
+        boxstyle="round,pad=0.3",
+        facecolor="white",
+        edgecolor="black",
+        linewidth=2
+    )
+)
+
 plt.show()
 
