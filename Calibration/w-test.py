@@ -20,6 +20,7 @@ data = np.load('D:/NUC_0813.npz', allow_pickle=True)
 Rij = data['arr1'].item()   # convert array-object → Python dict
 Bij = data['arr2'].item()
 
+
 #Correct image
 def correct_img(Pij,Rij,Bij):
     R_avg = np.mean(Rij)
@@ -28,88 +29,162 @@ def correct_img(Pij,Rij,Bij):
     
     return Cij
 
-def create_analyzervec(gen_angle):
-    
-    Stokes_vec = np.array([1, np.cos(2*gen_angle), np.sin(2*gen_angle)])
-    
-    return Stokes_vec 
-
-gen_angles = np.r_[0:365:15]
-Stokes_ideal = np.column_stack([create_analyzervec(a) for a in np.radians(gen_angles)])
-
+W = np.load('D:/ULTRASIP_Avg_Wmatrix.npy')       # shape = (H, W, 4, 3)
 
 cal_path = 'D:/Calibration/Data'
-files = glob.glob(f'{cal_path}/Malus*20251124_*.h5')
+generator_0_file = glob.glob(f'{cal_path}/Malus*1118_15_15_58*.h5')
+g0 = h5py.File(generator_0_file[0],'r+')
+#Horizontal Measurements generator, analyzer
+runs0 = g0["Measurement_Metadata"].attrs['Runs for each angle']
+P_00 = np.mean(g0["P_0 Measurements/UV Raw Images"][:].reshape(runs0,2848,2848),axis=0)
+P_090 = np.mean(g0["P_90 Measurements/UV Raw Images"][:].reshape(runs0,2848,2848),axis=0)
+P_045 = np.mean(g0["P_45 Measurements/UV Raw Images"][:].reshape(runs0,2848,2848),axis=0)
+P_0135 = np.mean(g0["P_135 Measurements/UV Raw Images"][:].reshape(runs0,2848,2848),axis=0)
 
-# Dictionary to store all results
-# keys = generator angle (float)
-# values = dict with P0, P90, P45, P135 averaged images
-malus_data = {}
+#Corrected Horizontal
+P0 = correct_img(P_00,Rij[0],Bij[0])
+P90 = correct_img(P_090,Rij[90],Bij[90])
+P45 = correct_img(P_045,Rij[45],Bij[45])
+P135 = correct_img(P_0135,Rij[135],Bij[135])
 
-for f in files:
-    with h5py.File(f, 'r') as h:
+#Simulate 0deg fluxes 
+# P0 = 1500*np.ones((2848,2848))
+# P45 = 0.5*1500*np.ones((2848,2848))
+# P135 = 0.5*1500*np.ones((2848,2848))
+# P90 = 0.0001*1500*np.ones((2848,2848))
 
-        # --- Read metadata ---
-        if "Measurement_Metadata" not in h:
-            print(f"{os.path.basename(f)} → 'Measurement_Metadata' missing")
-            continue
+fig=plt.figure(figsize=(17,5))
 
-        meta = h["Measurement_Metadata"]
+cmin = 200
+cmax= 1800
+plt.subplot(1,4,1)
+plt.title("P0")
+plt.imshow(P0, cmap='gray',interpolation = 'None',vmin=cmin,vmax=cmax)
+plt.colorbar(shrink=0.5)
 
-        if "Angle of Generator Linear Polarizer" not in meta.attrs:
-            print(f"{os.path.basename(f)} → angle attribute missing")
-            continue
+plt.subplot(1,4,2)
+plt.title("P90")
+plt.imshow(P90, cmap='gray',interpolation ='None',vmin=cmin,vmax=cmax)
+plt.colorbar(shrink=0.5)
 
-        gen_angle = float(meta.attrs["Angle of Generator Linear Polarizer"])
-        runs      = int(meta.attrs["Runs for each angle"])
-
-        # --- Print info ---
-        print(f"{os.path.basename(f)} → angle = {gen_angle}, runs = {runs}")
-
-        # --- Read measurement groups ---
-        P0_stack   = h["P_0 Measurements/UV Raw Images"][:]
-        P90_stack  = h["P_90 Measurements/UV Raw Images"][:]
-        P45_stack  = h["P_45 Measurements/UV Raw Images"][:]
-        P135_stack = h["P_135 Measurements/UV Raw Images"][:]
-
-        # Confirm size = runs × 2848 × 2848
-        # Average over the run dimension
-        P0   = np.mean(P0_stack.reshape(runs, 2848, 2848), axis=0)
-        P90  = np.mean(P90_stack.reshape(runs, 2848, 2848), axis=0)
-        P45  = np.mean(P45_stack.reshape(runs, 2848, 2848), axis=0)
-        P135 = np.mean(P135_stack.reshape(runs, 2848, 2848), axis=0)
-
-                # --- apply correction ---
-        C0   = correct_img(P0,   Rij[0], Bij[0])
-        C90  = correct_img(P90,  Rij[90], Bij[90])
-        C45  = correct_img(P45,  Rij[45], Bij[45])
-        C135 = correct_img(P135, Rij[135], Bij[135])
-
-        # --- store everything ---
-        malus_data[gen_angle] = {
-            "C0": C0, "C90": C90, "C45": C45, "C135": C135,
-            "runs": runs,
-            "filename": os.path.basename(f),
-        }
+plt.subplot(1,4,3)
+plt.title("P45")
+plt.imshow(P45, cmap='gray',interpolation ='None',vmin=cmin,vmax=cmax)
+plt.colorbar(shrink=0.5)
 
 
-        # Sort angles so row order is consistent
-        angles = sorted(malus_data.keys())
+plt.subplot(1,4,4)
+plt.title("P135")
+plt.imshow(P135, cmap='gray',interpolation ='None',vmin=cmin,vmax=cmax)
+plt.colorbar(shrink=0.5)
 
-        # Build matrix with rows = angles, cols = analyzers
-        Cmat = np.array([
-            [
-                malus_data[a]["C0"],
-                malus_data[a]["C90"],
-                malus_data[a]["C45"],
-                malus_data[a]["C135"]
-            ]
-            for a in angles
-                ])
-        
-        
-W = Cmat.T@np.linalg.pinv(Stokes_ideal)
-W = W.reshape(2848,2848,4,3)
+fig.suptitle("NUC Corrected Integrating Sphere Measured w/ 0deg Generator Fluxes", fontsize=18, y=0.9)
+plt.tight_layout()
+plt.show()
 
-#np.save('D:/ULTRASIP_Wmatrix_mas.npy', W)
+P = np.stack([P0, P90, P45, P135], axis=-1)
 
+H, Wd = P.shape[0], P.shape[1]
+# # --- Pixelwise pseudoinverse via SVD ---
+# Compute SVD of each 4x3 matrix
+U, S, Vt = np.linalg.svd(W, full_matrices=False)   # shapes:
+# U:  (H, W, 4, 3)
+# S:  (H, W, 3)
+# Vt: (H, W, 3, 3)
+
+# Invert singular values 
+S_inv = np.zeros_like(S)
+S_inv = np.where(S > 1e-12, 1/S, 0)                # avoids division by zero
+
+# Reconstruct pseudoinverse:  pinv(W) = V * S^-1 * U^T
+pinvW = np.matmul(Vt.transpose(0,1,3,2) * S_inv[...,None,:], 
+                  U.transpose(0,1,3,2))            # shape = (H,W,3,4)
+
+
+# Apply per-pixel calibration
+# Stokes = pinv(W) @ P_per_pixel
+Stokes = np.matmul(pinvW, P[...,None])[...,0]       # shape = (H, W, 3)
+
+
+# Stokes is assumed to be shape (H, W, 3)
+I = Stokes[:,:,0]
+Q = Stokes[:,:,1]
+U = Stokes[:,:,2]
+
+avgQ = np.flip(np.average(Q/I,axis=1)) #row avg
+avgU = np.average(U/I,axis=0)#col avg
+
+
+dolp = (np.sqrt((Q**2)+(U**2))/I)*100
+dolp_mean = np.average(dolp)
+dolp_std = np.std(dolp)
+dolp_median = np.median(dolp)
+
+dolp_avg = np.sqrt((avgQ**2)+(avgU**2))*100
+dolpavg_mean = np.average(dolp_avg)
+dolpavg_std = np.std(dolp_avg)
+dolpavg_median = np.median(dolp_avg)
+    
+aolp = 0.5*np.arctan2(U,Q)
+aolp = np.mod(np.degrees(aolp),180)
+
+plt.figure(figsize=(15,5))
+
+plt.subplot(1,3,1)
+plt.title(" I")
+plt.imshow(I, cmap='gray',interpolation = 'None')
+plt.colorbar(shrink=0.75)
+
+plt.subplot(1,3,2)
+plt.title(" Q/I")
+plt.imshow(Q/I, cmap=cmo.curl,interpolation ='None',vmin=-0.1,vmax=0.1)
+plt.colorbar(shrink=0.75)
+
+plt.subplot(1,3,3)
+plt.title(" U/I")
+plt.imshow(U/I, cmap=cmo.curl,interpolation ='None',vmin=-0.1,vmax=0.1)
+plt.colorbar(shrink=0.75)
+
+plt.tight_layout()
+plt.show()
+
+plt.figure()
+plt.imshow(dolp, cmap='hot', interpolation = 'None',vmin=80,vmax=100)
+plt.title('DoLP [%]',fontsize=20)
+plt.colorbar()
+
+plt.figure()
+plt.imshow(aolp, cmap=cmo.phase, interpolation = 'None',vmin=0,vmax=180)
+plt.title('AoLP  [deg]',fontsize=20)
+plt.colorbar()
+
+plt.figure()
+plt.hist(aolp.flatten())
+plt.title('AoLP [deg]')
+plt.show()
+
+
+fig, ax = plt.subplots(figsize=(8, 6))
+ax.hist(dolp.flatten(),range=(80, 100))
+ax.set_title('DoLP  [%]')
+# Add text box to the right of plot
+textstr = f"Mean = {dolp_mean:.4f}%\nStd = {dolp_std:.4f}%\nMed = {dolp_median:.4f}%"
+ax.text(0.5, 0.5, textstr, transform=ax.transAxes, fontsize=14,
+verticalalignment='center', bbox=dict(facecolor='white', alpha=0.8, edgecolor='black'))
+plt.show()
+
+fig, ax = plt.subplots(figsize=(8, 6))
+            
+# Scatter plot
+ax.scatter( range(len(dolp_avg)),dolp_avg, color='green')
+ax.set_ylabel(r'$DoLP_{rc} [\%]$', fontsize=15)
+ax.set_xlabel('Pixel Index', fontsize=15)
+ax.set_title(r'DoLP from $\bar{c}_{U},\bar{r}_{Q}$', fontsize=16)
+            
+# Add text box to the right of plot
+textstr = f"Mean = {dolpavg_mean:.4f}%\nStd = {dolpavg_std:.4f}%\nMed = {dolpavg_median:.4f}%"
+ax.text(1.05, 0.5, textstr, transform=ax.transAxes, fontsize=14,
+verticalalignment='center', bbox=dict(facecolor='white', alpha=0.8, edgecolor='black'))
+
+plt.tight_layout()
+plt.show()

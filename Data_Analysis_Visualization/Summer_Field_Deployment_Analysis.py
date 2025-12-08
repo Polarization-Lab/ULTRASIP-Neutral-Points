@@ -150,7 +150,7 @@ textbox_text = (
     "$\sigma_1\,\sigma_2$: Width of fine/coarse mode \n size distribution [$\mu m$]\n"
     "$C_r$: Coarse/Fine Mode Ratio\n"
     "$Sph\%$: Percent of Spherical Aerosols\n"
-    "$n_{400}$,$\kappa_{400}$: Complex refractive index at 440nm\n"
+    "$n_{440}$,$\kappa_{440}$: Complex refractive index at 440nm\n"
     "$AOD_{355}$: Aerosol Optical Depth at 355nm\n"
     "$SSA_{355}$: Single Scatter Albedo at 355nm\n"
     "$m_o$/$b_o$: Observed regression slope/intercept"

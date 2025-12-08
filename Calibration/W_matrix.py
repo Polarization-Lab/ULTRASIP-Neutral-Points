@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Nov 14 11:12:35 2025
+Created on Mon Dec  1 12:13:01 2025
 
 @author: ULTRASIP_1
-
-Find W-matrix 
 """
-
 #Import libraries 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -31,194 +28,88 @@ def correct_img(Pij,Rij,Bij):
     
     return Cij
 
+def create_analyzervec(gen_angle):
+    
+    Stokes_vec = np.array([1, np.cos(2*gen_angle), np.sin(2*gen_angle)])
+    
+    return Stokes_vec 
+
+gen_angles = np.r_[0:365:15]
+Stokes_ideal = np.column_stack([create_analyzervec(a) for a in np.radians(gen_angles)])
+
 
 cal_path = 'D:/Calibration/Data'
-# generator_0_file = glob.glob(f'{cal_path}/Malus*1001_10_57*.h5')
-# generator_90_file = glob.glob(f'{cal_path}/Malus*1007_08_30*.h5')
-# generator_45_file = glob.glob(f'{cal_path}/Malus*1007_11_33*.h5')
-# generator_135_file = glob.glob(f'{cal_path}/Malus*1007_10_40*.h5')
+files = glob.glob(f'{cal_path}/Malus*20251124_*.h5')
 
-generator_0_file = glob.glob(f'{cal_path}/Malus*1118_15_15_58*.h5')
-generator_90_file = glob.glob(f'{cal_path}/Malus*1118_15_57_15*.h5')
-generator_45_file = glob.glob(f'{cal_path}/Malus*1118_15_51_41*.h5')
-generator_135_file = glob.glob(f'{cal_path}/Malus*1118_16_02_07*.h5')
+# Dictionary to store all results
+# keys = generator angle (float)
+# values = dict with P0, P90, P45, P135 averaged images
+malus_data = {}
 
-g0 = h5py.File(generator_0_file[0],'r+')
-g90 = h5py.File(generator_90_file[0],'r+')
-g45 = h5py.File(generator_45_file[0],'r+')
-g135 = h5py.File(generator_135_file[0],'r+')
+for f in files:
+    with h5py.File(f, 'r') as h:
 
-#Horizontal Measurements generator, analyzer
-runs0 = g0["Measurement_Metadata"].attrs['Runs for each angle']
-P_00 = np.mean(g0["P_0 Measurements/UV Raw Images"][:].reshape(runs0,2848,2848),axis=0)
-P_090 = np.mean(g0["P_90 Measurements/UV Raw Images"][:].reshape(runs0,2848,2848),axis=0)
-P_045 = np.mean(g0["P_45 Measurements/UV Raw Images"][:].reshape(runs0,2848,2848),axis=0)
-P_0135 = np.mean(g0["P_135 Measurements/UV Raw Images"][:].reshape(runs0,2848,2848),axis=0)
+        # --- Read metadata ---
+        if "Measurement_Metadata" not in h:
+            print(f"{os.path.basename(f)} → 'Measurement_Metadata' missing")
+            continue
 
-#Corrected Horizontal
-C_00 = correct_img(P_00,Rij[0],Bij[0])
-C_090 = correct_img(P_090,Rij[90],Bij[90])
-C_045 = correct_img(P_045,Rij[45],Bij[45])
-C_0135 = correct_img(P_0135,Rij[135],Bij[135])
+        meta = h["Measurement_Metadata"]
 
-fig=plt.figure(figsize=(15,5))
+        if "Angle of Generator Linear Polarizer" not in meta.attrs:
+            print(f"{os.path.basename(f)} → angle attribute missing")
+            continue
 
-plt.subplot(1,4,1)
-plt.title("P0")
-plt.imshow(C_00, cmap='gray',interpolation = 'None',vmin=0,vmax=3000)
-plt.colorbar(shrink=0.5)
+        gen_angle = float(meta.attrs["Angle of Generator Linear Polarizer"])
+        runs      = int(meta.attrs["Runs for each angle"])
 
-plt.subplot(1,4,2)
-plt.title("P90")
-plt.imshow(C_090, cmap='gray',interpolation ='None',vmin=0,vmax=3000)
-plt.colorbar(shrink=0.5)
+        # --- Print info ---
+        print(f"{os.path.basename(f)} → angle = {gen_angle}, runs = {runs}")
 
-plt.subplot(1,4,3)
-plt.title("P45")
-plt.imshow(C_045, cmap='gray',interpolation ='None',vmin=0,vmax=3000)
-plt.colorbar(shrink=0.5)
+        # --- Read measurement groups ---
+        P0_stack   = h["P_0 Measurements/UV Raw Images"][:]
+        P90_stack  = h["P_90 Measurements/UV Raw Images"][:]
+        P45_stack  = h["P_45 Measurements/UV Raw Images"][:]
+        P135_stack = h["P_135 Measurements/UV Raw Images"][:]
 
+        # Confirm size = runs × 2848 × 2848
+        # Average over the run dimension
+        P0   = np.mean(P0_stack.reshape(runs, 2848, 2848), axis=0)
+        P90  = np.mean(P90_stack.reshape(runs, 2848, 2848), axis=0)
+        P45  = np.mean(P45_stack.reshape(runs, 2848, 2848), axis=0)
+        P135 = np.mean(P135_stack.reshape(runs, 2848, 2848), axis=0)
 
-plt.subplot(1,4,4)
-plt.title("P135")
-plt.imshow(C_0135, cmap='gray',interpolation ='None',vmin=0,vmax=3000)
-plt.colorbar(shrink=0.5)
+                # --- apply correction ---
+        C0   = correct_img(P0,   Rij[0], Bij[0])
+        C90  = correct_img(P90,  Rij[90], Bij[90])
+        C45  = correct_img(P45,  Rij[45], Bij[45])
+        C135 = correct_img(P135, Rij[135], Bij[135])
 
-fig.suptitle("Cij Images — Horizontal Generator", fontsize=18, y=0.8)
-plt.tight_layout()
-plt.show()
+        # --- store everything ---
+        malus_data[gen_angle] = {
+            "C0": C0, "C90": C90, "C45": C45, "C135": C135,
+            "runs": runs,
+            "filename": os.path.basename(f),
+        }
 
 
-#Vertical Measurements generator, analyzer
-runs90 = g90["Measurement_Metadata"].attrs['Runs for each angle']
-P_900 = np.mean(g90["P_0 Measurements/UV Raw Images"][:].reshape(runs90,2848,2848),axis=0)
-P_9090 =np.mean( g90["P_90 Measurements/UV Raw Images"][:].reshape(runs90,2848,2848),axis=0)
-P_9045 = np.mean(g90["P_45 Measurements/UV Raw Images"][:].reshape(runs90,2848,2848),axis=0)
-P_90135 = np.mean(g90["P_135 Measurements/UV Raw Images"][:].reshape(runs90,2848,2848),axis=0)
+        # Sort angles so row order is consistent
+        angles = sorted(malus_data.keys())
 
-
-#Corrected Vertical
-C_900 = correct_img(P_900,Rij[0],Bij[0])
-C_9090 = correct_img(P_9090,Rij[90],Bij[90])
-C_9045 = correct_img(P_9045,Rij[45],Bij[45])
-C_90135 = correct_img(P_90135,Rij[135],Bij[135])
-
-fig=plt.figure(figsize=(15,5))
-
-plt.subplot(1,4,1)
-plt.title("P0")
-plt.imshow(C_900, cmap='gray',interpolation = 'None',vmin=0,vmax=3000)
-plt.colorbar(shrink=0.5)
-
-plt.subplot(1,4,2)
-plt.title("P90")
-plt.imshow(C_9090, cmap='gray',interpolation ='None',vmin=0,vmax=3000)
-plt.colorbar(shrink=0.5)
-
-plt.subplot(1,4,3)
-plt.title("P45")
-plt.imshow(C_9045, cmap='gray',interpolation ='None',vmin=0,vmax=3000)
-plt.colorbar(shrink=0.5)
-
-
-plt.subplot(1,4,4)
-plt.title("P135")
-plt.imshow(C_90135, cmap='gray',interpolation ='None',vmin=0,vmax=3000)
-plt.colorbar(shrink=0.5)
-
-fig.suptitle("Cij Images — Vertical Generator", fontsize=18, y=0.8)
-plt.tight_layout()
-plt.show()
-
-#45 Measurements generator, analyzer
-runs45 = g45["Measurement_Metadata"].attrs['Runs for each angle']
-P_450 = np.mean(g45["P_0 Measurements/UV Raw Images"][:].reshape(runs45,2848,2848),axis=0)
-P_4590 =np.mean( g45["P_90 Measurements/UV Raw Images"][:].reshape(runs45,2848,2848),axis=0)
-P_4545 = np.mean(g45["P_45 Measurements/UV Raw Images"][:].reshape(runs45,2848,2848),axis=0)
-P_45135 = np.mean(g45["P_135 Measurements/UV Raw Images"][:].reshape(runs45,2848,2848),axis=0)
-
-#Corrected 45
-C_450 = correct_img(P_450,Rij[0],Bij[0])
-C_4590 = correct_img(P_4590,Rij[90],Bij[90])
-C_4545 = correct_img(P_4545,Rij[45],Bij[45])
-C_45135 = correct_img(P_45135,Rij[135],Bij[135])
-
-fig=plt.figure(figsize=(15,5))
-
-plt.subplot(1,4,1)
-plt.title("P0")
-plt.imshow(C_450, cmap='gray',interpolation = 'None',vmin=0,vmax=3000)
-plt.colorbar(shrink=0.5)
-
-plt.subplot(1,4,2)
-plt.title("P90")
-plt.imshow(C_4590, cmap='gray',interpolation ='None',vmin=0,vmax=3000)
-plt.colorbar(shrink=0.5)
-
-plt.subplot(1,4,3)
-plt.title("P45")
-plt.imshow(C_4545, cmap='gray',interpolation ='None',vmin=0,vmax=3000)
-plt.colorbar(shrink=0.5)
-
-
-plt.subplot(1,4,4)
-plt.title("P135")
-plt.imshow(C_45135, cmap='gray',interpolation ='None',vmin=0,vmax=3000)
-plt.colorbar(shrink=0.5)
-
-fig.suptitle("Cij Images — 45 deg Generator", fontsize=18, y=0.8)
-plt.tight_layout()
-plt.show()
-
-#135 Measurements generator, analyzer
-runs135 = g135["Measurement_Metadata"].attrs['Runs for each angle']
-P_1350 = np.mean(g135["P_0 Measurements/UV Raw Images"][:].reshape(runs135,2848,2848),axis=0)
-P_13590 =np.mean( g135["P_90 Measurements/UV Raw Images"][:].reshape(runs135,2848,2848),axis=0)
-P_13545 = np.mean(g135["P_45 Measurements/UV Raw Images"][:].reshape(runs135,2848,2848),axis=0)
-P_135135 = np.mean(g135["P_135 Measurements/UV Raw Images"][:].reshape(runs135,2848,2848),axis=0)
-
-#Corrected 135
-C_1350 = correct_img(P_1350,Rij[0],Bij[0])
-C_13590 = correct_img(P_13590,Rij[90],Bij[90])
-C_13545 = correct_img(P_13545,Rij[45],Bij[45])
-C_135135 = correct_img(P_135135,Rij[135],Bij[135])
-
-fig=plt.figure(figsize=(15,5))
-
-plt.subplot(1,4,1)
-plt.title("P0")
-plt.imshow(C_1350, cmap='gray',interpolation = 'None',vmin=0,vmax=3000)
-plt.colorbar(shrink=0.5)
-
-plt.subplot(1,4,2)
-plt.title("P90")
-plt.imshow(C_13590, cmap='gray',interpolation ='None',vmin=0,vmax=3000)
-plt.colorbar(shrink=0.5)
-
-plt.subplot(1,4,3)
-plt.title("P45")
-plt.imshow(C_13545, cmap='gray',interpolation ='None',vmin=0,vmax=3000)
-plt.colorbar(shrink=0.5)
-
-
-plt.subplot(1,4,4)
-plt.title("P135")
-plt.imshow(C_135135, cmap='gray',interpolation ='None',vmin=0,vmax=3000)
-plt.colorbar(shrink=0.5)
-
-fig.suptitle("Cij Images — 135 deg Generator", fontsize=18, y=0.8)
-plt.tight_layout()
-plt.show()
-
-flux_matrix = np.array([[C_00,C_090,C_045,C_0135],[C_900,C_9090,C_9045,C_90135],
-                        [C_450,C_4590,C_4545,C_45135],
-                        [C_1350,C_13590,C_13545,C_135135]
-                        ]).reshape(4,4,2848*2848)
-
-W = flux_matrix.T@np.linalg.pinv(Stokes_ideal)
+        # Build matrix with rows = angles, cols = analyzers
+        Cmat = np.array([
+            [
+                malus_data[a]["C0"],
+                malus_data[a]["C90"],
+                malus_data[a]["C45"],
+                malus_data[a]["C135"]
+            ]
+            for a in angles
+                ])
+        
+        
+W = Cmat.T@np.linalg.pinv(Stokes_ideal)
 W = W.reshape(2848,2848,4,3)
 
-#W =  W / W[..., :, :1]
+#np.save('D:/ULTRASIP_Wmatrix_mas.npy', W)
 
-
-np.save('ULTRASIP_Wmatrix.npy', W)
