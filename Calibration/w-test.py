@@ -41,17 +41,17 @@ P_090 = np.mean(g0["P_90 Measurements/UV Raw Images"][:].reshape(runs0,2848,2848
 P_045 = np.mean(g0["P_45 Measurements/UV Raw Images"][:].reshape(runs0,2848,2848),axis=0)
 P_0135 = np.mean(g0["P_135 Measurements/UV Raw Images"][:].reshape(runs0,2848,2848),axis=0)
 
-#Corrected Horizontal
-P0 = correct_img(P_00,Rij[0],Bij[0])
-P90 = correct_img(P_090,Rij[90],Bij[90])
-P45 = correct_img(P_045,Rij[45],Bij[45])
-P135 = correct_img(P_0135,Rij[135],Bij[135])
+# #Corrected Horizontal
+# P0 = correct_img(P_00,Rij[0],Bij[0])
+# P90 = correct_img(P_090,Rij[90],Bij[90])
+# P45 = correct_img(P_045,Rij[45],Bij[45])
+# P135 = correct_img(P_0135,Rij[135],Bij[135])
 
 #Simulate 0deg fluxes 
-# P0 = 1500*np.ones((2848,2848))
-# P45 = 0.5*1500*np.ones((2848,2848))
-# P135 = 0.5*1500*np.ones((2848,2848))
-# P90 = 0.0001*1500*np.ones((2848,2848))
+P135 = 1500*np.ones((2848,2848))
+P0 = 0.5*1500*np.ones((2848,2848))
+P90 = 0.5*1500*np.ones((2848,2848))
+P45 = 0.0001*1500*np.ones((2848,2848))
 
 fig=plt.figure(figsize=(17,5))
 
@@ -78,7 +78,9 @@ plt.title("P135")
 plt.imshow(P135, cmap='gray',interpolation ='None',vmin=cmin,vmax=cmax)
 plt.colorbar(shrink=0.5)
 
-fig.suptitle("NUC Corrected Integrating Sphere Measured w/ 0deg Generator Fluxes", fontsize=18, y=0.9)
+#fig.suptitle("NUC Corrected Integrating Sphere Measured w/ 0deg Generator Fluxes", fontsize=18, y=0.9)
+fig.suptitle("Simulated 135deg Polarization", fontsize=18, y=0.9)
+
 plt.tight_layout()
 plt.show()
 
@@ -127,6 +129,9 @@ dolpavg_median = np.median(dolp_avg)
     
 aolp = 0.5*np.arctan2(U,Q)
 aolp = np.mod(np.degrees(aolp),180)
+aolp_mean = np.average(aolp)
+aolp_std = np.std(aolp)
+aolp_median = np.median(aolp)
 
 plt.figure(figsize=(15,5))
 
@@ -163,9 +168,18 @@ plt.hist(aolp.flatten())
 plt.title('AoLP [deg]')
 plt.show()
 
+fig, ax = plt.subplots(figsize=(8, 6))
+ax.hist(aolp.flatten(),range=(0, 180))
+ax.set_title('AoLP  [$\circ$]')
+# Add text box to the right of plot
+textstr = f"Mean = {aolp_mean:.4f}$\circ$\nStd = {aolp_std:.4f}$\circ$\nMed = {aolp_median:.4f}$\circ$"
+ax.text(0.5, 0.5, textstr, transform=ax.transAxes, fontsize=14,
+verticalalignment='center', bbox=dict(facecolor='white', alpha=0.8, edgecolor='black'))
+plt.show()
+
 
 fig, ax = plt.subplots(figsize=(8, 6))
-ax.hist(dolp.flatten(),range=(80, 100))
+ax.hist(dolp.flatten(),range=(80, 105))
 ax.set_title('DoLP  [%]')
 # Add text box to the right of plot
 textstr = f"Mean = {dolp_mean:.4f}%\nStd = {dolp_std:.4f}%\nMed = {dolp_median:.4f}%"
