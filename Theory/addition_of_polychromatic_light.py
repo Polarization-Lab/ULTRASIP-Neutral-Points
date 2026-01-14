@@ -63,10 +63,16 @@ low = 2*np.pi*430*10**12
 omega_x = np.random.uniform(low,high,S)
 omega_y = np.random.uniform(low,high,R)
 
+
 k_x = omega_x / c
 k_y = omega_y / c
 phi_x = np.random.uniform(0, 2*np.pi, S)
 phi_y = np.random.uniform(0, 2*np.pi, R)
+
+#A_x=A_y
+#phi_x=phi_y
+#omega_y=omega_x
+
 
 z=0 #place on z-axis
 t = np.linspace(0, 3e-14,3000) #seconds
@@ -120,244 +126,244 @@ plt.ylabel("y")
 # plt.show()
 
 
-xsize = 512
-ysize = 512
+# xsize = 512
+# ysize = 512
 
-#Polychromatic vertically polarized
-Ex_pvert = np.zeros((xsize, ysize),dtype=complex)
-Ey_pvert = np.zeros((xsize,ysize),dtype=complex)
+# #Polychromatic vertically polarized
+# Ex_pvert = np.zeros((xsize, ysize),dtype=complex)
+# Ey_pvert = np.zeros((xsize,ysize),dtype=complex)
 
-A = np.random.uniform(0.1,1,R) #example doesnt specifiy a range...
+# A = np.random.uniform(0.1,1,R) #example doesnt specifiy a range...
 
-#angular freq range 
-high = 2*np.pi*750*10**12
-low = 2*np.pi*430*10**12
-omega = np.random.uniform(low,high,R)
-k = omega / c
-phi = np.random.uniform(0, 2*np.pi, R)
-A = np.array(A)[:, np.newaxis]       # shape (N, 1)
-k = np.array(k)[:, np.newaxis]       # shape (N, 1)
-omega = np.array(omega)[:, np.newaxis] # shape (N, 1)
-phi = np.array(phi)[:, np.newaxis]   # shape (N, 1)
-t=0
-
-
-for xx in range(0,xsize,1):
-    for yy in range(0,ysize,1):
-        xidx = (xx-(xsize/2))/xsize
-        yidx = (yy-(ysize/2))/ysize
-        Ex_pvert[xx,yy] = np.sum(A *xidx* np.exp(1j * (k - omega * t - phi)),axis=0)
-        Ey_pvert[xx,yy] = 0
-
-        
-plt.figure()
-plt.imshow(np.real(Ex_pvert), cmap='jet',interpolation=None)
-plt.ylabel('y')
-plt.xlabel('x')
-plt.title("Ex")
-plt.colorbar()
-plt.show()
-
-plt.figure()
-plt.imshow(np.real(Ey_pvert), cmap='jet',interpolation=None)
-plt.ylabel('y')
-plt.xlabel('x')
-plt.title("Ey")
-plt.colorbar()
-plt.show()
-
-I = np.abs(Ex_pvert)**2 + np.abs(Ey_pvert)**2
-Q =  np.abs(Ex_pvert)**2 - np.abs(Ey_pvert)**2
-U = 2*np.abs(Ex_pvert)*np.abs(Ey_pvert)*np.cos(np.angle(Ex_pvert-Ey_pvert))
-
-dolp = np.sqrt(Q**2+U**2)/I
-aolp = 0.5*np.atan2(U,Q)
-aolp = np.mod(np.degrees(aolp),180)
-
-plt.figure()
-plt.imshow(I, cmap='Blues',vmin=0,vmax=1,interpolation=None)
-plt.ylabel('y')
-plt.xlabel('x')
-plt.title("I")
-plt.colorbar()
-plt.show()
+# #angular freq range 
+# high = 2*np.pi*750*10**12
+# low = 2*np.pi*430*10**12
+# omega = np.random.uniform(low,high,R)
+# k = omega / c
+# phi = np.random.uniform(0, 2*np.pi, R)
+# A = np.array(A)[:, np.newaxis]       # shape (N, 1)
+# k = np.array(k)[:, np.newaxis]       # shape (N, 1)
+# omega = np.array(omega)[:, np.newaxis] # shape (N, 1)
+# phi = np.array(phi)[:, np.newaxis]   # shape (N, 1)
+# t=0
 
 
-plt.figure()
-plt.imshow(Q, cmap='Blues',interpolation=None)
-plt.ylabel('y')
-plt.xlabel('x')
-plt.title("Q")
-plt.colorbar()
-plt.show()
-
-plt.figure()
-plt.imshow(U, cmap='Blues',interpolation=None)
-plt.ylabel('y')
-plt.xlabel('x')
-plt.title("U")
-plt.colorbar()
-plt.show()
-
-plt.figure()
-plt.imshow(dolp, cmap='gray',vmin=0,vmax=1,interpolation=None)
-plt.ylabel('y')
-plt.xlabel('x')
-plt.title("dolp")
-plt.colorbar()
-plt.show()
-
-plt.figure()
-plt.imshow(aolp, cmap=cmo.phase,vmin=0,vmax=180,interpolation=None)
-plt.ylabel('y')
-plt.xlabel('x')
-plt.title("aolp")
-plt.colorbar()
-plt.show()
-
-#Polychromatic horizontal polarized
-Ex_phor = np.zeros((xsize, ysize),dtype=complex)
-Ey_phor = np.zeros((xsize,ysize),dtype=complex)
-
-A = np.random.uniform(0.1,1,R) #example doesnt specifiy a range...
-
-#angular freq range 
-high = 2*np.pi*750*10**12
-low = 2*np.pi*430*10**12
-omega = np.random.uniform(low,high,R)
-k = omega / c
-phi = np.random.uniform(0, 2*np.pi, R)
-A = np.array(A)[:, np.newaxis]       # shape (N, 1)
-k = np.array(k)[:, np.newaxis]       # shape (N, 1)
-omega = np.array(omega)[:, np.newaxis] # shape (N, 1)
-phi = np.array(phi)[:, np.newaxis]   # shape (N, 1)
-
-
-for xx in range(0,xsize,1):
-    for yy in range(0,ysize,1):
-        xidx = (xx-(xsize/2))/xsize
-        yidx = (yy-(ysize/2))/ysize
-        Ex_phor[xx,yy] = 0
-        Ey_phor[xx,yy] = np.sum(A * yidx * np.exp(1j * (k  - omega * t - phi)),axis=0)
+# for xx in range(0,xsize,1):
+#     for yy in range(0,ysize,1):
+#         xidx = (xx-(xsize/2))/xsize
+#         yidx = (yy-(ysize/2))/ysize
+#         Ex_pvert[xx,yy] = np.sum(A *xidx* np.exp(1j * (k - omega * t - phi)),axis=0)
+#         Ey_pvert[xx,yy] = 0
 
         
-plt.figure()
-plt.imshow(np.real(Ex_phor), cmap='jet',interpolation=None)
-plt.ylabel('y')
-plt.xlabel('x')
-plt.title("Ex")
-plt.colorbar()
-plt.show()
+# plt.figure()
+# plt.imshow(np.real(Ex_pvert), cmap='jet',interpolation=None)
+# plt.ylabel('y')
+# plt.xlabel('x')
+# plt.title("Ex")
+# plt.colorbar()
+# plt.show()
 
-plt.figure()
-plt.imshow(np.real(Ey_phor), cmap='jet',interpolation=None)
-plt.ylabel('y')
-plt.xlabel('x')
-plt.title("Ey")
-plt.colorbar()
-plt.show()
+# plt.figure()
+# plt.imshow(np.real(Ey_pvert), cmap='jet',interpolation=None)
+# plt.ylabel('y')
+# plt.xlabel('x')
+# plt.title("Ey")
+# plt.colorbar()
+# plt.show()
 
-I = np.abs(Ex_phor)**2 + np.abs(Ey_phor)**2
-Q =  np.abs(Ex_phor)**2 - np.abs(Ey_phor)**2
-U = 2*np.abs(Ex_phor)*np.abs(Ey_phor)*np.cos(np.angle(Ex_phor-Ey_phor))
+# I = np.abs(Ex_pvert)**2 + np.abs(Ey_pvert)**2
+# Q =  np.abs(Ex_pvert)**2 - np.abs(Ey_pvert)**2
+# U = 2*np.abs(Ex_pvert)*np.abs(Ey_pvert)*np.cos(np.angle(Ex_pvert-Ey_pvert))
 
-dolp = np.sqrt(Q**2+U**2)/I
-aolp = 0.5*np.atan2(U,Q)
-aolp = np.mod(np.degrees(aolp),180)
+# dolp = np.sqrt(Q**2+U**2)/I
+# aolp = 0.5*np.atan2(U,Q)
+# aolp = np.mod(np.degrees(aolp),180)
 
-plt.figure()
-plt.imshow(I, cmap='Blues',vmin=0,vmax=1,interpolation=None)
-plt.ylabel('y')
-plt.xlabel('x')
-plt.title("I")
-plt.colorbar()
-plt.show()
-
-
-plt.figure()
-plt.imshow(Q, cmap='Blues',interpolation=None)
-plt.ylabel('y')
-plt.xlabel('x')
-plt.title("Q")
-plt.colorbar()
-plt.show()
-
-plt.figure()
-plt.imshow(U, cmap='Blues',interpolation=None)
-plt.ylabel('y')
-plt.xlabel('x')
-plt.title("U")
-plt.colorbar()
-plt.show()
-
-plt.figure()
-plt.imshow(dolp, cmap='gray',vmin=0,vmax=1,interpolation=None)
-plt.ylabel('y')
-plt.xlabel('x')
-plt.title("dolp")
-plt.colorbar()
-plt.show()
-
-plt.figure()
-plt.imshow(aolp, cmap=cmo.phase,vmin=0,vmax=180,interpolation=None)
-plt.ylabel('y')
-plt.xlabel('x')
-plt.title("aolp")
-plt.colorbar()
-plt.show()
+# plt.figure()
+# plt.imshow(I, cmap='Blues',vmin=0,vmax=1,interpolation=None)
+# plt.ylabel('y')
+# plt.xlabel('x')
+# plt.title("I")
+# plt.colorbar()
+# plt.show()
 
 
+# plt.figure()
+# plt.imshow(Q, cmap='Blues',interpolation=None)
+# plt.ylabel('y')
+# plt.xlabel('x')
+# plt.title("Q")
+# plt.colorbar()
+# plt.show()
 
-E1 = Ex_pvert + Ex_phor
-E2 = Ey_pvert + Ey_phor
+# plt.figure()
+# plt.imshow(U, cmap='Blues',interpolation=None)
+# plt.ylabel('y')
+# plt.xlabel('x')
+# plt.title("U")
+# plt.colorbar()
+# plt.show()
+
+# plt.figure()
+# plt.imshow(dolp, cmap='gray',vmin=0,vmax=1,interpolation=None)
+# plt.ylabel('y')
+# plt.xlabel('x')
+# plt.title("dolp")
+# plt.colorbar()
+# plt.show()
+
+# plt.figure()
+# plt.imshow(aolp, cmap=cmo.phase,vmin=0,vmax=180,interpolation=None)
+# plt.ylabel('y')
+# plt.xlabel('x')
+# plt.title("aolp")
+# plt.colorbar()
+# plt.show()
+
+# #Polychromatic horizontal polarized
+# Ex_phor = np.zeros((xsize, ysize),dtype=complex)
+# Ey_phor = np.zeros((xsize,ysize),dtype=complex)
+
+# A = np.random.uniform(0.1,1,R) #example doesnt specifiy a range...
+
+# #angular freq range 
+# high = 2*np.pi*750*10**12
+# low = 2*np.pi*430*10**12
+# omega = np.random.uniform(low,high,R)
+# k = omega / c
+# phi = np.random.uniform(0, 2*np.pi, R)
+# A = np.array(A)[:, np.newaxis]       # shape (N, 1)
+# k = np.array(k)[:, np.newaxis]       # shape (N, 1)
+# omega = np.array(omega)[:, np.newaxis] # shape (N, 1)
+# phi = np.array(phi)[:, np.newaxis]   # shape (N, 1)
 
 
-I = np.abs(E1)**2 + np.abs(E2)**2
-Q =  np.abs(E1)**2 - np.abs(E2)**2
-U = 2*np.abs(E1)*np.abs(E2)*np.cos(np.angle(E1-E2))
+# for xx in range(0,xsize,1):
+#     for yy in range(0,ysize,1):
+#         xidx = (xx-(xsize/2))/xsize
+#         yidx = (yy-(ysize/2))/ysize
+#         Ex_phor[xx,yy] = 0
+#         Ey_phor[xx,yy] = np.sum(A * yidx * np.exp(1j * (k  - omega * t - phi)),axis=0)
 
-dolp = np.sqrt(Q**2+U**2)/I
-aolp = 0.5*np.atan2(U,Q)
-aolp = np.mod(np.degrees(aolp),180)
+        
+# plt.figure()
+# plt.imshow(np.real(Ex_phor), cmap='jet',interpolation=None)
+# plt.ylabel('y')
+# plt.xlabel('x')
+# plt.title("Ex")
+# plt.colorbar()
+# plt.show()
 
-plt.figure()
-plt.imshow(I, cmap='Blues',vmin=0,vmax=1,interpolation=None)
-plt.ylabel('y')
-plt.xlabel('x')
-plt.title("I")
-plt.colorbar()
-plt.show()
+# plt.figure()
+# plt.imshow(np.real(Ey_phor), cmap='jet',interpolation=None)
+# plt.ylabel('y')
+# plt.xlabel('x')
+# plt.title("Ey")
+# plt.colorbar()
+# plt.show()
+
+# I = np.abs(Ex_phor)**2 + np.abs(Ey_phor)**2
+# Q =  np.abs(Ex_phor)**2 - np.abs(Ey_phor)**2
+# U = 2*np.abs(Ex_phor)*np.abs(Ey_phor)*np.cos(np.angle(Ex_phor-Ey_phor))
+
+# dolp = np.sqrt(Q**2+U**2)/I
+# aolp = 0.5*np.atan2(U,Q)
+# aolp = np.mod(np.degrees(aolp),180)
+
+# plt.figure()
+# plt.imshow(I, cmap='Blues',vmin=0,vmax=1,interpolation=None)
+# plt.ylabel('y')
+# plt.xlabel('x')
+# plt.title("I")
+# plt.colorbar()
+# plt.show()
 
 
-plt.figure()
-plt.imshow(Q, cmap='Blues',interpolation=None)
-plt.ylabel('y')
-plt.xlabel('x')
-plt.title("Q")
-plt.colorbar()
-plt.show()
+# plt.figure()
+# plt.imshow(Q, cmap='Blues',interpolation=None)
+# plt.ylabel('y')
+# plt.xlabel('x')
+# plt.title("Q")
+# plt.colorbar()
+# plt.show()
 
-plt.figure()
-plt.imshow(U, cmap='Blues',interpolation=None)
-plt.ylabel('y')
-plt.xlabel('x')
-plt.title("U")
-plt.colorbar()
-plt.show()
+# plt.figure()
+# plt.imshow(U, cmap='Blues',interpolation=None)
+# plt.ylabel('y')
+# plt.xlabel('x')
+# plt.title("U")
+# plt.colorbar()
+# plt.show()
 
-plt.figure()
-plt.imshow(dolp, cmap='gray',vmin=0,vmax=1,interpolation=None)
-plt.ylabel('y')
-plt.xlabel('x')
-plt.title("dolp")
-plt.colorbar()
-plt.show()
+# plt.figure()
+# plt.imshow(dolp, cmap='gray',vmin=0,vmax=1,interpolation=None)
+# plt.ylabel('y')
+# plt.xlabel('x')
+# plt.title("dolp")
+# plt.colorbar()
+# plt.show()
 
-plt.figure()
-plt.imshow(aolp, cmap=cmo.phase,vmin=0,vmax=180,interpolation=None)
-plt.ylabel('y')
-plt.xlabel('x')
-plt.title("aolp")
-plt.colorbar()
-plt.show()
+# plt.figure()
+# plt.imshow(aolp, cmap=cmo.phase,vmin=0,vmax=180,interpolation=None)
+# plt.ylabel('y')
+# plt.xlabel('x')
+# plt.title("aolp")
+# plt.colorbar()
+# plt.show()
+
+
+
+# E1 = Ex_pvert + Ex_phor
+# E2 = Ey_pvert + Ey_phor
+
+
+# I = np.abs(E1)**2 + np.abs(E2)**2
+# Q =  np.abs(E1)**2 - np.abs(E2)**2
+# U = 2*np.abs(E1)*np.abs(E2)*np.cos(np.angle(E1-E2))
+
+# dolp = np.sqrt(Q**2+U**2)/I
+# aolp = 0.5*np.atan2(U,Q)
+# aolp = np.mod(np.degrees(aolp),180)
+
+# plt.figure()
+# plt.imshow(I, cmap='Blues',vmin=0,vmax=1,interpolation=None)
+# plt.ylabel('y')
+# plt.xlabel('x')
+# plt.title("I")
+# plt.colorbar()
+# plt.show()
+
+
+# plt.figure()
+# plt.imshow(Q, cmap='Blues',interpolation=None)
+# plt.ylabel('y')
+# plt.xlabel('x')
+# plt.title("Q")
+# plt.colorbar()
+# plt.show()
+
+# plt.figure()
+# plt.imshow(U, cmap='Blues',interpolation=None)
+# plt.ylabel('y')
+# plt.xlabel('x')
+# plt.title("U")
+# plt.colorbar()
+# plt.show()
+
+# plt.figure()
+# plt.imshow(dolp, cmap='gray',vmin=0,vmax=1,interpolation=None)
+# plt.ylabel('y')
+# plt.xlabel('x')
+# plt.title("dolp")
+# plt.colorbar()
+# plt.show()
+
+# plt.figure()
+# plt.imshow(aolp, cmap=cmo.phase,vmin=0,vmax=180,interpolation=None)
+# plt.ylabel('y')
+# plt.xlabel('x')
+# plt.title("aolp")
+# plt.colorbar()
+# plt.show()
 
