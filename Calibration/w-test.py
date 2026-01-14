@@ -6,6 +6,7 @@ Created on Mon Dec  1 12:13:01 2025
 """
 #Import libraries 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MultipleLocator
 import numpy as np
 import cmocean.cm as cmo
 import glob
@@ -31,27 +32,42 @@ def correct_img(Pij,Rij,Bij):
 
 W = np.load('D:/ULTRASIP_Avg_Wmatrix.npy')       # shape = (H, W, 4, 3)
 
+# cal_path = 'D:/Calibration/Data'
+# generator_0_file = glob.glob(f'{cal_path}/Malus*1118_16_02_07*.h5')
+# g0 = h5py.File(generator_0_file[0],'r+')
+# #Horizontal Measurements generator, analyzer
+# runs0 = g0["Measurement_Metadata"].attrs['Runs for each angle']
+# P_00 = np.mean(g0["P_0 Measurements/UV Raw Images"][:].reshape(runs0,2848,2848),axis=0)
+# P_090 = np.mean(g0["P_90 Measurements/UV Raw Images"][:].reshape(runs0,2848,2848),axis=0)
+# P_045 = np.mean(g0["P_45 Measurements/UV Raw Images"][:].reshape(runs0,2848,2848),axis=0)
+# P_0135 = np.mean(g0["P_135 Measurements/UV Raw Images"][:].reshape(runs0,2848,2848),axis=0)
+
 cal_path = 'D:/Calibration/Data'
-generator_0_file = glob.glob(f'{cal_path}/Malus*1118_15_15_58*.h5')
+generator_0_file = glob.glob(f'{cal_path}/NUC_20250925_15_29_46.h5')
 g0 = h5py.File(generator_0_file[0],'r+')
-#Horizontal Measurements generator, analyzer
-runs0 = g0["Measurement_Metadata"].attrs['Runs for each angle']
-P_00 = np.mean(g0["P_0 Measurements/UV Raw Images"][:].reshape(runs0,2848,2848),axis=0)
-P_090 = np.mean(g0["P_90 Measurements/UV Raw Images"][:].reshape(runs0,2848,2848),axis=0)
-P_045 = np.mean(g0["P_45 Measurements/UV Raw Images"][:].reshape(runs0,2848,2848),axis=0)
-P_0135 = np.mean(g0["P_135 Measurements/UV Raw Images"][:].reshape(runs0,2848,2848),axis=0)
+exp_times = g0['P_0 Measurements/Exposure Times'][:]
+Nexp = len(exp_times)
+P_00 =   g0["P_0 Measurements/UV Raw Images"][:].reshape(Nexp,2848,2848)
+P_00 = P_00[Nexp-1,:,:]
+P_090 =  g0["P_90 Measurements/UV Raw Images"][:].reshape(Nexp,2848,2848)
+P_090 = P_090[Nexp-1,:,:]
+P_045 =  g0["P_45 Measurements/UV Raw Images"][:].reshape(Nexp,2848,2848)
+P_045 = P_045[Nexp-1,:,:]
+P_0135 = g0["P_135 Measurements/UV Raw Images"][:].reshape(Nexp,2848,2848)
+P_0135 = P_0135[Nexp-1,:,:]
 
-# #Corrected Horizontal
-# P0 = correct_img(P_00,Rij[0],Bij[0])
-# P90 = correct_img(P_090,Rij[90],Bij[90])
-# P45 = correct_img(P_045,Rij[45],Bij[45])
-# P135 = correct_img(P_0135,Rij[135],Bij[135])
 
-#Simulate 0deg fluxes 
-P135 = 1500*np.ones((2848,2848))
-P0 = 0.5*1500*np.ones((2848,2848))
-P90 = 0.5*1500*np.ones((2848,2848))
-P45 = 0.0001*1500*np.ones((2848,2848))
+#Corrected Horizontal
+P0 = correct_img(P_00,Rij[0],Bij[0])
+P90 = correct_img(P_090,Rij[90],Bij[90])
+P45 = correct_img(P_045,Rij[45],Bij[45])
+P135 = correct_img(P_0135,Rij[135],Bij[135])
+
+# #Simulate 0deg fluxes 
+# P90 = 0.5*1500*np.ones((2848,2848))
+# P135 = 1500*np.ones((2848,2848))
+# P45 = 0.000001*1500*np.ones((2848,2848))
+# P0 = 0.5*1500*np.ones((2848,2848))
 
 fig=plt.figure(figsize=(17,5))
 
@@ -79,7 +95,7 @@ plt.imshow(P135, cmap='gray',interpolation ='None',vmin=cmin,vmax=cmax)
 plt.colorbar(shrink=0.5)
 
 #fig.suptitle("NUC Corrected Integrating Sphere Measured w/ 0deg Generator Fluxes", fontsize=18, y=0.9)
-fig.suptitle("Simulated 135deg Polarization", fontsize=18, y=0.9)
+fig.suptitle("Unpolarized Input", fontsize=18, y=0.9)
 
 plt.tight_layout()
 plt.show()
@@ -127,11 +143,15 @@ dolpavg_mean = np.average(dolp_avg)
 dolpavg_std = np.std(dolp_avg)
 dolpavg_median = np.median(dolp_avg)
     
-aolp = 0.5*np.arctan2(U,Q)
-aolp = np.mod(np.degrees(aolp),180)
+aolp = np.degrees(0.5*np.arctan2(U,Q))
 aolp_mean = np.average(aolp)
 aolp_std = np.std(aolp)
 aolp_median = np.median(aolp)
+
+aolp = np.mod(aolp,180)
+
+
+
 
 plt.figure(figsize=(15,5))
 
@@ -142,12 +162,12 @@ plt.colorbar(shrink=0.75)
 
 plt.subplot(1,3,2)
 plt.title(" Q/I")
-plt.imshow(Q/I, cmap=cmo.curl,interpolation ='None',vmin=-0.1,vmax=0.1)
+plt.imshow(Q/I, cmap=cmo.curl,interpolation ='None',vmin=-1,vmax=1)
 plt.colorbar(shrink=0.75)
 
 plt.subplot(1,3,3)
 plt.title(" U/I")
-plt.imshow(U/I, cmap=cmo.curl,interpolation ='None',vmin=-0.1,vmax=0.1)
+plt.imshow(U/I, cmap=cmo.curl,interpolation ='None',vmin=-1,vmax=1)
 plt.colorbar(shrink=0.75)
 
 plt.tight_layout()
@@ -163,27 +183,65 @@ plt.imshow(aolp, cmap=cmo.phase, interpolation = 'None',vmin=0,vmax=180)
 plt.title('AoLP  [deg]',fontsize=20)
 plt.colorbar()
 
-plt.figure()
-plt.hist(aolp.flatten())
-plt.title('AoLP [deg]')
-plt.show()
+
+# fig, ax = plt.subplots(figsize=(8, 6))
+# ax.hist(aolp.flatten())
+# ax.set_title('AoLP  [$\circ$]',fontsize=16)
+# ax.tick_params(axis='both', labelsize=14)
+# # Add text box to the right of plot
+# textstr = f"Mean = {aolp_mean:.4f}$\circ$\nStd = {aolp_std:.4f}$\circ$\nMed = {aolp_median:.4f}$\circ$"
+# ax.text(0.5, 0.5, textstr, transform=ax.transAxes, fontsize=14,
+# verticalalignment='center', bbox=dict(facecolor='white', alpha=0.8, edgecolor='black'))
+# plt.show()
+
+# fig, ax = plt.subplots(figsize=(8, 6))
+# ax.hist(aolp.flatten(),range=(0,180), bins = 100)
+# ax.set_title('AoLP  [$\circ$]',fontsize=16)
+# ax.tick_params(axis='both', labelsize=14)
+# ax.xaxis.set_major_locator(MultipleLocator(15))   # labeled ticks every 20°
+# ax.xaxis.set_minor_locator(MultipleLocator(2))    # small ticks every 5°
+# plt.show()
 
 fig, ax = plt.subplots(figsize=(8, 6))
-ax.hist(aolp.flatten(),range=(0, 180))
-ax.set_title('AoLP  [$\circ$]')
-# Add text box to the right of plot
-textstr = f"Mean = {aolp_mean:.4f}$\circ$\nStd = {aolp_std:.4f}$\circ$\nMed = {aolp_median:.4f}$\circ$"
-ax.text(0.5, 0.5, textstr, transform=ax.transAxes, fontsize=14,
-verticalalignment='center', bbox=dict(facecolor='white', alpha=0.8, edgecolor='black'))
+
+counts, bins, patches = ax.hist(
+    aolp.flatten(),
+    range=(0, 180),
+    bins=100
+)
+
+ax.set_title('AoLP  [$\\circ$]', fontsize=16)
+ax.tick_params(axis='both', labelsize=14)
+
+ax.xaxis.set_major_locator(MultipleLocator(15))
+ax.xaxis.set_minor_locator(MultipleLocator(2))
+
+# Label AoLP bin center (degrees) on top of each bar
+for left_edge, count, patch in zip(bins[:-1], counts, patches):
+    if count > 0:
+        bin_center = left_edge + patch.get_width() / 2
+        ax.text(
+            bin_center,
+            count,
+            f'{bin_center:.1f}°',
+            ha='center', va='bottom',
+            fontsize=14,
+            rotation=0
+        )
+
 plt.show()
 
 
+
 fig, ax = plt.subplots(figsize=(8, 6))
-ax.hist(dolp.flatten(),range=(80, 105))
-ax.set_title('DoLP  [%]')
+ax.hist(dolp.flatten(),range=(80, 120),bins=100)
+ax.set_title('DoLP  [%]',fontsize=16)
+ax.tick_params(axis='both', labelsize=14)
+ax.xaxis.set_major_locator(MultipleLocator(10))   
+ax.xaxis.set_minor_locator(MultipleLocator(2))   
 # Add text box to the right of plot
 textstr = f"Mean = {dolp_mean:.4f}%\nStd = {dolp_std:.4f}%\nMed = {dolp_median:.4f}%"
-ax.text(0.5, 0.5, textstr, transform=ax.transAxes, fontsize=14,
+ax.text(0.05, 0.8, textstr, transform=ax.transAxes, fontsize=14,
 verticalalignment='center', bbox=dict(facecolor='white', alpha=0.8, edgecolor='black'))
 plt.show()
 
@@ -194,7 +252,7 @@ ax.scatter( range(len(dolp_avg)),dolp_avg, color='green')
 ax.set_ylabel(r'$DoLP_{rc} [\%]$', fontsize=15)
 ax.set_xlabel('Pixel Index', fontsize=15)
 ax.set_title(r'DoLP from $\bar{c}_{U},\bar{r}_{Q}$', fontsize=16)
-            
+ax.tick_params(axis='both', labelsize=14)
 # Add text box to the right of plot
 textstr = f"Mean = {dolpavg_mean:.4f}%\nStd = {dolpavg_std:.4f}%\nMed = {dolpavg_median:.4f}%"
 ax.text(1.05, 0.5, textstr, transform=ax.transAxes, fontsize=14,
