@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Dec  1 12:13:01 2025
+Created on Thu Jan 15 14:41:58 2026
 
 @author: ULTRASIP_1
 """
+
 #Import libraries 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,14 +12,6 @@ import cmocean.cm as cmo
 import glob
 import h5py
 import os
-# Define W-matrix of ULTRASIP (rows = analyzer vectors P0, P90, P45, P135)
-W = 0.5 * np.array([[1, 1, 0],[1, -1, 0],[1, 0, 1],[1, 0, -1]])
-#W-matrix cal 
-Stokes_ideal = np.array([[1,1,1,1],[1,-1,0,0],[0,0,1,-1]])
-data = np.load('D:/NUC_0813.npz', allow_pickle=True)
-
-Rij = data['arr1'].item()   # convert array-object → Python dict
-Bij = data['arr2'].item()
 
 #Correct image
 def correct_img(Pij,Rij,Bij):
@@ -34,17 +27,25 @@ def create_analyzervec(gen_angle):
     
     return Stokes_vec 
 
-gen_angles = np.r_[0:365:15]
-Stokes_ideal = np.column_stack([create_analyzervec(a) for a in np.radians(gen_angles)])
+#NUC
+data = np.load('D:/NUC_0813.npz', allow_pickle=True)
 
+Rij = data['arr1'].item()   # convert array-object → Python dict
+Bij = data['arr2'].item()
 
+#Polarized MEasurements
 cal_path = 'D:/Calibration/Data'
 files = glob.glob(f'{cal_path}/Malus*20251124_*.h5')
 
-# Dictionary to store all results
-# keys = generator angle (float)
-# values = dict with P0, P90, P45, P135 averaged images
-malus_data = {}
+
+for step in [None, 45, 15]:
+
+    if step is None:
+        gen_angles = np.array([0, 45, 90, 135])
+    else:
+        gen_angles = np.arange(0, 361, step)
+        
+    Stokes_ideal = np.column_stack([create_analyzervec(a) for a in np.radians(gen_angles)])
 
 for f in files:
     with h5py.File(f, 'r') as h:
@@ -65,7 +66,7 @@ for f in files:
 
         # --- Print info ---
         print(f"{os.path.basename(f)} → angle = {gen_angle}, runs = {runs}")
-
+        
         # --- Read measurement groups ---
         P0_stack   = h["P_0 Measurements/UV Raw Images"][:]
         P90_stack  = h["P_90 Measurements/UV Raw Images"][:]
@@ -110,8 +111,6 @@ for f in files:
         
 W = Cmat.T@np.linalg.pinv(Stokes_ideal)
 W = W.reshape(2848,2848,4,3)
-
-#np.save('D:/ULTRASIP_Wmatrix_mas.npy', W)
 # compute singular values for each 4x3 matrix
 u, s, vh = np.linalg.svd(W, full_matrices=False)
 
