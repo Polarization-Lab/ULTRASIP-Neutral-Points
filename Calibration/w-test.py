@@ -30,7 +30,10 @@ def correct_img(Pij,Rij,Bij):
     
     return Cij
 
-W = np.load('D:/ULTRASIP_Avg_Wmatrix.npy')       # shape = (H, W, 4, 3)
+Wavg = np.load('D:/ULTRASIP_Avg_Wmatrix.npy')       # shape = (H, W, 4, 3)
+W = np.load('D:/ULTRASIP_Wmatrix_15.npy')      
+W= W[1644:2000,1644:2000,:,:] 
+
 
 # cal_path = 'D:/Calibration/Data'
 # generator_0_file = glob.glob(f'{cal_path}/Malus*1118_16_02_07*.h5')
@@ -42,32 +45,32 @@ W = np.load('D:/ULTRASIP_Avg_Wmatrix.npy')       # shape = (H, W, 4, 3)
 # P_045 = np.mean(g0["P_45 Measurements/UV Raw Images"][:].reshape(runs0,2848,2848),axis=0)
 # P_0135 = np.mean(g0["P_135 Measurements/UV Raw Images"][:].reshape(runs0,2848,2848),axis=0)
 
-cal_path = 'D:/Calibration/Data'
-generator_0_file = glob.glob(f'{cal_path}/NUC_20250925_15_29_46.h5')
-g0 = h5py.File(generator_0_file[0],'r+')
-exp_times = g0['P_0 Measurements/Exposure Times'][:]
-Nexp = len(exp_times)
-P_00 =   g0["P_0 Measurements/UV Raw Images"][:].reshape(Nexp,2848,2848)
-P_00 = P_00[Nexp-1,:,:]
-P_090 =  g0["P_90 Measurements/UV Raw Images"][:].reshape(Nexp,2848,2848)
-P_090 = P_090[Nexp-1,:,:]
-P_045 =  g0["P_45 Measurements/UV Raw Images"][:].reshape(Nexp,2848,2848)
-P_045 = P_045[Nexp-1,:,:]
-P_0135 = g0["P_135 Measurements/UV Raw Images"][:].reshape(Nexp,2848,2848)
-P_0135 = P_0135[Nexp-1,:,:]
+# cal_path = 'D:/Calibration/Data'
+# generator_0_file = glob.glob(f'{cal_path}/NUC_20250925_15_29_46.h5')
+# g0 = h5py.File(generator_0_file[0],'r+')
+# exp_times = g0['P_0 Measurements/Exposure Times'][:]
+# Nexp = len(exp_times)
+# P_00 =   g0["P_0 Measurements/UV Raw Images"][:].reshape(Nexp,2848,2848)
+# P_00 = P_00[Nexp-1,:,:]
+# P_090 =  g0["P_90 Measurements/UV Raw Images"][:].reshape(Nexp,2848,2848)
+# P_090 = P_090[Nexp-1,:,:]
+# P_045 =  g0["P_45 Measurements/UV Raw Images"][:].reshape(Nexp,2848,2848)
+# P_045 = P_045[Nexp-1,:,:]
+# P_0135 = g0["P_135 Measurements/UV Raw Images"][:].reshape(Nexp,2848,2848)
+# P_0135 = P_0135[Nexp-1,:,:]
 
 
-#Corrected Horizontal
-P0 = correct_img(P_00,Rij[0],Bij[0])
-P90 = correct_img(P_090,Rij[90],Bij[90])
-P45 = correct_img(P_045,Rij[45],Bij[45])
-P135 = correct_img(P_0135,Rij[135],Bij[135])
+# #Corrected Horizontal
+# P0 = correct_img(P_00,Rij[0],Bij[0])
+# P90 = correct_img(P_090,Rij[90],Bij[90])
+# P45 = correct_img(P_045,Rij[45],Bij[45])
+# P135 = correct_img(P_0135,Rij[135],Bij[135])
 
-# #Simulate 0deg fluxes 
-# P90 = 0.5*1500*np.ones((2848,2848))
-# P135 = 1500*np.ones((2848,2848))
-# P45 = 0.000001*1500*np.ones((2848,2848))
-# P0 = 0.5*1500*np.ones((2848,2848))
+#Simulate 0deg fluxes 
+P90 = 0.5*1500*np.ones((2848,2848))
+P135 = 1500*np.ones((2848,2848))
+P45 = 0.000001*1500*np.ones((2848,2848))
+P0 = 0.5*1500*np.ones((2848,2848))
 
 fig=plt.figure(figsize=(17,5))
 
@@ -149,8 +152,6 @@ aolp_std = np.std(aolp)
 aolp_median = np.median(aolp)
 
 aolp = np.mod(aolp,180)
-
-
 
 
 plt.figure(figsize=(15,5))
