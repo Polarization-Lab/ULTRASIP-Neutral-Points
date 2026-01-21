@@ -37,7 +37,7 @@ cal_type = 'NUC'  # 'NUC' or 'Malus'
 cal_path = 'D:/Calibration/Data'
 cal_files = glob.glob(f'{cal_path}/{cal_type}*.h5')
 
-idx = 7 #len(cal_files) - 3  # choose file index #8,7,6,5
+idx = 8 #len(cal_files) - 3  # choose file index #8,7,6,5
 Ni, Nj = 2848, 2848       # image size
 
 # Open HDF5 calibration file
@@ -108,17 +108,16 @@ plt.tight_layout()
 plt.show()
 
 # Load pixel-wise W matrix
-W = np.load('D:/ULTRASIP_Wmatrix_mas.npy')       # shape = (H, W, 4, 3)
+W = np.load('D:/ULTRASIP_AvgWmatrix_15.npy')       # shape = (H, W, 4, 3)
 
-W_average = W[800:1700, 800:1700,:,:].mean(axis=(0, 1)) #800-1700?
 # Wi = 0.5 * np.array([
 #     [1,  1,  0],
 #     [1, -1,  0],
 #     [1,  0,  1],
 #     [1,  0, -1]
 # ])  # shape (4, 3)
-# #Broadcast W to a full 2848 x 2848 grid
-W = np.broadcast_to(W_average, (2848, 2848, 4, 3)).copy()
+# # #Broadcast W to a full 2848 x 2848 grid
+# W = np.broadcast_to(W, (2848, 2848, 4, 3)).copy()
 
 
 H, Wd = P.shape[0], P.shape[1]

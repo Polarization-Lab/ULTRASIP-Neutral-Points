@@ -32,7 +32,8 @@ def correct_img(Pij,Rij,Bij):
 
 Wavg = np.load('D:/ULTRASIP_Avg_Wmatrix.npy')       # shape = (H, W, 4, 3)
 W = np.load('D:/ULTRASIP_Wmatrix_15.npy')      
-W= W[1644:2000,1644:2000,:,:] 
+#kappa= kappa[1644:2000,1644:2000] 
+W = W[1000:2500,1000:2500]
 
 
 # cal_path = 'D:/Calibration/Data'

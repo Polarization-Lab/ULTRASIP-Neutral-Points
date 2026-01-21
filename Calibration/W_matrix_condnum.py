@@ -44,12 +44,13 @@ def plot_condW(condW,px,py):
 
     cond_flat = condW.flatten()
     std_val = np.std(cond_flat)
+    median = np.median(cond_flat)
 
     ax.hist(cond_flat, range=(1.4, 1.5), bins=100)
-    ax.set_ylim([0, 5e4])
+    ax.set_ylim([0, 5e5])
 
     # Add text box with std in upper-right corner of plot
-    textstr = f"std = {std_val:.4e}"
+    textstr = f"std = {std_val:.4e}\n med = {median:.4}"
 
     ax.text(0.97, 0.97, textstr,
         transform=ax.transAxes,
@@ -90,8 +91,9 @@ pixel_values = []
 
 for kappa in condition_numbers:
     
-    kappa= kappa[1644:2000,1644:2000] 
-
+    #kappa= kappa[1644:2000,1644:2000] 
+    #kappa = kappa[1000:2500,1000:2500]
+    
     plot_condW(kappa,px,py)
     value = kappa[px,py]
     print(value)
@@ -103,6 +105,28 @@ plt.xticks([0,1,2,3,4,5],[1,3,4,5,6,7])
 plt.xlabel('Case #')
 plt.ylabel('Pixel Value')
 plt.title(f'Pixel {px,py}')
+
+
+
+#Test Average, W is 2848,2848,4,3 so make sure to average across axis (0,1)
+avgW_15 = np.mean(W_15,axis=(0,1))
+avgcond_W_15 = cond_num(avgW_15)
+print(avgcond_W_15)
+
+#cropped
+avgW_15_cropped = np.mean(W_15[1000:2500,1000:2500],axis=(0,1))
+avgcond_W_15_cropped = cond_num(avgW_15_cropped)
+print(avgcond_W_15_cropped)
+
+W_uniform = np.broadcast_to(avgW_15_cropped, (2848, 2848, 4, 3))
+
+condnumAvg = cond_num(W_uniform)
+print(condnumAvg)
+
+plot_condW(condnumAvg,1200,1200)
+
+np.save('D:/ULTRASIP_AvgWmatrix_15.npy', W_uniform)
+
 
 
 
