@@ -53,7 +53,7 @@ epsilon_0 = 8.854e-12
 #750 to 430 terahertz (10^12 Hz) (recall: angular freq is 2pi*f). since each value within these ranges are equally 
 #probable you can randomly sample a uniform distrubution of this range... 
 
-A_x = np.random.uniform(0.1,1,S) #example doesnt specifiy a range...
+A_x = np.random.uniform(0.1,1,S) 
 A_y = np.random.uniform(0.1,1,R) 
 
 #angular freq range 
@@ -70,15 +70,43 @@ phi_x = np.random.uniform(0, 2*np.pi, S)
 phi_y = np.random.uniform(0, 2*np.pi, R)
 
 #A_x=A_y
-#phi_x=phi_y
 #omega_y=omega_x
-
+#phi_x=phi_y
 
 z=0 #place on z-axis
-t = np.linspace(0, 3e-14,3000) #seconds
+t = np.linspace(0,5e-14,3000) #seconds
+t_int = np.linspace(0, 60,10000000) #seconds
 
+#Calculate E_x and E_y over a longer time period 
+E_x = Efield(z,t_int,A_x,k_x,omega_x,phi_x)
+E_y = Efield(z, t_int, A_y, k_y, omega_y, phi_y)
 
-#Calculate E_x and E_y (x and y components of white light through a x/y linear polarizer)
+# Instantaneous fluxes
+p_x = (epsilon_0 * c / 2) * np.abs(E_x)**2
+p_y = (epsilon_0 * c / 2) * np.abs(E_y)**2
+
+E_45  = (E_x + E_y) / np.sqrt(2)
+E_135 = (E_x - E_y) / np.sqrt(2)
+
+p_45  = (epsilon_0 * c / 2) * np.abs(E_45)**2
+p_135 = (epsilon_0 * c / 2) * np.abs(E_135)**2
+
+# Time averaging
+T = t_int[-1] - t_int[0]
+p_x = np.trapz(p_x, t_int, axis=-1) / T
+p_y = np.trapz(p_y, t_int, axis=-1) / T
+
+p_45  = np.trapz(p_45, t_int, axis=-1) / T
+p_135 = np.trapz(p_135, t_int, axis=-1) / T
+
+# Stokes parameters
+s0 = p_x + p_y
+s1 = p_x - p_y
+s2 = p_45 - p_135
+
+dolp = np.sqrt(s1**2 + s2**2)/s0 
+print(dolp*100)
+
 E_x = Efield(z,t,A_x,k_x,omega_x,phi_x)
 E_y = Efield(z, t, A_y, k_y, omega_y, phi_y)
 
@@ -110,16 +138,12 @@ plt.plot(E_y,E_x,color='red')
 plt.xlabel("x")
 plt.ylabel("y")
 
-# #Instaneous Fluxes using Poynting vectors
-# p_x = (epsilon_0*c/2)*np.abs(E_x)**2
-# p_y = (epsilon_0*c/2)*np.abs(E_y)**2
-
-# diff = p_x-p_y
-
 # plt.figure()
-# plt.plot(t,p_x,label="P_x")
-# plt.plot(t,p_y,label="P_y")
-# plt.plot(t, diff,label='difference',color="purple")
+# # plt.plot(t,p_x,label="P_x")
+# # plt.plot(t,p_y,label="P_y")
+# plt.plot(t, s1,label='s1',color="purple")
+# plt.plot(t, s0,label='s0',color="red")
+# plt.plot(t, s2,label='s1',color="blue")
 # plt.xlabel("Time (s)")
 # plt.ylabel("Poynting Vector")
 # plt.legend(loc='upper right')
