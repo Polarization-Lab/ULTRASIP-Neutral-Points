@@ -9,8 +9,11 @@ import numpy as np
 
     
 
-def pixel_geometry(HFOV,VFOV,img_x,img_y,x_center, y_center, Pan, Tilt, Sun_Position_Azimuth, Sun_Position_Altitude):
+def pixel_geometry(sza0,HFOV,VFOV,img_x,img_y,x_center, y_center, Pan, Tilt, Sun_Position_Azimuth, Sun_Position_Altitude):
     
+        
+        delta_zen = (Sun_Position_Altitude-sza0)
+       # print(delta_zen)
         view_az = np.zeros((img_x,img_y))
         view_zen = np.zeros((img_x,img_y))
 
@@ -25,8 +28,8 @@ def pixel_geometry(HFOV,VFOV,img_x,img_y,x_center, y_center, Pan, Tilt, Sun_Posi
 
         # Compute view angles
         view_az = np.radians(Pan - y_dev)
-        view_zen = np.radians(Tilt - x_dev)
+        view_zen = np.radians((Tilt-delta_zen) - x_dev)
         sun_az = np.radians(Sun_Position_Azimuth)
-        sun_zen = np.radians(Sun_Position_Altitude)
+        sun_zen = np.radians(Sun_Position_Altitude-delta_zen)
         
         return view_az, view_zen, sun_az, sun_zen

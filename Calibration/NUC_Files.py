@@ -18,10 +18,10 @@ import os
 
 # --- Config ---
 cal_type = 'NUC'  # 'NUC' or 'Malus'
-cal_path = 'D:/Calibration/Data'
+cal_path = 'E:/Calibration/Data'
 cal_files = glob.glob(f'{cal_path}/{cal_type}*.h5')
 
-idx = 8 #len(cal_files) - 3  # choose file index #8,7,6,5
+idx = 6 #len(cal_files) - 3  # choose file index #8,7,6,5
 Ni, Nj = 2848, 2848       # image size
 
 with h5py.File(cal_files[idx], 'r+') as f:
@@ -100,4 +100,4 @@ plt.show()
         
         
 
-#np.savez('D:/NUC_0813.npz', arr1=Rij, arr2=Bij)
+np.savez('E:/NUC_0812_1643.npz', arr1=Rij, arr2=Bij)

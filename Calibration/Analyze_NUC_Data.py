@@ -17,7 +17,8 @@ import glob
 import h5py
 import os
 
-data = np.load('D:/NUC_0813.npz', allow_pickle=True)
+data = np.load('E:/NUC_0813.npz', allow_pickle=True)
+#data = np.load('E:/NUC_0812_1643.npz', allow_pickle=True)
 
 Rij = data['arr1'].item()   # convert array-object → Python dict
 Bij = data['arr2'].item()
@@ -34,7 +35,7 @@ def correct_img(Pij,Rij,Bij):
 # P90 = 0.01*1500*np.ones((2848,2848))
 
 cal_type = 'NUC'  # 'NUC' or 'Malus'
-cal_path = 'D:/Calibration/Data'
+cal_path = 'E:/Calibration/Data'
 cal_files = glob.glob(f'{cal_path}/{cal_type}*.h5')
 
 idx = 8 #len(cal_files) - 3  # choose file index #8,7,6,5
@@ -108,7 +109,7 @@ plt.tight_layout()
 plt.show()
 
 # Load pixel-wise W matrix
-W = np.load('D:/ULTRASIP_AvgWmatrix_15.npy')       # shape = (H, W, 4, 3)
+W = np.load('E:/ULTRASIP_AvgWmatrix_15.npy')       # shape = (H, W, 4, 3)
 
 # Wi = 0.5 * np.array([
 #     [1,  1,  0],
