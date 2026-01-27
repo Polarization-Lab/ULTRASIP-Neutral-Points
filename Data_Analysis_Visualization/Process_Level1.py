@@ -26,12 +26,12 @@ img_y = 2848
 
 
 #Set Date of Measurements 
-date = '2025_06_10'
+date = '2025_10_24'
 start_time = time.time()
 #Datapath
 basepath = 'D:/Data'
 folderdate = os.path.join(basepath,date)
-files = glob.glob(f'{folderdate}/NormRoof_*.h5')
+files = glob.glob(f'{folderdate}/Lubrecht_*.h5')
 #files = glob.glob(f'{folderdate}/NormRoof*09_16_36*.h5')
 
 idx = len(files) 

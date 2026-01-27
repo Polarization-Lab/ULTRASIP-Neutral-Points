@@ -27,7 +27,7 @@ folderdate = os.path.join(basepath,date)
 files = glob.glob(f'{folderdate}/*.h5')
 i = len(files) # Set file index you want to view - default is set to the last one (len(files)-1)
 
-for idx in range(0, i):
+for idx in range(0, 1):
     print(f'Processing file {idx} of {i}: {files[idx]}')
     
     try:
@@ -45,7 +45,7 @@ for idx in range(0, i):
                 
             #Load geometry 
             view_az = aq['UV Image Data/view_az'][:]
-            view_zen = 90-aq['UV Image Data/view_zen'][:]
+            view_zen = aq['UV Image Data/view_zen'][:]
     
             #Load polarized data products
             I = aq['UV Image Data/I_corrected'][:]
@@ -67,39 +67,91 @@ for idx in range(0, i):
 
             #HI :)
             
-            
             vza = view_zen[:,0]
             vaz = view_az[0,:]
+                        
+            #rows,colummns for subfigs
+            fig, axes = plt.subplots(2, 3, figsize=(16, 8))  
             
+            # Plot I
+            im0 = axes[0,0].imshow(I, cmap='gray', interpolation = 'None',extent=[view_az.min(), view_az.max(), view_zen.max(), view_zen.min()], vmin = 0, vmax = 1)
+            axes[0,0].set_title('I',fontsize=20)
+            axes[0,0].set_ylabel('Zenith [$\circ$]',fontsize=15)
+            axes[0,0].set_xlabel('Azimuth [$\circ$]',fontsize=15)
+            plt.colorbar(im0, ax=axes[0,0], fraction=0.046, pad=0.04)
             
-            fig, axes = plt.subplots(1, 4, figsize=(16, 4))  
+            #Plot Q/I
+            im1 = axes[0,1].imshow(Q/I, cmap=cmo.curl, vmin=-1, vmax=1 ,extent=[view_az.min(), view_az.max(), view_zen.max(), view_zen.min()], interpolation = 'None')
+            axes[0,1].set_title('Q/I',fontsize=20)
+            #axes[0,1].set_ylabel('Zenith [$\circ$]',fontsize=15)
+            axes[0,1].set_xlabel('Azimuth [$\circ$]',fontsize=15)
+            plt.colorbar(im1, ax=axes[0,1], fraction=0.046, pad=0.04)
+            
+            # Plot U/I
+            im2 = axes[0,2].imshow(U/I, cmap=cmo.curl, vmin=-1, vmax=1 ,extent=[view_az.min(), view_az.max(), view_zen.max(), view_zen.min()], interpolation = 'None')
+            axes[0,2].set_title('U/I',fontsize=20)
+            #axes[0,1].set_ylabel('Zenith [$\circ$]',fontsize=15)
+            axes[0,2].set_xlabel('Azimuth [$\circ$]',fontsize=15)
+            plt.colorbar(im2, ax=axes[0,2], fraction=0.046, pad=0.04)
+            
+            # Plot I
+            im3 = axes[1,0].hist(I.flatten())
+            axes[1,0].set_ylabel('Frequency',fontsize=15)
+            axes[1,0].set_xlabel('Value',fontsize=15)
+            
+            # Plot Q/I
+            im3 = axes[1,1].hist((Q/I).flatten())
+            #axes[1,1].set_ylabel('Frequency',fontsize=15)
+            axes[1,1].set_xlabel('Value',fontsize=15)
+            
+            # Plot U/I
+            im3 = axes[1,2].hist((U/I).flatten())
+            #axes[1,2].set_ylabel('Frequency',fontsize=15)
+            axes[1,2].set_xlabel('Value',fontsize=15)
+            plt.suptitle(f'{timestamp, aqnum}',fontsize=20)
+            
+            plt.tight_layout()
+            plt.show()
+            
+
+            #rows,colummns for subfigs
+            fig, axes = plt.subplots(2, 3, figsize=(16, 8))  
             
             # Plot DoLP
-            im0 = axes[0].imshow(dolp, cmap='hot', interpolation = 'None',extent=[view_az.min(), view_az.max(), view_zen.max(), view_zen.min()], vmin = 0, vmax = 1)
-            axes[0].set_title('DoLP [%]',fontsize=20)
-            axes[0].set_ylabel('Altitude [deg]',fontsize=15)
-            axes[0].set_xlabel('Azimuth [deg]',fontsize=15)
-            plt.colorbar(im0, ax=axes[0], fraction=0.046, pad=0.04)
+            im0 = axes[0,0].imshow(dolp, cmap='hot', interpolation = 'None',extent=[view_az.min(), view_az.max(), view_zen.max(), view_zen.min()], vmin = 0, vmax = 1)
+            axes[0,0].set_title('DoLP [%]',fontsize=20)
+            axes[0,0].set_ylabel('Zenith [$\circ$]',fontsize=15)
+            axes[0,0].set_xlabel('Azimuth [$\circ$]',fontsize=15)
+            plt.colorbar(im0, ax=axes[0,0], fraction=0.046, pad=0.04)
             
             #Plot log(DoLP)
-            im1 = axes[1].imshow(np.log(dolp), cmap='Blues_r', vmin=-3, vmax=1.5 ,extent=[view_az.min(), view_az.max(), view_zen.max(), view_zen.min()], interpolation = 'None')
-            axes[1].set_title('log(DoLP [%])',fontsize=20)
-            axes[1].set_ylabel('Altitude [deg]',fontsize=15)
-            axes[1].set_xlabel('Azimuth [deg]',fontsize=15)
-            plt.colorbar(im1, ax=axes[1], fraction=0.046, pad=0.04)
+            im1 = axes[0,1].imshow(np.log(dolp), cmap='Blues_r', vmin=-3, vmax=1.5 ,extent=[view_az.min(), view_az.max(), view_zen.max(), view_zen.min()], interpolation = 'None')
+            axes[0,1].set_title('log(DoLP [%])',fontsize=20)
+            #axes[0,1].set_ylabel('Zenith [$\circ$]',fontsize=15)
+            axes[0,1].set_xlabel('Azimuth [$\circ$]',fontsize=15)
+            plt.colorbar(im1, ax=axes[0,1], fraction=0.046, pad=0.04)
             
             # Plot AoLP
-            im2 = axes[2].imshow(aolp, cmap=cmo.phase,extent=[view_az.min(), view_az.max(), view_zen.max(), view_zen.min()], interpolation = 'None')
-            axes[2].set_title('AoLP [deg]',fontsize=20)
-            axes[2].set_ylabel('Altitude [deg]',fontsize=15)
-            axes[2].set_xlabel('Azimuth [deg]',fontsize=15)
-            plt.colorbar(im2, ax=axes[2], fraction=0.046, pad=0.04)
+            im2 = axes[0,2].imshow(aolp, cmap=cmo.phase,extent=[view_az.min(), view_az.max(), view_zen.max(), view_zen.min()], interpolation = 'None')
+            axes[0,2].set_title('AoLP [$\circ$]',fontsize=20)
+            #axes[0,2].set_ylabel('Zenith [$\circ$]',fontsize=15)
+            axes[0,2].set_xlabel('Azimuth [$\circ$]',fontsize=15)
+            plt.colorbar(im2, ax=axes[0,2], fraction=0.046, pad=0.04)
             
             # Plot AoLP
-            im3 = axes[3].hist(aolp.flatten())
-            axes[3].set_title('AoLP [deg]',fontsize=20)
-            axes[3].set_ylabel('Frequency',fontsize=15)
-            axes[3].set_xlabel('Value',fontsize=15)
+            im3 = axes[1,0].hist(dolp.flatten())
+            axes[1,0].set_ylabel('Frequency',fontsize=15)
+            axes[1,0].set_xlabel('Value',fontsize=15)
+            
+            # Plot AoLP
+            im3 = axes[1,1].hist(np.log(dolp).flatten())
+            #axes[1,1].set_ylabel('Frequency',fontsize=15)
+            axes[1,1].set_xlabel('Value',fontsize=15)
+            
+            # Plot AoLP
+            im3 = axes[1,2].hist(aolp.flatten())
+            #axes[1,2].set_ylabel('Frequency',fontsize=15)
+            axes[1,2].set_xlabel('Value',fontsize=15)
             plt.suptitle(f'{timestamp, aqnum}',fontsize=20)
             
             plt.tight_layout()
@@ -151,7 +203,7 @@ for idx in range(0, i):
             axes[0].scatter(avgq,vza,color='green')
             axes[0].axvline(x=0,lw=5,color='red')
             axes[0].set_xlabel(r'$\bar{r}_{Q}$',fontsize=15)
-            axes[0].set_ylabel('Altitude [deg]',fontsize=15)
+            axes[0].set_ylabel('Zenith [deg]',fontsize=15)
 
             #axes[0].set_xlim(-0.02, 0.02)
             #axes[0].set_ylim(55,56)
@@ -165,41 +217,7 @@ for idx in range(0, i):
             plt.tight_layout()
             plt.show()
             
-            #DoLP/AoLP
-            
-            fig, axes = plt.subplots(1, 4, figsize=(16, 4))  
-            
-            # Plot DoLP
-            im0 = axes[0].imshow(dolp, cmap='hot', interpolation = 'None',extent=[view_az.min(), view_az.max(), view_zen.max(), view_zen.min()], vmin = 0, vmax = 1)
-            axes[0].set_title('DoLP [%]',fontsize=20)
-            axes[0].set_ylabel('Altitude [deg]',fontsize=15)
-            axes[0].set_xlabel('Azimuth [deg]',fontsize=15)
-            plt.colorbar(im0, ax=axes[0], fraction=0.046, pad=0.04)
-            
-            #Plot log(DoLP)
-            im1 = axes[1].imshow(np.log(dolp), cmap='Blues_r', vmin=-3, vmax=1.5 ,extent=[view_az.min(), view_az.max(), view_zen.max(), view_zen.min()], interpolation = 'None')
-            axes[1].set_title('log(DoLP [%])',fontsize=20)
-            axes[1].set_ylabel('Altitude [deg]',fontsize=15)
-            axes[1].set_xlabel('Azimuth [deg]',fontsize=15)
-            plt.colorbar(im1, ax=axes[1], fraction=0.046, pad=0.04)
-            
-            # Plot AoLP
-            im2 = axes[2].imshow(aolp, cmap=cmo.phase,extent=[view_az.min(), view_az.max(), view_zen.max(), view_zen.min()], interpolation = 'None')
-            axes[2].set_title('AoLP [deg]',fontsize=20)
-            axes[2].set_ylabel('Altitude [deg]',fontsize=15)
-            axes[2].set_xlabel('Azimuth [deg]',fontsize=15)
-            plt.colorbar(im2, ax=axes[2], fraction=0.046, pad=0.04)
-            
-            # Plot AoLP
-            im3 = axes[3].hist(aolp.flatten())
-            axes[3].set_title('AoLP [deg]',fontsize=20)
-            axes[3].set_ylabel('Frequency',fontsize=15)
-            axes[3].set_xlabel('Value',fontsize=15)
-            plt.suptitle(f'{timestamp, aqnum}',fontsize=20)
-            
-            plt.tight_layout()
-            plt.show()
-            
+  
             run = input("Run neutral point estimation? (Yes/No): ")
             print(f"{run}!")
             
@@ -209,7 +227,7 @@ for idx in range(0, i):
                 print('Running Estimation')
                 
                 saz =  aq['UV Image Data/sun_az'][()]
-                sza = 90- aq['UV Image Data/sun_zen'][()]
+                sza = aq['UV Image Data/sun_zen'][()]
         
                 #---Altitude Estimate------------#
 
@@ -239,7 +257,7 @@ for idx in range(0, i):
                 #plt.fill_between(avgq, fit_line - std_residuals, fit_line + std_residuals, color='red', alpha=0.3, label='Uncertainty region')
                 plt.axvline(0,color='red',linewidth=5)
                 # Add labels and legend
-                plt.ylabel(r'Altitude [$\circ$]',fontsize=20)
+                plt.ylabel(r'Zenith [$\circ$]',fontsize=20)
                 plt.xlabel(r'$\bar{r_{Q}}$', fontsize = 20)
                 plt.xlim(-0.025, 0.025)
                 #plt.ylim([50.5, 54.5])
@@ -321,14 +339,14 @@ for idx in range(0, i):
                 
                 save = input("Save neutral point estimation to file? (Yes/No): ")
                 if save.lower() in ['yes', 'y']:
-                    if 'Neutral Point Estimation' not in aq:
-                        np_est = aq.create_group("Neutral Point Estimation")
+                    if 'Neutral Point Estimation' not in f:
+                        np_est = f.create_group("Neutral Point Estimation")
                     else: 
-                        del aq['Neutral Point Estimation']
-                        np_est = aq.create_group("Neutral Point Estimation")
+                        del f['Neutral Point Estimation']
+                        np_est = f.create_group("Neutral Point Estimation")
 
                     np_est.create_dataset('Estimation NP Location (alt,az) [deg]', data = np.array([altitude, azimuth]))
-                    np_est.attrs['Altitude Error [arcseconds]'] = altitude_error * 3600
+                    np_est.attrs['Zenith Error [arcseconds]'] = altitude_error * 3600
                     np_est.attrs['Azimuth Error [arcseconds]'] = azimuth_error * 3600
                     print("Neutral point estimation saved.")
                     f['Measurement_Metadata'].attrs['Processed Level'] = 'Level 3'
