@@ -32,7 +32,7 @@ start_time = time.time()
 basepath = 'D:/Data'
 folderdate = os.path.join(basepath,date)
 files = glob.glob(f'{folderdate}/Lubrecht_*.h5')
-#files = glob.glob(f'{folderdate}/NormRoof*09_16_36*.h5')
+#files = glob.glob(f'{folderdate}/NormRoof*.h5')
 
 idx = len(files) 
 idx_array = np.arange(0,idx)
@@ -111,12 +111,14 @@ def process1(idx):
 
                     #Calculate geometry 
                     view_az, view_zen, sun_az, sun_zen = pg(sza0,HFOV,VFOV,img_x,img_y,x_center, y_center, Pan, Tilt, Sun_Position_Azimuth, Sun_Position_Altitude)
-                
+                    
+                    #Convention for zenitih is 0 is straight up so subtract 90 degrees from zenith angles 
+                   
                     if 'view_az' not in uv_data:
                         uv_data.create_dataset('view_az', data = np.degrees(view_az))
-                        uv_data.create_dataset('view_zen', data = np.degrees(view_zen))
+                        uv_data.create_dataset('view_zen', data = 90-np.degrees(view_zen))
                         uv_data.create_dataset('sun_az', data = np.degrees(sun_az))
-                        uv_data.create_dataset('sun_zen', data = np.degrees(sun_zen))
+                        uv_data.create_dataset('sun_zen', data = 90-np.degrees(sun_zen))
                     elif 'view_az' in uv_data:
                         print('here')
                         del uv_data['view_az']
@@ -124,9 +126,9 @@ def process1(idx):
                         del uv_data['sun_az']
                         del uv_data['sun_zen']
                         uv_data.create_dataset('view_az', data = np.degrees(view_az))
-                        uv_data.create_dataset('view_zen', data = np.degrees(view_zen))
+                        uv_data.create_dataset('view_zen', data = 90-np.degrees(view_zen))
                         uv_data.create_dataset('sun_az', data = np.degrees(sun_az))
-                        uv_data.create_dataset('sun_zen', data = np.degrees(sun_zen))
+                        uv_data.create_dataset('sun_zen', data = 90-np.degrees(sun_zen))
 
             except KeyError as e:
                 print(f'Skipping Acquisition {aqnum} in file {idx} — {e}')

@@ -18,30 +18,40 @@ from scipy.optimize import curve_fit
 
 #Load observations 
 #Set Date of Measurements 
-date = '2025_06_10'
+date = '2025_10_24'
 
 #Datapath
 basepath = 'D:/Data'
+
+#Figurepath
+figurepath = 'D:/Analyzed_Data_Figures'
+figurepath = os.path.join(figurepath,date)
+if not os.path.exists(figurepath):
+    os.makedirs(figurepath)
+
 #basepath = 'C:/Users/ULTRASIP_1/OneDrive/Desktop'
 folderdate = os.path.join(basepath,date)
 files = glob.glob(f'{folderdate}/*.h5')
 i = len(files) # Set file index you want to view - default is set to the last one (len(files)-1)
 
-for idx in range(0, 1):
+for idx in range(i):
     print(f'Processing file {idx} of {i}: {files[idx]}')
+    skip_file = False
+
     
     try:
         f = h5py.File(files[idx], 'r+')
 
         for aqnum in range(0,len(f.keys())-1):
     
-            timestamp = files[idx][32:46]
             #Set aquisition to view
             aq = f[f'Aquistion_{aqnum}']
             print(aqnum)
     
             if 'Neutral Point Estimation' in aq:
                 del aq['Neutral Point Estimation']
+            
+            timestamp = aq.attrs['Timestamp MDT']
                 
             #Load geometry 
             view_az = aq['UV Image Data/view_az'][:]
@@ -69,43 +79,44 @@ for idx in range(0, 1):
             
             vza = view_zen[:,0]
             vaz = view_az[0,:]
-                        
+            
+         
             #rows,colummns for subfigs
             fig, axes = plt.subplots(2, 3, figsize=(16, 8))  
             
             # Plot I
-            im0 = axes[0,0].imshow(I, cmap='gray', interpolation = 'None',extent=[view_az.min(), view_az.max(), view_zen.max(), view_zen.min()], vmin = 0, vmax = 1)
+            im0 = axes[0,0].imshow(I, cmap='gray',vmin=0,vmax=8, interpolation = 'None',extent=[view_az.min(), view_az.max(), view_zen.max(), view_zen.min()])
             axes[0,0].set_title('I',fontsize=20)
             axes[0,0].set_ylabel('Zenith [$\circ$]',fontsize=15)
             axes[0,0].set_xlabel('Azimuth [$\circ$]',fontsize=15)
             plt.colorbar(im0, ax=axes[0,0], fraction=0.046, pad=0.04)
             
             #Plot Q/I
-            im1 = axes[0,1].imshow(Q/I, cmap=cmo.curl, vmin=-1, vmax=1 ,extent=[view_az.min(), view_az.max(), view_zen.max(), view_zen.min()], interpolation = 'None')
+            im1 = axes[0,1].imshow(Q/I, cmap=cmo.curl, vmin=-.2, vmax=.2 ,extent=[view_az.min(), view_az.max(), view_zen.max(), view_zen.min()], interpolation = 'None')
             axes[0,1].set_title('Q/I',fontsize=20)
             #axes[0,1].set_ylabel('Zenith [$\circ$]',fontsize=15)
             axes[0,1].set_xlabel('Azimuth [$\circ$]',fontsize=15)
             plt.colorbar(im1, ax=axes[0,1], fraction=0.046, pad=0.04)
             
             # Plot U/I
-            im2 = axes[0,2].imshow(U/I, cmap=cmo.curl, vmin=-1, vmax=1 ,extent=[view_az.min(), view_az.max(), view_zen.max(), view_zen.min()], interpolation = 'None')
+            im2 = axes[0,2].imshow(U/I, cmap=cmo.curl, vmin=-.2, vmax=.2 ,extent=[view_az.min(), view_az.max(), view_zen.max(), view_zen.min()], interpolation = 'None')
             axes[0,2].set_title('U/I',fontsize=20)
             #axes[0,1].set_ylabel('Zenith [$\circ$]',fontsize=15)
             axes[0,2].set_xlabel('Azimuth [$\circ$]',fontsize=15)
             plt.colorbar(im2, ax=axes[0,2], fraction=0.046, pad=0.04)
             
             # Plot I
-            im3 = axes[1,0].hist(I.flatten())
+            im3 = axes[1,0].hist(I.flatten(),bins=100)
             axes[1,0].set_ylabel('Frequency',fontsize=15)
             axes[1,0].set_xlabel('Value',fontsize=15)
             
             # Plot Q/I
-            im3 = axes[1,1].hist((Q/I).flatten())
+            im3 = axes[1,1].hist((Q/I).flatten(), bins=100, range=(-0.3,0.3))
             #axes[1,1].set_ylabel('Frequency',fontsize=15)
             axes[1,1].set_xlabel('Value',fontsize=15)
             
             # Plot U/I
-            im3 = axes[1,2].hist((U/I).flatten())
+            im3 = axes[1,2].hist((U/I).flatten(), bins=100, range=(-0.3,0.3))
             #axes[1,2].set_ylabel('Frequency',fontsize=15)
             axes[1,2].set_xlabel('Value',fontsize=15)
             plt.suptitle(f'{timestamp, aqnum}',fontsize=20)
@@ -113,19 +124,31 @@ for idx in range(0, 1):
             plt.tight_layout()
             plt.show()
             
+            plt.suptitle(f'{timestamp, aqnum}', fontsize=20)
+            plt.tight_layout()
 
+            fname = os.path.join(
+                figurepath,
+                f'{timestamp}_aq{aqnum:03d}_Stokes.png'
+                )
+
+            fig.savefig(fname, dpi=300, bbox_inches='tight')
+            plt.show()
+            plt.close(fig)
+
+        
             #rows,colummns for subfigs
             fig, axes = plt.subplots(2, 3, figsize=(16, 8))  
             
             # Plot DoLP
-            im0 = axes[0,0].imshow(dolp, cmap='hot', interpolation = 'None',extent=[view_az.min(), view_az.max(), view_zen.max(), view_zen.min()], vmin = 0, vmax = 1)
+            im0 = axes[0,0].imshow(dolp, cmap='hot', interpolation = 'None',extent=[view_az.min(), view_az.max(), view_zen.max(), view_zen.min()], vmin = 0, vmax = 8)
             axes[0,0].set_title('DoLP [%]',fontsize=20)
             axes[0,0].set_ylabel('Zenith [$\circ$]',fontsize=15)
             axes[0,0].set_xlabel('Azimuth [$\circ$]',fontsize=15)
             plt.colorbar(im0, ax=axes[0,0], fraction=0.046, pad=0.04)
             
             #Plot log(DoLP)
-            im1 = axes[0,1].imshow(np.log(dolp), cmap='Blues_r', vmin=-3, vmax=1.5 ,extent=[view_az.min(), view_az.max(), view_zen.max(), view_zen.min()], interpolation = 'None')
+            im1 = axes[0,1].imshow(np.log(dolp), cmap='Blues_r', vmin=-1, vmax=2 ,extent=[view_az.min(), view_az.max(), view_zen.max(), view_zen.min()], interpolation = 'None')
             axes[0,1].set_title('log(DoLP [%])',fontsize=20)
             #axes[0,1].set_ylabel('Zenith [$\circ$]',fontsize=15)
             axes[0,1].set_xlabel('Azimuth [$\circ$]',fontsize=15)
@@ -139,24 +162,33 @@ for idx in range(0, 1):
             plt.colorbar(im2, ax=axes[0,2], fraction=0.046, pad=0.04)
             
             # Plot AoLP
-            im3 = axes[1,0].hist(dolp.flatten())
+            im3 = axes[1,0].hist(dolp.flatten(),range=(0,30),bins=100)
             axes[1,0].set_ylabel('Frequency',fontsize=15)
             axes[1,0].set_xlabel('Value',fontsize=15)
             
             # Plot AoLP
-            im3 = axes[1,1].hist(np.log(dolp).flatten())
+            im3 = axes[1,1].hist(np.log(dolp).flatten(),range=(-5,2),bins=100)
             #axes[1,1].set_ylabel('Frequency',fontsize=15)
             axes[1,1].set_xlabel('Value',fontsize=15)
             
             # Plot AoLP
-            im3 = axes[1,2].hist(aolp.flatten())
+            im3 = axes[1,2].hist(aolp.flatten(),range=(0,180),bins=100)
             #axes[1,2].set_ylabel('Frequency',fontsize=15)
             axes[1,2].set_xlabel('Value',fontsize=15)
             plt.suptitle(f'{timestamp, aqnum}',fontsize=20)
             
+            plt.suptitle(f'{timestamp, aqnum}', fontsize=20)
             plt.tight_layout()
+
+            fname = os.path.join(
+                figurepath,
+                f'{timestamp}_aq{aqnum:03d}_AoLP_DoLP.png'
+                )
+
+            fig.savefig(fname, dpi=300, bbox_inches='tight')
             plt.show()
-            
+            plt.close(fig)
+
 
             #Averages
             fig, axes = plt.subplots(1, 2, figsize=(12, 5))
@@ -179,7 +211,7 @@ for idx in range(0, 1):
             plt.grid()
             plt.show()
             
-            run = input("Cropping? (Yes/No): ")
+            run = input("Cropping? (Yes/No/Skip to Next File): ")
             if run =='yes' or run == 'Yes' or run == 'YES' or run =='y':
                 q_range_str = input("Q range?: ")  # e.g., "1000:2000"
                 u_range_str = input("U range?: ")
@@ -193,6 +225,9 @@ for idx in range(0, 1):
 
                 vza = vza[q_start:q_stop]
                 vaz = vaz[u_start:u_stop]
+            elif run in ['skip', 's']:
+                skip_file = True
+                break
             else:
                 continue
             
@@ -319,8 +354,15 @@ for idx in range(0, 1):
                 plt.xticks(fontsize=15)
                 #plt.title('Weighted Linear Regression with Fit Error')
                 plt.grid(True)
-                #plt.legend(fontsize=20,loc='upper left')
+                #plt.legend(fontsize=20,loc='upper left')                
+                fname = os.path.join(
+                    figurepath,
+                    f'{timestamp}_aq{aqnum:02d}_NP.png'
+                    )
+
+                fig.savefig(fname, dpi=300, bbox_inches='tight')
                 plt.show()
+                plt.close(fig)
                 
                 # Print regression results
                 print(results.summary())
@@ -345,9 +387,14 @@ for idx in range(0, 1):
                         del f['Neutral Point Estimation']
                         np_est = f.create_group("Neutral Point Estimation")
 
-                    np_est.create_dataset('Estimation NP Location (alt,az) [deg]', data = np.array([altitude, azimuth]))
+                    np_est.create_dataset('Estimation NP Location (zen,az) [deg]', data = np.array([altitude, azimuth]))
+                    np_est.create_dataset('Sun Location (zen,az) [deg]', data = np.array([sza, saz]))
                     np_est.attrs['Zenith Error [arcseconds]'] = altitude_error * 3600
                     np_est.attrs['Azimuth Error [arcseconds]'] = azimuth_error * 3600
+                    np_est.attrs['Q Cropped Region'] = q_range_str
+                    np_est.attrs['U Cropped Region'] = u_range_str
+                    np_est.attrs['Aquisition Number'] = aqnum
+                    np_est.attrs['Time Stamp'] = timestamp
                     print("Neutral point estimation saved.")
                     f['Measurement_Metadata'].attrs['Processed Level'] = 'Level 3'
                 else :

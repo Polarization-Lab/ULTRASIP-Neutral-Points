@@ -32,8 +32,5 @@ def pixel_geometry(sza0,HFOV,VFOV,img_x,img_y,x_center, y_center, Pan, Tilt, Sun
         sun_az = np.radians(Sun_Position_Azimuth)
         sun_zen = np.radians(Sun_Position_Altitude-delta_zen)
         
-        #Convention for zenitih is 0 is straight up so subtract 90 degrees from zenith angles 
-        sun_zen = 90 - sun_zen
-        view_zen = 90 - view_zen 
         
         return view_az, view_zen, sun_az, sun_zen

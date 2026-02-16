@@ -56,7 +56,7 @@ pinvW_ULTRASIP = pseudoinverse(W_ULTRASIP)
 start_time = time.time()
 
 #Load Observations 
-date = '2025_10_24'
+date = '2025_07_01'
 #basepath = 'C:/Users/ULTRASIP_1/OneDrive/Desktop/'
 basepath = 'D:/Data/'
 folderdate = os.path.join(basepath, date)
