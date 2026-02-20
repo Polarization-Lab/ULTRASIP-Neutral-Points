@@ -93,9 +93,9 @@ def process1(idx):
                 
                     if 'view_az' not in uv_data:
                         uv_data.create_dataset('view_az', data = np.degrees(view_az))
-                        uv_data.create_dataset('view_zen', data = np.degrees(view_zen))
+                        uv_data.create_dataset('view_zen', data = 90-np.degrees(view_zen))
                         uv_data.create_dataset('sun_az', data = np.degrees(sun_az))
-                        uv_data.create_dataset('sun_zen', data = np.degrees(sun_zen))
+                        uv_data.create_dataset('sun_zen', data = 90-np.degrees(sun_zen))
                     elif 'view_az' in uv_data:
                         print('here')
                         del uv_data['view_az']
@@ -103,9 +103,9 @@ def process1(idx):
                         del uv_data['sun_az']
                         del uv_data['sun_zen']
                         uv_data.create_dataset('view_az', data = np.degrees(view_az))
-                        uv_data.create_dataset('view_zen', data = np.degrees(view_zen))
+                        uv_data.create_dataset('view_zen', data = 90-np.degrees(view_zen))
                         uv_data.create_dataset('sun_az', data = np.degrees(sun_az))
-                        uv_data.create_dataset('sun_zen', data = np.degrees(sun_zen))
+                        uv_data.create_dataset('sun_zen', data =90- np.degrees(sun_zen))
 
                 else: 
 

@@ -19,10 +19,29 @@ import matplotlib.pyplot as plt
 from scipy.stats import linregress
 import os
 
+sim_sun_zen = np.array([
+    59.277323,
+    42.592545,
+    44.085867,
+    55.451474,
+    61.006963,
+    71.415686,
+    76.39244
+])
+
+sim_delta = np.array([
+    -20.39164929,
+    -14.76625695,
+    -15.28140779,
+    -19.14911842,
+    -20.91928794,
+    -24.00322845,
+    -25.31664981
+])
 # =========================
 # File path
 # =========================
-json_path = r"C:/Users/ULTRASIP_1/OneDrive/Desktop/Analyzed_Data_JSON/BNP_observations_2025_07_18_v3.json"
+json_path = r"C:/Users/ULTRASIP_1/OneDrive/Desktop/Analyzed_Data_JSON/BNP_observations_2025_07_10_v3.json"
 
 # =========================
 # Load JSON
@@ -55,7 +74,7 @@ data["delta_azimuth_deg"] = delta_az.tolist()
 # =========================
 # 1) delta vs SZA
 # =========================
-fig1, ax1 = plt.subplots(figsize=(8,5))
+fig1, ax1 = plt.subplots(figsize=(6,5))
 
 # --- Main data (purple, no connecting line)
 ax1.plot(
@@ -170,14 +189,15 @@ fit_line = slope * sun_zen + intercept
 
 
 
-fig3 = plt.figure(figsize=(11,6))  # wider figure
+fig3 = plt.figure(figsize=(8,6))  # wider figure
 
 # Observed data (purple markers)
 plt.plot(
     sun_zen,
     delta_zen,
     'o',
-    color='purple',
+    color='olive',
+    markeredgecolor='black',
     markersize=12,
     label="Observed"
 )
@@ -192,7 +212,7 @@ plt.plot(
     label=(
         f"Slope = {slope:.4f}\n"
         f"Intercept = {intercept:.4f}\n"
-        f"$R^2$ = {r_value**2:.4f}\n"
+        # f"$R^2$ = {r_value**2:.4f}\n"
     )
 )
 
@@ -219,18 +239,64 @@ plt.tight_layout()
 plt.show()
 
 
+fig4 = plt.figure(figsize=(8,6))  
 
-# =========================
-# Save Fit Parameters
-# =========================
-data["delta_vs_sza_slope"] = float(slope)
-data["delta_vs_sza_intercept"] = float(intercept)
-data["delta_vs_sza_r_squared"] = float(r_value**2)
+# Observed data (purple markers)
+plt.plot(
+    sun_zen,
+    delta_zen,
+    'o',
+    color='red',
+    markeredgecolor='black',
+    markersize=12,
+    label="Observed"
+)
 
-# =========================
-# Write Updated JSON
-# =========================
-with open(json_path, "w") as f:
-    json.dump(data, f, indent=2)
+plt.plot(
+    sim_sun_zen,
+    sim_delta,
+    's',
+    color='red',
+    markeredgecolor='black',
+    markersize=12,
+    label="Simulated"
+)
 
-print("Updated JSON file saved successfully.")
+
+# Gridlines
+plt.grid(True, linestyle='--', alpha=0.8)
+
+plt.xlabel(r"Sun Zenith Angle [$^\circ$]", fontsize=18)
+plt.ylabel(r"$\delta$ Zenith [$^\circ$]", fontsize=18)
+
+plt.title(date_str, fontsize=20)
+
+plt.xticks(fontsize=16)
+plt.yticks(fontsize=16)
+
+# plt.ylim(-25, -5)
+
+# plt.legend(
+#     fontsize=16,
+#     handlelength=2,
+#     borderpad=1,
+#     labelspacing=1.0,
+# )    
+# plt.tight_layout()
+# plt.show()
+
+
+# # =========================
+# # Save Fit Parameters
+# # =========================
+# data["delta_vs_sza_slope"] = float(slope)
+# data["delta_vs_sza_intercept"] = float(intercept)
+# data["delta_vs_sza_r_squared"] = float(r_value**2)
+
+# # =========================
+# # Write Updated JSON
+# # =========================
+# with open(json_path, "w") as f:
+#     json.dump(data, f, indent=2)
+
+# print("Updated JSON file saved successfully.")
