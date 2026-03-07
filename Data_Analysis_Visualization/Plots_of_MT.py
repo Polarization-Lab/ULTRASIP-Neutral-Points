@@ -32,8 +32,8 @@ colors = ['red','darkorange','yellow','green',
           'honeydew','palevioletred','tan','brown','mediumorchid']
 idx=-1
 # Load in JSON Files
-#data_path = "C:/Users/ULTRASIP_1/OneDrive/Desktop/BNP_daily_v3_allfields"
-data_path ="C:/Users/deleo/Downloads/BNP_daily_v3_allfields/BNP_daily_v3_allfields"
+data_path = "C:/Users/ULTRASIP_1/OneDrive/Desktop/BNP_daily_v3_allfields"
+#data_path ="C:/Users/deleo/Downloads/BNP_daily_v3_allfields/BNP_daily_v3_allfields"
 json_files = glob.glob(f'{data_path}/BNP*.json')
 
 # =========================
@@ -72,187 +72,104 @@ for file in json_files:
             "marker_color": colors[idx]
         }
         
-# #For each day plot grasp_delta (squares) and ultrasip_deltas (circle) versus sza with each color
-# # ==========================================
-# # Plot each day separately
-# # ==========================================
-# for day, values in data_dict.items():
-    
-#     sun_zen = np.array(values["sun_zenith"])
-#     delta_ultrasip = np.array(values["ultrasip_delta"])
-#     delta_grasp = np.array(values["grasp_delta"])
-    
-#     slope_obs = values["slope_obs"]
-#     intercept_obs = values["intercept_obs"]
-    
-#     slope_sim = values["slope_sim"]
-#     intercept_sim = values["intercept_sim"]
-    
-#     aod_val = np.average(values["aod"])
-#     color = values["marker_color"]
-    
-#     # Create new figure for each day
-#     fig = plt.figure(figsize=(10,6))
-    
-#     # -------------------------
-#     # Observed (circles)
-#     # -------------------------
-#     plt.plot(
-#         sun_zen,
-#         delta_ultrasip,
-#         'o',
-#         color=color,
-#         markeredgecolor='black',
-#         markersize=10,
-#         label="Observed (ULTRASIP)"
-#     )
-    
-#     # Regression line (Observed)
-#     x_fit = np.linspace(min(sun_zen), max(sun_zen), 100)
-#     y_fit_obs = slope_obs * x_fit + intercept_obs
-    
-    
-#     # -------------------------
-#     # Simulated (squares)
-#     # -------------------------
-#     plt.plot(
-#         sun_zen,
-#         delta_grasp,
-#         's',
-#         color=color,
-#         markeredgecolor='black',
-#         markersize=10,
-#         label="Simulated (GRASP)"
-#     )
-    
-#     # # Regression line (Simulated)
-#     # y_fit_sim = slope_sim * x_fit + intercept_sim
-    
-
-    
-#     # -------------------------
-#     # Formatting
-#     # -------------------------
-#     plt.grid(True, linestyle='--', alpha=0.8)
-
-#     plt.xlabel(r"Sun Zenith Angle [$^\circ$]", fontsize=18)
-#     plt.ylabel(r"$\delta$ Zenith [$^\circ$]", fontsize=18)
-
-#     plt.title(
-#         f"{day}\n Daily Average AOD(440nm) = {aod_val:.3f}",
-#         fontsize=20
-#     )
-
-#     plt.xticks(fontsize=16)
-#     plt.yticks(fontsize=16)
-
-#     plt.legend(fontsize=14, loc='upper right')
-    
-#     plt.ylim([-30,-5])
-
-    
-#     # Define limits
-#     xmin = np.min(sun_zen) - 1
-#     xmax = np.max(sun_zen) + 1
-
-#     plt.xlim([xmin, xmax])
-
-#     # 10 evenly spaced ticks
-#     xticks = np.linspace(xmin, xmax, 10)
-
-#     # Truncate decimals (no rounding)
-#     plt.xticks(xticks, [f"{int(x)}" for x in xticks])
-#     plt.tight_layout()
-#     plt.show()
-#     # Save figure (no changes to appearance)
-#     fig_path = os.path.join(figure_dir, f"{day}.png")
-#     plt.savefig(fig_path, dpi=400)
-#     plt.close(fig)
-
-
+#For each day plot grasp_delta (squares) and ultrasip_deltas (circle) versus sza with each color
 # ==========================================
-# Polar Plot Each Day
-# Angle  = Sun Zenith Angle
+# Plot each day separately
 # ==========================================
-
 for day, values in data_dict.items():
     
     sun_zen = np.array(values["sun_zenith"])
     delta_ultrasip = np.array(values["ultrasip_delta"])
     delta_grasp = np.array(values["grasp_delta"])
     
+    slope_obs = values["slope_obs"]
+    intercept_obs = values["intercept_obs"]
+    
+    slope_sim = values["slope_sim"]
+    intercept_sim = values["intercept_sim"]
+    
     aod_val = np.average(values["aod"])
     color = values["marker_color"]
     
-    # Convert degrees to radians
-    theta = np.deg2rad(sun_zen)
-    
-    fig = plt.figure(figsize=(8,8))
-    ax = plt.subplot(111, projection='polar')
+    # Create new figure for each day
+    fig = plt.figure(figsize=(10,6))
     
     # -------------------------
-    # Observed (ULTRASIP)
+    # Observed (circles)
     # -------------------------
-    ax.scatter(
-        theta,
+    plt.plot(
+        sun_zen,
         delta_ultrasip,
-        c=color,
-        edgecolors='black',
-        s=120,
-        marker='o',
+        'o',
+        color=color,
+        markeredgecolor='black',
+        markersize=10,
         label="Observed (ULTRASIP)"
     )
     
+    # Regression line (Observed)
+    x_fit = np.linspace(min(sun_zen), max(sun_zen), 100)
+    y_fit_obs = slope_obs * x_fit + intercept_obs
+    
+    
     # -------------------------
-    # Simulated (GRASP)
+    # Simulated (squares)
     # -------------------------
-    ax.scatter(
-        theta,
+    plt.plot(
+        sun_zen,
         delta_grasp,
-        c=color,
-        edgecolors='black',
-        s=120,
-        marker='s',
+        's',
+        color=color,
+        markeredgecolor='black',
+        markersize=10,
         label="Simulated (GRASP)"
     )
+    
+    # # Regression line (Simulated)
+    # y_fit_sim = slope_sim * x_fit + intercept_sim
+    
+
     
     # -------------------------
     # Formatting
     # -------------------------
-    
-    ax.set_title(
-        f"{day}\nDaily Average AOD(440nm) = {aod_val:.3f}",
-        fontsize=18,
-        pad=20
+    plt.grid(True, linestyle='--', alpha=0.8)
+
+    plt.xlabel(r"Sun Zenith Angle [$^\circ$]", fontsize=18)
+    plt.ylabel(r"$\delta$ Zenith [$^\circ$]", fontsize=18)
+
+    plt.title(
+        f"{day}\n Daily Average AOD(440nm) = {aod_val:.3f}",
+        fontsize=20
     )
+
+    plt.xticks(fontsize=16)
+    plt.yticks(fontsize=16)
+
+    plt.legend(fontsize=14, loc='upper right')
     
-    ax.set_xlim(0, np.pi) 
+    plt.ylim([-30,-5])
+
     
-    #Angular ticks (SZA)
-    xmin = 0
-    xmax = 90
-    ang_ticks = np.linspace(xmin, xmax, 10)
-    
-    ax.set_xticks(np.deg2rad(ang_ticks))
-    ax.set_xticklabels([f"{int(x)}" for x in ang_ticks])
-    
-    
-    
-    # TRUE radial limits (negative values preserved)
-    ax.set_ylim(-30, -5)
-    
-    # Radial ticks (no rounding, no decimals)
-    rticks = np.linspace(-30, -5, 6)
-    ax.set_yticks(rticks)
-    ax.set_yticklabels([f"{int(r)}" for r in rticks])
-    
-    ax.grid(True, linestyle='--', alpha=0.8)
-    
-    ax.legend(loc='upper right', bbox_to_anchor=(1.2,1.1), fontsize=12)
-    
+    # Define limits
+    xmin = np.min(sun_zen) - 1
+    xmax = np.max(sun_zen) + 1
+
+    plt.xlim([xmin, xmax])
+
+    # 10 evenly spaced ticks
+    xticks = np.linspace(xmin, xmax, 10)
+
+    # Truncate decimals (no rounding)
+    plt.xticks(xticks, [f"{int(x)}" for x in xticks])
     plt.tight_layout()
     plt.show()
-    
+    # Save figure (no changes to appearance)
+    fig_path = os.path.join(figure_dir, f"{day}.png")
+    plt.savefig(fig_path, dpi=400)
+    plt.close(fig)
+
+
 
 # ==========================================
 # Polar Plot
@@ -891,12 +808,15 @@ for i in range(n_days):
 # Radial Formatting (Slope axis)
 # ------------------------------------------
 rmin = -0.45
-rmax=-0.15
+rmax = -0.15
 ax.set_ylim(rmin, rmax)
 
 rticks = np.linspace(rmin, rmax, 6)
 ax.set_yticks(rticks)
-ax.set_yticklabels([f"{v:.3f}" for v in rticks], fontsize=15)
+ax.set_yticklabels([f"{v:.3f}" for v in rticks], fontsize=20)  # larger labels
+
+# Make radial tick marks thicker & longer
+ax.tick_params(axis='y', labelsize=20, width=2.5, length=10)
 
 # ------------------------------------------
 # Angular formatting
@@ -971,111 +891,113 @@ all_legend_elements = legend_elements_main + legend_elements_dates
 
 ax.legend(
     handles=all_legend_elements,
-    loc='center',
-    bbox_to_anchor=(1.45, 1.15),
-    fontsize=11,
+    loc='upper center',
+    bbox_to_anchor=(0.5, 1.65),   # centered above plot
+    fontsize=18,
     frameon=True,
-    ncol=5
+    ncol=4
 )
 
-plt.tight_layout()
 plt.show()
 
 
 # # =========================================
 # # Movie Writer Setup (HIGH RESOLUTION)
 # # ==========================================
-# Writer = animation.FFMpegWriter
-# writer = Writer(fps=0.5, bitrate=5000)  # high bitrate for sharp output
+Writer = animation.FFMpegWriter
+writer = Writer(fps=0.5, bitrate=5000)  # high bitrate for sharp output
 
 # # Dates to separate
-# october_dates = ["2025_10_22", "2025_10_23", "2025_10_24"]
+october_dates = ["2025_10_22", "2025_10_23", "2025_10_24"]
 
 # # Sort chronologically
-# all_days = sorted(data_dict.keys())
+all_days = sorted(data_dict.keys())
 
 # non_oct_days = [d for d in all_days if d not in october_dates]
-# oct_days = [d for d in all_days if d in october_dates]
+oct_days = [d for d in all_days if d in october_dates]
 
 
 # # ==========================================
 # # Function to render movie directly
 # # ==========================================
-# def make_movie(day_list, output_name):
+def make_movie(day_list, output_name):
 
-#     if len(day_list) == 0:
-#         print(f"No frames for {output_name}")
-#         return
+    if len(day_list) == 0:
+        print(f"No frames for {output_name}")
+        return
     
-#     fig = plt.figure(figsize=(10,6), dpi=500)
+    fig = plt.figure(figsize=(10,6), dpi=500)
 
 
-#     with writer.saving(fig, output_name, dpi=500):
+    with writer.saving(fig, output_name, dpi=500):
 
-#         for day in day_list:
+        for day in day_list:
             
 
-#             plt.clf()
+            plt.clf()
 
-#             values = data_dict[day]
+            values = data_dict[day]
 
-#             sun_zen = np.array(values["sun_zenith"])
-#             delta_ultrasip = np.array(values["ultrasip_delta"])
-#             delta_grasp = np.array(values["grasp_delta"])
-#             aod_val = np.average(values["aod"])
-#             color = values["marker_color"]
+            sun_zen = np.array(values["sun_zenith"])
+            delta_ultrasip = np.array(values["ultrasip_delta"])
+            delta_grasp = np.array(values["grasp_delta"])
+            aod_val = np.average(values["aod"])
+            color = values["marker_color"]
 
-#             # Observed
-#             plt.plot(
-#                 sun_zen,
-#                 delta_ultrasip,
-#                 'o',
-#                 color=color,
-#                 markeredgecolor='black',
-#                 markersize=10,
-#                 label="Observed (ULTRASIP)"
-#             )
+            # Observed
+            plt.plot(
+                sun_zen,
+                delta_ultrasip,
+                'o',
+                color=color,
+                markeredgecolor='black',
+                markersize=10,
+                label="Observed (ULTRASIP)"
+            )
 
-#             # Simulated
-#             plt.plot(
-#                 sun_zen,
-#                 delta_grasp,
-#                 's',
-#                 color=color,
-#                 markeredgecolor='black',
-#                 markersize=10,
-#                 label="Simulated (GRASP)"
-#             )
+            # Simulated
+            # plt.plot(
+            #     sun_zen,
+            #     delta_grasp,
+            #     's',
+            #     color=color,
+            #     markeredgecolor='black',
+            #     markersize=10,
+            #     label="Simulated (GRASP)"
+            # )
 
-#             plt.grid(True, linestyle='--', alpha=0.8)
-#             plt.xlabel(r"Sun Zenith Angle [$^\circ$]", fontsize=18)
-#             plt.ylabel(r"$\delta$ Zenith [$^\circ$]", fontsize=18)
-#             plt.title(f"{day}\n Daily Average AOD(440nm) = {aod_val:.3f}", fontsize=20)
+            plt.grid(True, linestyle='--', alpha=0.8)
+            plt.xlabel(r"Sun Zenith Angle [$^\circ$]", fontsize=18)
+            plt.ylabel(r"$\delta$ Zenith [$^\circ$]", fontsize=18)
+            #plt.title(f"{day}\n Daily Average AOD(440nm) = {aod_val:.3f}", fontsize=20)
+            plt.title(f"{day}", fontsize=20)
 
-#             plt.xticks(fontsize=16)
-#             plt.yticks(fontsize=16)
-#             plt.legend(fontsize=14, loc='upper right')
+            plt.xticks(fontsize=16)
+            plt.yticks(fontsize=16)
+            plt.legend(fontsize=14, loc='upper right')
 
-#             plt.ylim([-30, -5])
+            #plt.ylim([-30, -5])
+            plt.xlim([57, 80])
+            plt.ylim([-25,-15])
+            # xmin = np.min(sun_zen) - 1
+            # xmax = np.max(sun_zen) + 1
+            # plt.xlim([xmin, xmax])
 
-#             xmin = np.min(sun_zen) - 1
-#             xmax = np.max(sun_zen) + 1
-#             plt.xlim([xmin, xmax])
-
-#             xticks = np.linspace(xmin, xmax, 10)
-#             plt.xticks(xticks, [f"{int(x)}" for x in xticks])
+            #xticks = np.linspace(xmin, xmax, 10)
+            # xticks = np.linspace(55, 85, 10)
+            # plt.xticks(xticks, [f"{int(x)}" for x in xticks])
 
 
-#             writer.grab_frame()
+            writer.grab_frame()
 
-#     plt.close(fig)
-#     print(f"Saved: {output_name}")
+    plt.close(fig)
+    print(f"Saved: {output_name}")
 
-# # ==========================================
-# # Create AOD-Sorted Movie (Non-October Only)
-# # ==========================================
+# ==========================================
+# Create AOD-Sorted Movie (Non-October Only)
+# ==========================================
 
-# # Sort non-October days by increasing AOD
+# Sort non-October days by increasing AOD
 # non_oct_days_sorted_aod = sorted(
 #     non_oct_days,
 #     key=lambda d: np.average(data_dict[d]["aod"])
@@ -1087,4 +1009,4 @@ plt.show()
 # # Create Both Movies
 # # ==========================================
 # make_movie(non_oct_days, "Daily_All_EXCEPT_October.mp4")
-# make_movie(oct_days, "Daily_October_Only.mp4")
+make_movie(oct_days, "Daily_October_Only_nosim.mp4")
