@@ -108,11 +108,11 @@ def update(dolp_value):
     im2.set_data(aolp_multi)
     fig.suptitle(f'Vertical Field DoLP: {dolp_value * 100:.1f}[%]')
 
-# Create animation
-dolp_values = [1] #np.arange(0, 1, 0.1)
-ani = FuncAnimation(fig, update, frames=dolp_values, repeat=False)
+# # Create animation
+# dolp_values = [1] #np.arange(0, 1, 0.1)
+# ani = FuncAnimation(fig, update, frames=dolp_values, repeat=False)
 
-# Save animation
-ani.save("dolp_animation.mp4", writer='ffmpeg', fps=1)
+# # Save animation
+# ani.save("dolp_animation.mp4", writer='ffmpeg', fps=1)
 plt.show()
 plt.close('all')

@@ -149,148 +149,148 @@ plt.axis('off')
 plt.show()
 
 
-# plt.figure()
-# plt.imshow(dolp*100,cmap='GnBu_r',interpolation= 'None',vmin=0, vmax=70)
-# plt.colorbar()
-# plt.title('Degree of Linear Polarization (DoLP) [%]')
-# plt.axis('off')
+plt.figure()
+plt.imshow(dolp*100,cmap='GnBu_r',interpolation= 'None',vmin=0, vmax=70)
+plt.colorbar()
+plt.title('Degree of Linear Polarization (DoLP) [%]')
+plt.axis('off')
 
-# f=plt.figure(figsize=(15, 8))
-# title = 'Angle of Linear Polarization (AoLP) [deg]'
-# cwimshow(f,aolp,title)
+f=plt.figure(figsize=(15, 8))
+title = 'Angle of Linear Polarization (AoLP) [deg]'
+cwimshow(f,aolp,title)
 
-# plt.figure()
-# plt.imshow(dolp_multi*100,cmap='GnBu_r',interpolation= 'None',vmin=0, vmax=70)
-# plt.colorbar()
-# plt.title('Degree of Linear Polarization (DoLP) [%]')
-# plt.axis('off')
+plt.figure()
+plt.imshow(dolp_multi*100,cmap='GnBu_r',interpolation= 'None',vmin=0, vmax=70)
+plt.colorbar()
+plt.title('Degree of Linear Polarization (DoLP) [%]')
+plt.axis('off')
 
-# f=plt.figure(figsize=(15, 8))
-# title = 'Angle of Linear Polarization (AoLP) [deg]'
-# cwimshow(f,aolp_multi,title)
+f=plt.figure(figsize=(15, 8))
+title = 'Angle of Linear Polarization (AoLP) [deg]'
+cwimshow(f,aolp_multi,title)
 
 
-# #Create flux images from aolp_multi and dolp_multi
-# I_o = np.zeros((ysize, xsize))
-# Q_o = I * dolp_multi * np.cos(2 * np.radians(aolp_multi))
-# U_o = I * dolp_multi * np.sin(2 * np.radians(aolp_multi))
+#Create flux images from aolp_multi and dolp_multi
+I_o = np.zeros((ysize, xsize))
+Q_o = I * dolp_multi * np.cos(2 * np.radians(aolp_multi))
+U_o = I * dolp_multi * np.sin(2 * np.radians(aolp_multi))
 
-# Stokes_o = np.array([I_o, Q_o, U_o]).reshape(3,xsize*ysize)
+Stokes_o = np.array([I_o, Q_o, U_o]).reshape(3,xsize*ysize)
 
-# P = np.linalg.pinv(W_ultrasip).T@Stokes_o
-# P = P.reshape(4,xsize,ysize)
+P = np.linalg.pinv(W_ultrasip).T@Stokes_o
+P = P.reshape(4,xsize,ysize)
 
-# P0 = P[0,:,:]
-# P90 = P[1,:,:]
-# P45 = P[2,:,:]
-# P135 = P[3,:,:]
+P0 = P[0,:,:]
+P90 = P[1,:,:]
+P45 = P[2,:,:]
+P135 = P[3,:,:]
 
-# plt.figure()
-# plt.imshow(P0)
+plt.figure()
+plt.imshow(P0)
 
-# aolp = 0.5*np.arctan2(U_o,Q_o)
-# aolp = np.mod(np.degrees(aolp),180)
-# dolp = np.sqrt(U_o**2 + Q_o**2)/I
+aolp = 0.5*np.arctan2(U_o,Q_o)
+aolp = np.mod(np.degrees(aolp),180)
+dolp = np.sqrt(U_o**2 + Q_o**2)/I
 
-# plt.figure()
-# #plt.title('Angle of Linear Polarization (AoLP) [$\circ$]')
-# plt.imshow(aolp,cmap=cmo.phase,interpolation= 'None')
-# #cb = plt.colorbar()
-# #cb.ax.tick_params(labelsize=10)
-# plt.axis('off')
+plt.figure()
+#plt.title('Angle of Linear Polarization (AoLP) [$\circ$]')
+plt.imshow(aolp,cmap=cmo.phase,interpolation= 'None')
+#cb = plt.colorbar()
+#cb.ax.tick_params(labelsize=10)
+plt.axis('off')
 
-# f=plt.figure(figsize=(15, 8))
-# title = 'AoLP Meas [deg]'
-# cwimshow(f,aolp,title)
+f=plt.figure(figsize=(15, 8))
+title = 'AoLP Meas [deg]'
+cwimshow(f,aolp,title)
 
-# plt.figure()
-# plt.imshow(np.log(dolp),cmap='Blues_r',interpolation= 'None',vmin=-5, vmax=0)
-# cb = plt.colorbar()
-# cb.ax.tick_params(labelsize=15)
-# plt.title('Log of Degree of Linear Polarization (DoLP)')
-# plt.axis('off')
+plt.figure()
+plt.imshow(np.log(dolp),cmap='Blues_r',interpolation= 'None',vmin=-5, vmax=0)
+cb = plt.colorbar()
+cb.ax.tick_params(labelsize=15)
+plt.title('Log of Degree of Linear Polarization (DoLP)')
+plt.axis('off')
 
-# # Simulate Flux Measurements of a Zoomed in Picture of the Neutral Point
-# Stokes_meas = (Stokes_in[:]+Stokes_vert[:]).reshape(3,xsize*ysize)
+# Simulate Flux Measurements of a Zoomed in Picture of the Neutral Point
+Stokes_meas = (Stokes_in[:]+Stokes_vert[:]).reshape(3,xsize*ysize)
 
-# #P= pinv(W)@S_meas
+#P= pinv(W)@S_meas
 
-# P = np.linalg.pinv(W_ultrasip).T@Stokes_meas
-# P = P.reshape(4,xsize,ysize)
-# # P0=P[0,900:1100,1300:1600]
-# # P90=P[1,900:1100,1300:1600]
-# # P45=P[2,900:1100,1300:1600]
-# # P135=P[3,900:1100,1300:1600]
+P = np.linalg.pinv(W_ultrasip).T@Stokes_meas
+P = P.reshape(4,xsize,ysize)
+# P0=P[0,900:1100,1300:1600]
+# P90=P[1,900:1100,1300:1600]
+# P45=P[2,900:1100,1300:1600]
+# P135=P[3,900:1100,1300:1600]
 
-# P0=P[0,:,:]
-# P90=P[1,:,:]
-# P45=P[2,:,:]
-# P135=P[3,:,:]
+P0=P[0,:,:]
+P90=P[1,:,:]
+P45=P[2,:,:]
+P135=P[3,:,:]
 
-# Q_meas = P0[:]-P90[:]
-# U_meas = P45[:] - P135[:]
+Q_meas = P0[:]-P90[:]
+U_meas = P45[:] - P135[:]
 
-# dolp_meas = np.sqrt(Q_meas**2 + U_meas**2)
-# aolp_meas = np.mod(np.degrees(0.5*np.arctan2(U_meas,Q_meas)),180)
+dolp_meas = np.sqrt(Q_meas**2 + U_meas**2)
+aolp_meas = np.mod(np.degrees(0.5*np.arctan2(U_meas,Q_meas)),180)
 
-# plt.figure()
-# plt.imshow(dolp_meas*100,cmap='hot',interpolation= 'None',vmin=0, vmax=8)
-# plt.colorbar()
-# plt.title('DoLP Meas [%]')
+plt.figure()
+plt.imshow(dolp_meas*100,cmap='hot',interpolation= 'None',vmin=0, vmax=8)
+plt.colorbar()
+plt.title('DoLP Meas [%]')
 
-# f=plt.figure(figsize=(15, 8))
-# title = 'AoLP Meas [deg]'
-# cwimshow(f,aolp_meas,title)
+f=plt.figure(figsize=(15, 8))
+title = 'AoLP Meas [deg]'
+cwimshow(f,aolp_meas,title)
 
-# #axis 1 is along columns, axis=0 is along rows
-# avg0 = np.average(P0, axis=1)
-# avg135 = np.average(P135, axis=0)
-# avg90 = np.average(P90, axis=1)
-# avg45 = np.average(P45, axis=0)
+#axis 1 is along columns, axis=0 is along rows
+avg0 = np.average(P0, axis=1)
+avg135 = np.average(P135, axis=0)
+avg90 = np.average(P90, axis=1)
+avg45 = np.average(P45, axis=0)
  
-# # Finding the overlap points
-# overlap_indices = np.where(np.isclose(avg45, avg135))[0]
-# xoverlap = overlap_indices
+# Finding the overlap points
+overlap_indices = np.where(np.isclose(avg45, avg135))[0]
+xoverlap = overlap_indices
 
-# plt.figure()
-# plt.scatter(range(0,len(avg45)),avg45,label='P[45]',color='blue')
-# plt.scatter(range(0,len(avg135)),avg135,label='P[135]',color='orange')
-# # Highlighting the overlap points
-# plt.scatter(overlap_indices, avg45[overlap_indices], color='black',marker='x', label=f'Pixel{xoverlap}',s=100)
-# # Drawing vertical lines at the overlap points
-# for index in overlap_indices:
-#     plt.axvline(x=index, color='black', linestyle='--', alpha=0.8)
-# plt.ylabel("Digital Count")
-# plt.xlabel("X-Dimension Pixel Index")
-# plt.title("Average Flux Values")
-# # plt.ylim(0, 1)
-# plt.grid()
-# plt.minorticks_on()
-# plt.legend()
-# plt.show()
+plt.figure()
+plt.scatter(range(0,len(avg45)),avg45,label='P[45]',color='blue')
+plt.scatter(range(0,len(avg135)),avg135,label='P[135]',color='orange')
+# Highlighting the overlap points
+plt.scatter(overlap_indices, avg45[overlap_indices], color='black',marker='x', label=f'Pixel{xoverlap}',s=100)
+# Drawing vertical lines at the overlap points
+for index in overlap_indices:
+    plt.axvline(x=index, color='black', linestyle='--', alpha=0.8)
+plt.ylabel("Digital Count")
+plt.xlabel("X-Dimension Pixel Index")
+plt.title("Average Flux Values")
+# plt.ylim(0, 1)
+plt.grid()
+plt.minorticks_on()
+plt.legend()
+plt.show()
 
-# plt.figure()
-# plt.scatter(range(0,len(avg90)),avg90,label='P[90]',color='green')
-# plt.scatter(range(0,len(avg0)),avg0,label='P[0]',color='red')
+plt.figure()
+plt.scatter(range(0,len(avg90)),avg90,label='P[90]',color='green')
+plt.scatter(range(0,len(avg0)),avg0,label='P[0]',color='red')
 
-# # Finding the overlap points
-# yoverlap_indices = np.where(np.isclose(avg0, avg90,atol=0.0001))[0]
-# yoverlap = yoverlap_indices
+# Finding the overlap points
+yoverlap_indices = np.where(np.isclose(avg0, avg90,atol=0.0001))[0]
+yoverlap = yoverlap_indices
         
-# # Highlighting the overlap points
-# plt.scatter(yoverlap_indices, avg0[yoverlap_indices], color='black',marker='x', label=f'Pixel{yoverlap}',s=100)
+# Highlighting the overlap points
+plt.scatter(yoverlap_indices, avg0[yoverlap_indices], color='black',marker='x', label=f'Pixel{yoverlap}',s=100)
 
-# # Drawing vertical lines at the overlap points
-# for index in yoverlap_indices:
-#     plt.axvline(x=index, color='black', linestyle='--', alpha=0.8)
+# Drawing vertical lines at the overlap points
+for index in yoverlap_indices:
+    plt.axvline(x=index, color='black', linestyle='--', alpha=0.8)
 
-# plt.ylabel("Digital Count")
-# plt.xlabel("Y-Dimension Pixel Index")
-# plt.title("Average Flux Values")
-# # plt.ylim(0, 1)
-# plt.grid()
-# plt.minorticks_on()
-# plt.legend()
-# plt.show()
+plt.ylabel("Digital Count")
+plt.xlabel("Y-Dimension Pixel Index")
+plt.title("Average Flux Values")
+# plt.ylim(0, 1)
+plt.grid()
+plt.minorticks_on()
+plt.legend()
+plt.show()
 
 
