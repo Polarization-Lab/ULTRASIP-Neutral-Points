@@ -16,6 +16,8 @@ import os
 import matplotlib.animation as animation
 from scipy.stats import linregress
 from matplotlib.lines import Line2D
+from matplotlib.ticker import MultipleLocator
+
 
 data_dict = {}
 date = []
@@ -271,6 +273,14 @@ valid_dates = sorted([
     if "2025_10_" not in d
 ])
 
+valid_dates = sorted(
+    valid_dates,
+    key=lambda d: np.average(data_dict[d]["aod"])
+)
+
+aod_values = np.array([np.average(data_dict[d]["aod"]) for d in valid_dates])
+x = np.arange(len(valid_dates))
+
 slopes_obs = []
 intercepts_obs = []
 slopes_sim = []
@@ -299,13 +309,6 @@ intercepts_ray = np.array(intercepts_ray)
 r_slope, _ = pearsonr(slopes_obs, slopes_sim)
 r_intercept, _ = pearsonr(intercepts_obs, intercepts_sim)
 
-valid_dates = sorted(
-    valid_dates,
-    key=lambda d: np.average(data_dict[d]["aod"])
-)
-
-aod_values = np.array([np.average(data_dict[d]["aod"]) for d in valid_dates])
-x = np.arange(len(valid_dates))
 
 fig, (ax1, ax2) = plt.subplots(
     2, 1, figsize=(14,8), sharex=True
@@ -339,6 +342,8 @@ ax2.set_xlabel("Date", fontsize=18)
 
 ax2.set_xticks(x)
 ax2.set_xticklabels(valid_dates, rotation=45, ha='right')
+ax2.grid(True, linestyle='--', alpha=0.6)
+
 
 ax_top = ax1.twiny()
 ax_top.set_xlim(ax1.get_xlim())
@@ -641,6 +646,146 @@ plt.title(
 
 plt.xticks(fontsize=16)
 plt.yticks(fontsize=16)
+
+plt.tight_layout()
+plt.show()
+
+#---------------------------------------1 SZA--------------------------------#
+
+target_sza = 59
+tol = 0.5
+parameter = "sphericity"
+
+parameter_list = []
+delta_obs_list = []
+delta_sim_list = []
+date_list = []
+color_list = []
+
+valid_dates = sorted([
+    d for d in data_dict.keys()
+    if "2025_10_" not in d
+])
+
+for day in valid_dates:
+
+    values = data_dict[day]
+
+    sza = np.array(values["sun_zenith"])
+    delta_obs = np.array(values["delta_delta_obs"])
+    delta_sim = np.array(values["delta_delta_sim"])
+    param = np.array(values[parameter])
+
+    idx = np.argmin(np.abs(sza - target_sza))
+
+    if np.abs(sza[idx] - target_sza) > tol:
+        continue
+
+    parameter_list.append(param[idx])
+    delta_obs_list.append(delta_obs[idx])
+    delta_sim_list.append(delta_sim[idx])
+    date_list.append(day)
+    color_list.append(values["marker_color"])
+
+param_arr = np.array(parameter_list)
+delta_obs_arr = np.array(delta_obs_list)
+delta_sim_arr = np.array(delta_sim_list)
+
+# --------------------------------
+# statistics
+# --------------------------------
+std_obs = np.std(delta_obs_arr, ddof=1)
+std_sim = np.std(delta_sim_arr, ddof=1)
+
+# --------------------------------
+# plot
+# --------------------------------
+fig, ax = plt.subplots(figsize=(12,6))   
+
+for i in range(len(param_arr)):
+
+    ax.scatter(
+        delta_obs_arr[i],
+        param_arr[i],
+        s=160,
+        marker='o',
+        color=color_list[i],
+        edgecolor='black'
+    )
+
+    ax.scatter(
+        delta_sim_arr[i],
+        param_arr[i],
+        s=160,
+        marker='s',
+        color=color_list[i],
+        edgecolor='black'
+    )
+
+ax.axvline(0, color='black', linestyle='--', linewidth=2)
+
+ax.set_ylabel(f"{parameter}", fontsize=20)
+ax.set_xlabel(r"$\Delta_{\delta}$ [$^\circ$]", fontsize=20)
+
+ax.grid(True, linestyle='--', alpha=0.7)
+
+ax.set_title(
+    f"$\Delta_\delta$ vs {parameter} at SZA ≈ {target_sza}$^\circ\pm {tol}^\circ$",
+    fontsize=22,
+    pad=25
+)
+
+# larger tick labels
+ax.tick_params(axis='both', labelsize=18)
+# --------------------------------
+# x-axis ticks every 0.25°
+# --------------------------------
+ax.xaxis.set_major_locator(MultipleLocator(0.5))
+
+# --------------------------------
+# combined legend
+# --------------------------------
+legend_handles = []
+
+# marker style explanation
+legend_handles.append(
+    Line2D([0],[0], marker='o', color='black',
+           linestyle='None', markersize=10,
+           label='Observed')
+)
+
+legend_handles.append(
+    Line2D([0],[0], marker='s', color='black',
+           linestyle='None', markersize=10,
+           label='Simulated')
+)
+
+
+ax.legend(
+    handles=legend_handles,
+    loc='upper center',
+    bbox_to_anchor=(0.2,1.08),
+    ncol=2,
+    fontsize=14,
+    frameon=True
+)
+
+# --------------------------------
+# statistics box
+# --------------------------------
+ax.text(
+    0.8,
+    0.8,
+    f"$\\sigma_{{obs}}$ = {std_obs:.2f}°\n"
+    f"$\\sigma_{{sim}}$ = {std_sim:.2f}°",
+    transform=ax.transAxes,
+    fontsize=16,
+    bbox=dict(
+        facecolor='white',
+        edgecolor='black',
+        boxstyle='round'
+    )
+)
 
 plt.tight_layout()
 plt.show()
