@@ -244,7 +244,7 @@ for day, values in data_dict.items():
     # ----------------------------------
     plt.text(
         0.98, 0.05,
-        f"$\\sigma_{{obs}}$ = {std_obs:.2f}°\n$\\sigma_{{sim}}$ = {std_sim:.2f}°",
+        f"$SD_{{obs}}$ = {std_obs:.2f}°\n$SD_{{sim}}$ = {std_sim:.2f}°",
         transform=plt.gca().transAxes,
         fontsize=14,
         ha='right',
@@ -700,7 +700,7 @@ std_sim = np.std(delta_sim_arr, ddof=1)
 # --------------------------------
 # plot
 # --------------------------------
-fig, ax = plt.subplots(figsize=(12,6))   
+fig, ax = plt.subplots(figsize=(1,6))   
 
 for i in range(len(param_arr)):
 
@@ -776,8 +776,8 @@ ax.legend(
 ax.text(
     0.8,
     0.8,
-    f"$\\sigma_{{obs}}$ = {std_obs:.2f}°\n"
-    f"$\\sigma_{{sim}}$ = {std_sim:.2f}°",
+    f"$SD_{{obs}}$ = {std_obs:.2f}°\n"
+    f"$SD_{{sim}}$ = {std_sim:.2f}°",
     transform=ax.transAxes,
     fontsize=16,
     bbox=dict(
@@ -785,6 +785,123 @@ ax.text(
         edgecolor='black',
         boxstyle='round'
     )
+)
+
+plt.tight_layout()
+plt.show()
+
+# ==========================================
+# AOD vs DAILY STANDARD DEVIATION
+# ==========================================
+
+avg_aod_list = []
+std_obs_list = []
+std_sim_list = []
+date_list = []
+color_list = []
+
+valid_dates = sorted([
+    d for d in data_dict.keys()
+    if "2025_10_" not in d
+])
+
+for day in valid_dates:
+
+    values = data_dict[day]
+
+    delta_obs = np.array(values["delta_delta_obs"])
+    delta_sim = np.array(values["delta_delta_sim"])
+
+    avg_aod = np.mean(values["aod"])
+
+    std_obs = np.std(delta_obs, ddof=1)
+    std_sim = np.std(delta_sim, ddof=1)
+
+    avg_aod_list.append(avg_aod)
+    std_obs_list.append(std_obs)
+    std_sim_list.append(std_sim)
+    date_list.append(day)
+    color_list.append(values["marker_color"])
+
+
+avg_aod_arr = np.array(avg_aod_list)
+std_obs_arr = np.array(std_obs_list)
+std_sim_arr = np.array(std_sim_list)
+
+# --------------------------------
+# Plot
+# --------------------------------
+fig, ax = plt.subplots(figsize=(14,8))
+
+for i in range(len(avg_aod_arr)):
+
+    # Observations
+    ax.scatter(
+        avg_aod_arr[i],
+        std_obs_arr[i],
+        marker='o',
+        s=180,
+        color=color_list[i],
+        edgecolor='black'
+    )
+
+    # Simulations
+    ax.scatter(
+        avg_aod_arr[i],
+        std_sim_arr[i],
+        marker='s',
+        s=180,
+        color=color_list[i],
+        edgecolor='black'
+    )
+
+
+# --------------------------------
+# Labels
+# --------------------------------
+ax.set_xlabel("Daily Average AOD (440 nm)", fontsize=18)
+ax.set_ylabel("Daily Standard Deviation of $\Delta_\delta$ [$^\circ$]", fontsize=18)
+
+ax.grid(True, linestyle='--', alpha=0.7)
+ax.tick_params(axis='both', labelsize=16)
+ax.xaxis.set_major_locator(MultipleLocator(0.01))
+
+# --------------------------------
+# Legend
+# --------------------------------
+
+legend_handles = []
+
+# marker explanation
+legend_handles.append(
+    Line2D([0],[0], marker='o', color='black',
+           linestyle='None', markersize=10,
+           label='Observed')
+)
+
+legend_handles.append(
+    Line2D([0],[0], marker='s', color='black',
+           linestyle='None', markersize=10,
+           label='Simulated')
+)
+
+# colored lines for dates
+for i in range(len(date_list)):
+    legend_handles.append(
+        Line2D([0],[0],
+               color=color_list[i],
+               linewidth=4,
+               label=date_list[i])
+    )
+
+ax.legend(
+    handles=legend_handles,
+    fontsize=12,
+    loc='lower center',
+    bbox_to_anchor=(0.5, 1),
+    ncol=5,
+    frameon=True,
+facecolor='lightgray'
 )
 
 plt.tight_layout()
