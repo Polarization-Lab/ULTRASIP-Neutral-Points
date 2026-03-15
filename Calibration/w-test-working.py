@@ -47,7 +47,7 @@ def correct_img(Pij,Rij,Bij):
     return Cij
 
 #NUC FIles
-data = np.load('D:/NUC_0813.npz', allow_pickle=True)
+data = np.load('E:/NUC_0813.npz', allow_pickle=True)
 Rij = data['arr1'].item()   # convert array-object → Python dict
 Bij = data['arr2'].item()
 
@@ -58,7 +58,7 @@ W_ideal = np.broadcast_to(W_ideal, (2848, 2848, 4, 3))
 pinvW_ideal = pseudoinverse(W_ideal)
 
 #Load ULTRASIP W-matrix 
-W_ULTRASIP = np.load('D:/ULTRASIP_AvgWmatrix_15.npy')
+W_ULTRASIP = np.load('E:/ULTRASIP_AvgWmatrix_15.npy')
 pinvW_ULTRASIP = pseudoinverse(W_ULTRASIP)
 
 #Define Ideal Stokes
@@ -106,7 +106,7 @@ Stokes_ideal = np.array([[1,1,1,1,1],[1,-1,0,0,0],[0,0,1,-1,0]])
 
 #Test on measurements
 #Horizontal
-cal_path = 'D:/Calibration/Data'
+cal_path = 'E:/Calibration/Data'
 # generator_file = glob.glob(f'{cal_path}/Malus*1118_*.h5')
 # g = h5py.File(generator_file[3],'r+')
 # print(g)
@@ -139,11 +139,11 @@ raw_90 =  g["P_90 Measurements/UV Raw Images"][:].reshape(Nexp,2848,2848)
 raw_45 =  g["P_45 Measurements/UV Raw Images"][:].reshape(Nexp,2848,2848)
 raw_135 = g["P_135 Measurements/UV Raw Images"][:].reshape(Nexp,2848,2848)
 
-r_0 = raw_0[Nexp-5,:,:]
-r_90 = raw_90[Nexp-5,:,:]
-r_45 = raw_45[Nexp-5,:,:]
-r_135 = raw_135[Nexp-5,:,:]
-print(exp_times[Nexp-5])
+r_0 = raw_0[Nexp-1,:,:]
+r_90 = raw_90[Nexp-1,:,:]
+r_45 = raw_45[Nexp-1,:,:]
+r_135 = raw_135[Nexp-1,:,:]
+print(exp_times[Nexp-1])
 
 #NUC Images
 P0 = correct_img(r_0,Rij[0],Bij[0])

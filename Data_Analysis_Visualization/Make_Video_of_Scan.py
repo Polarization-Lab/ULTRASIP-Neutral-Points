@@ -8,6 +8,10 @@ import glob
 import os
 import matplotlib.animation as animation
 from matplotlib.colors import ListedColormap
+from scipy.stats import norm
+import matplotlib as mpl
+
+
 
 #Custom colormap for Q and U
 #Blue to Red Color scale for S1 and S2
@@ -31,9 +35,9 @@ date = '2025_07_10'
 basepath = 'D:/Data'
 
 folderdate = os.path.join(basepath, date)
-file = glob.glob(f'{folderdate}/*08_24_54*.h5')
+file = glob.glob(f'{folderdate}/*h5')
 
-f = h5py.File(file[0], 'r')
+f = h5py.File(file[5], 'r')
 
 # =========================
 # Create FIXED figure
@@ -53,12 +57,12 @@ video_path = os.path.join(folderdate, f'{date}_polarization_movie_adolp.mp4')
 
 with writer.saving(fig, video_path,dpi=100):
 
-    for aqnum in range(0, 16):
+    for aqnum in range(0, 20):
 
         print("Processing acquisition:", aqnum)
 
         aq = f[f'Aquistion_{aqnum}']
-
+        
         view_az = aq['UV Image Data/view_az'][:]
         view_zen = aq['UV Image Data/view_zen'][:]
 
@@ -170,7 +174,7 @@ video_path = os.path.join(folderdate, f'{date}_polarization_movie_stokes.mp4')
 
 with writer.saving(fig, video_path,dpi=100):
 
-    for aqnum in range(0, 16):
+    for aqnum in range(0, 20):
 
         print("Processing acquisition:", aqnum)
 
@@ -264,6 +268,19 @@ with writer.saving(fig, video_path,dpi=100):
 
 plt.close(fig)
 
+fig, ax = plt.subplots(figsize=(8,1))
+
+norm = mpl.colors.Normalize(vmin=-0.1,vmax= 0.1)
+sm = mpl.cm.ScalarMappable(norm=norm, cmap=colmap)
+sm.set_array([])
+
+cbar = fig.colorbar(sm, cax=ax, orientation='horizontal')
+
+ax.tick_params(labelsize=14)
+
+plt.tight_layout()
+plt.show()
+
 #--------------------------------Stokes Avg-------------------------------------#
 # =========================
 # Create FIXED figure
@@ -283,7 +300,7 @@ video_path = os.path.join(folderdate, f'{date}_polarization_movie_stokesavg.mp4'
 
 with writer.saving(fig, video_path, dpi=100):
 
-    for aqnum in range(0, 16):
+    for aqnum in range(0, 20):
 
         print("Processing acquisition:", aqnum)
 
@@ -295,6 +312,9 @@ with writer.saving(fig, video_path, dpi=100):
 
         view_az = aq['UV Image Data/view_az'][:]
         view_zen = aq['UV Image Data/view_zen'][:]
+        
+        sun_az = aq['UV Image Data/sun_az'][()]
+
 
         I = aq['UV Image Data/I_corrected'][:]
         Q = aq['UV Image Data/Q_corrected'][:]
@@ -324,6 +344,8 @@ with writer.saving(fig, video_path, dpi=100):
 
         ax2.scatter(avgU, view_az[0,:], color='green')
         ax2.axvline(x=0, lw=3, color='red')
+        ax2.axhline(y=sun_az, lw=3, color='purple')
+
 
         # Titles
         ax1.set_title('Row Avg Q', fontsize=20)
@@ -333,7 +355,8 @@ with writer.saving(fig, video_path, dpi=100):
         ax1.set_xlabel(r'$\bar{r}_{Q}$', fontsize=15)
         ax1.set_ylabel('Zenith [$^\circ$]', fontsize=15)
         ax1.tick_params(axis='both', labelsize=25)
-
+        ax1.invert_yaxis()
+        
 
         ax2.set_xlabel(r'$\bar{r}_{U}$', fontsize=15)
         ax2.set_ylabel('Azimuth [$^\circ$]', fontsize=15)
