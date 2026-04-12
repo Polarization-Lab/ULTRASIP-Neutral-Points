@@ -55,8 +55,9 @@ for file in json_files:
 
     day = data["date"]
     sza = np.array(data["sun_zenith_deg"])
+    uza = np.array(data["np_zenith_deg"]) -3.16
 
-    delta_obs = np.array(data["ultrasip_delta"])
+    delta_obs = uza-sza
     delta_sim = np.array(data["GRASP_delta"])
 
     ray_zen = np.array(data["rayleigh_np_za_355nm"])
@@ -72,12 +73,14 @@ for file in json_files:
 
     data_dict[day] = {
         "sun_zenith": sza,
+        
         "ray_zen": ray_zen,
         "ultrasip_delta": delta_obs,
         "grasp_delta": delta_sim,
         "ray_delta": delta_ray,
         "delta_delta_obs": delta_delta_obs,
         "delta_delta_sim": delta_delta_sim,
+        "zenith_correction": 0.57*(np.array(data["acquisition"])),
         "sphericity": data["Sphericity_Factor(%)"],
         "ssa": data["Single_Scattering_Albedo[440nm]"],
         "aod": data["AOD_Extinction-Total[440nm]"],
@@ -97,6 +100,7 @@ for file in json_files:
 # ==========================================
 for day, values in data_dict.items():
 
+    zcorr = values["zenith_correction"]
     sun_zen = np.array(values["sun_zenith"])
     delta_ultrasip = np.array(values["ultrasip_delta"])
     delta_grasp = np.array(values["grasp_delta"])
@@ -108,8 +112,13 @@ for day, values in data_dict.items():
     slope_sim = values["slope_sim"]
     intercept_sim = values["intercept_sim"]
 
-    aod_val = np.average(values["aod"])
+    aod_val = np.std(values["aod"])
     color = values["marker_color"]
+    
+    rho_delta, p_value = pearsonr(delta_ultrasip,delta_grasp)
+    rho_ultraray, p_value = pearsonr(delta_ultrasip,delta_ray)
+    rho_graspray, p_value = pearsonr(delta_grasp,delta_ray)
+
 
     fig = plt.figure(figsize=(10,6))
 
@@ -152,7 +161,7 @@ for day, values in data_dict.items():
     plt.ylabel(r"$\delta$ Zenith [$^\circ$]", fontsize=18)
 
     plt.title(
-        f"{day}\n Daily Average AOD(440nm) = {aod_val:.3f}",
+        f"{day}\n Daily SD AOD(440nm) = {aod_val:.3f}",
         fontsize=20
     )
 
@@ -163,6 +172,19 @@ for day, values in data_dict.items():
 
     plt.ylim([-30,-5])
     plt.xlim([24,89])
+    
+    plt.text(
+        30,
+        -27,
+        f"$\\rho_{{obs,sim}}$ = {rho_delta:.4f}\n $\\rho_{{obs,ray}}$ = {rho_ultraray:.4f}\n$\\rho_{{sim,ray}}$ = {rho_graspray:.4f}",
+        fontsize=16,
+        bbox=dict(
+            facecolor='white',
+            edgecolor='black',
+            boxstyle='round'
+        )
+    )
+
 
     plt.tight_layout()
     plt.show()
@@ -180,6 +202,8 @@ for day, values in data_dict.items():
 
     delta_delta_obs = np.array(values["delta_delta_obs"])
     delta_delta_sim = np.array(values["delta_delta_sim"])
+    
+    rho, p_value = pearsonr(delta_delta_obs,delta_delta_sim)
 
     aod_val = np.average(values["aod"])
     color = values["marker_color"]
@@ -218,7 +242,7 @@ for day, values in data_dict.items():
         color='black',
         linestyle='--',
         linewidth=2,
-        label="Rayleigh Reference"
+        label="Molecular Reference"
     )
 
     plt.grid(True, linestyle='--', alpha=0.8)
@@ -244,7 +268,7 @@ for day, values in data_dict.items():
     # ----------------------------------
     plt.text(
         0.98, 0.05,
-        f"$SD_{{obs}}$ = {std_obs:.2f}°\n$SD_{{sim}}$ = {std_sim:.2f}°",
+        f"$SD_{{obs}}$ = {std_obs:.4f}°\n$SD_{{sim}}$ = {std_sim:.4f}°\n$\\rho_{{obs,sim}}$ = {rho:.4f}",
         transform=plt.gca().transAxes,
         fontsize=14,
         ha='right',
@@ -275,10 +299,10 @@ valid_dates = sorted([
 
 valid_dates = sorted(
     valid_dates,
-    key=lambda d: np.average(data_dict[d]["aod"])
+    key=lambda d: np.std(data_dict[d]["aod"])
 )
 
-aod_values = np.array([np.average(data_dict[d]["aod"]) for d in valid_dates])
+aod_values = np.array([np.std(data_dict[d]["aod"]) for d in valid_dates])
 x = np.arange(len(valid_dates))
 
 slopes_obs = []
@@ -349,7 +373,7 @@ ax_top = ax1.twiny()
 ax_top.set_xlim(ax1.get_xlim())
 ax_top.set_xticks(x)
 ax_top.set_xticklabels([f"{a:.3f}" for a in aod_values], rotation=45, ha='left')
-ax_top.set_xlabel("Daily Average AOD (440 nm)", fontsize=18)
+ax_top.set_xlabel("Daily SD AOD (440 nm)", fontsize=18)
 
 legend_elements = [
     Line2D([0],[0],marker='o',color='black',linestyle='None',markersize=12,label='Observed'),
@@ -368,15 +392,16 @@ fig.legend(
 plt.tight_layout()
 plt.show()
 
+
+
 # ==========================================
 # MULTI-DAY Δδ COMPARISON
 # ==========================================
 
 # Choose subset of days
 selected_days = [
-    "2025_06_23",
-    "2025_06_24",
-    "2025_06_25"
+    "2025_10_22",
+    "2025_10_23"
 ]
 
 plt.figure(figsize=(10,6))
@@ -449,9 +474,8 @@ plt.show()
 #------------Comparison at certain zenith range---------------------#
 
 selected_days = [
-    "2025_06_24",
-    "2025_06_25",
-    "2025_07_18"
+    "2025_10_22",
+    "2025_10_23"
 ]
 
 # --------------------------------
@@ -480,10 +504,12 @@ for day in selected_days:
     values = data_dict[day]
 
     sza = np.array(values["sun_zenith"])
-    delta = np.array(values["ultrasip_delta"])
-    ray = np.array(values["ray_delta"])
+    dd = ray_delta-np.array(values["ultrasip_delta"])
+    #ray = np.array(values["ray_delta"])
+    print("obs og",len(delta))
+    print("sza range og",np.max(sza)-np.min(sza))
 
-    delta_delta = delta - ray
+    #delta_delta = delta - ray
 
     color = values["marker_color"]
 
@@ -491,20 +517,22 @@ for day in selected_days:
     mask = (sza >= sza_min) & (sza <= sza_max)
 
     sza_overlap = sza[mask]
-    delta_overlap = delta_delta[mask]
+    delta_overlap = delta[mask]
+    
+    print("obs mask",len(delta_overlap))
 
     mean_val = np.mean(delta_overlap)
-    std_val = np.std(delta_overlap, ddof=1)
+    std_val = np.std(delta_overlap)
 
     # improved legend formatting
-    label_text = f"{day}   μ={mean_val:.2f}°,  σ={std_val:.2f}°"
+    label_text = f"{day}   μ={mean_val:.2f}°,  SD={std_val:.2f}°"
 
     # --------------------------------
     # plot all points (faint)
     # --------------------------------
     plt.scatter(
         sza,
-        delta_delta,
+        delta,
         color=color,
         alpha=0.25,
         s=80
@@ -527,20 +555,20 @@ for day in selected_days:
 # --------------------------------
 plt.axvspan(sza_min, sza_max, color='gray', alpha=0.12)
 
-plt.axhline(0, color='black', linestyle='--', linewidth=2)
+#plt.axhline(0, color='black', linestyle='--', linewidth=2)
 
 plt.xlabel(r"Sun Zenith Angle [$^\circ$]", fontsize=18)
-plt.ylabel(r"$\Delta_{\delta}$ [$^\circ$]", fontsize=18)
+plt.ylabel(r"$\delta$ [$^\circ$]", fontsize=18)
 
 plt.grid(True, linestyle='--', alpha=0.7)
 
-plt.xlim([24,89])
-plt.ylim([-3,8])
+plt.xlim([55,80])
+plt.ylim([-25,-15])
 
 plt.legend(fontsize=14)
 
 plt.title(
-    f"$\Delta_\delta$ Comparison Across Days\nCommon SZA: {sza_min:.1f}–{sza_max:.1f}",
+    f"$\delta$ Comparison Across Days\nCommon SZA: {sza_min:.2f}–{sza_max:.2f}",
     fontsize=20
 )
 
@@ -592,10 +620,10 @@ for day in selected_days:
     delta_overlap = delta_delta[mask]
 
     mean_val = np.mean(delta_overlap)
-    std_val = np.std(delta_overlap, ddof=1)
+    std_val = np.std(delta_overlap)
 
     # improved legend formatting
-    label_text = f"{day}   μ={mean_val:.2f}°,  σ={std_val:.2f}°"
+    label_text = f"{day}   μ={mean_val:.4f}°,  σ={std_val:.4f}°"
 
     # --------------------------------
     # plot all points (faint)
@@ -650,259 +678,3 @@ plt.yticks(fontsize=16)
 plt.tight_layout()
 plt.show()
 
-#---------------------------------------1 SZA--------------------------------#
-
-target_sza = 59
-tol = 0.5
-parameter = "sphericity"
-
-parameter_list = []
-delta_obs_list = []
-delta_sim_list = []
-date_list = []
-color_list = []
-
-valid_dates = sorted([
-    d for d in data_dict.keys()
-    if "2025_10_" not in d
-])
-
-for day in valid_dates:
-
-    values = data_dict[day]
-
-    sza = np.array(values["sun_zenith"])
-    delta_obs = np.array(values["delta_delta_obs"])
-    delta_sim = np.array(values["delta_delta_sim"])
-    param = np.array(values[parameter])
-
-    idx = np.argmin(np.abs(sza - target_sza))
-
-    if np.abs(sza[idx] - target_sza) > tol:
-        continue
-
-    parameter_list.append(param[idx])
-    delta_obs_list.append(delta_obs[idx])
-    delta_sim_list.append(delta_sim[idx])
-    date_list.append(day)
-    color_list.append(values["marker_color"])
-
-param_arr = np.array(parameter_list)
-delta_obs_arr = np.array(delta_obs_list)
-delta_sim_arr = np.array(delta_sim_list)
-
-# --------------------------------
-# statistics
-# --------------------------------
-std_obs = np.std(delta_obs_arr, ddof=1)
-std_sim = np.std(delta_sim_arr, ddof=1)
-
-# --------------------------------
-# plot
-# --------------------------------
-fig, ax = plt.subplots(figsize=(1,6))   
-
-for i in range(len(param_arr)):
-
-    ax.scatter(
-        delta_obs_arr[i],
-        param_arr[i],
-        s=160,
-        marker='o',
-        color=color_list[i],
-        edgecolor='black'
-    )
-
-    ax.scatter(
-        delta_sim_arr[i],
-        param_arr[i],
-        s=160,
-        marker='s',
-        color=color_list[i],
-        edgecolor='black'
-    )
-
-ax.axvline(0, color='black', linestyle='--', linewidth=2)
-
-ax.set_ylabel(f"{parameter}", fontsize=20)
-ax.set_xlabel(r"$\Delta_{\delta}$ [$^\circ$]", fontsize=20)
-
-ax.grid(True, linestyle='--', alpha=0.7)
-
-ax.set_title(
-    f"$\Delta_\delta$ vs {parameter} at SZA ≈ {target_sza}$^\circ\pm {tol}^\circ$",
-    fontsize=22,
-    pad=25
-)
-
-# larger tick labels
-ax.tick_params(axis='both', labelsize=18)
-# --------------------------------
-# x-axis ticks every 0.25°
-# --------------------------------
-ax.xaxis.set_major_locator(MultipleLocator(0.5))
-
-# --------------------------------
-# combined legend
-# --------------------------------
-legend_handles = []
-
-# marker style explanation
-legend_handles.append(
-    Line2D([0],[0], marker='o', color='black',
-           linestyle='None', markersize=10,
-           label='Observed')
-)
-
-legend_handles.append(
-    Line2D([0],[0], marker='s', color='black',
-           linestyle='None', markersize=10,
-           label='Simulated')
-)
-
-
-ax.legend(
-    handles=legend_handles,
-    loc='upper center',
-    bbox_to_anchor=(0.2,1.08),
-    ncol=2,
-    fontsize=14,
-    frameon=True
-)
-
-# --------------------------------
-# statistics box
-# --------------------------------
-ax.text(
-    0.8,
-    0.8,
-    f"$SD_{{obs}}$ = {std_obs:.2f}°\n"
-    f"$SD_{{sim}}$ = {std_sim:.2f}°",
-    transform=ax.transAxes,
-    fontsize=16,
-    bbox=dict(
-        facecolor='white',
-        edgecolor='black',
-        boxstyle='round'
-    )
-)
-
-plt.tight_layout()
-plt.show()
-
-# ==========================================
-# AOD vs DAILY STANDARD DEVIATION
-# ==========================================
-
-avg_aod_list = []
-std_obs_list = []
-std_sim_list = []
-date_list = []
-color_list = []
-
-valid_dates = sorted([
-    d for d in data_dict.keys()
-    if "2025_10_" not in d
-])
-
-for day in valid_dates:
-
-    values = data_dict[day]
-
-    delta_obs = np.array(values["delta_delta_obs"])
-    delta_sim = np.array(values["delta_delta_sim"])
-
-    avg_aod = np.mean(values["aod"])
-
-    std_obs = np.std(delta_obs, ddof=1)
-    std_sim = np.std(delta_sim, ddof=1)
-
-    avg_aod_list.append(avg_aod)
-    std_obs_list.append(std_obs)
-    std_sim_list.append(std_sim)
-    date_list.append(day)
-    color_list.append(values["marker_color"])
-
-
-avg_aod_arr = np.array(avg_aod_list)
-std_obs_arr = np.array(std_obs_list)
-std_sim_arr = np.array(std_sim_list)
-
-# --------------------------------
-# Plot
-# --------------------------------
-fig, ax = plt.subplots(figsize=(14,8))
-
-for i in range(len(avg_aod_arr)):
-
-    # Observations
-    ax.scatter(
-        avg_aod_arr[i],
-        std_obs_arr[i],
-        marker='o',
-        s=180,
-        color=color_list[i],
-        edgecolor='black'
-    )
-
-    # Simulations
-    ax.scatter(
-        avg_aod_arr[i],
-        std_sim_arr[i],
-        marker='s',
-        s=180,
-        color=color_list[i],
-        edgecolor='black'
-    )
-
-
-# --------------------------------
-# Labels
-# --------------------------------
-ax.set_xlabel("Daily Average AOD (440 nm)", fontsize=18)
-ax.set_ylabel("Daily Standard Deviation of $\Delta_\delta$ [$^\circ$]", fontsize=18)
-
-ax.grid(True, linestyle='--', alpha=0.7)
-ax.tick_params(axis='both', labelsize=16)
-ax.xaxis.set_major_locator(MultipleLocator(0.01))
-
-# --------------------------------
-# Legend
-# --------------------------------
-
-legend_handles = []
-
-# marker explanation
-legend_handles.append(
-    Line2D([0],[0], marker='o', color='black',
-           linestyle='None', markersize=10,
-           label='Observed')
-)
-
-legend_handles.append(
-    Line2D([0],[0], marker='s', color='black',
-           linestyle='None', markersize=10,
-           label='Simulated')
-)
-
-# colored lines for dates
-for i in range(len(date_list)):
-    legend_handles.append(
-        Line2D([0],[0],
-               color=color_list[i],
-               linewidth=4,
-               label=date_list[i])
-    )
-
-ax.legend(
-    handles=legend_handles,
-    fontsize=12,
-    loc='lower center',
-    bbox_to_anchor=(0.5, 1),
-    ncol=5,
-    frameon=True,
-facecolor='lightgray'
-)
-
-plt.tight_layout()
-plt.show()

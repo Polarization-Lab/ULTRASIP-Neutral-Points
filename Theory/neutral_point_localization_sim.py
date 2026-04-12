@@ -140,10 +140,10 @@ plt.plot(avgq, qfit_line, color='gold', label='Weighted fitted line', linewidth=
 plt.axvline(x=0, lw=5, color='red', zorder=0)
 
 plt.xlabel(r'$\bar{r}_{Q}$', fontsize=18)
-plt.ylabel('Zenith [$^\circ$]', fontsize=18)
+plt.ylabel('$\\theta$ [$^\circ$]', fontsize=18)
 
 plt.text(-0.65, 60,
-         f'Intercept: {qint:.4f}$^\circ$ \n $\sigma_{{zen}}$: {qint_stderror:.4e} arcsec',
+         f'Intercept: {qint:.4f}$^\circ$ \n $SE_{{\\theta}}$: {qint_stderror:.4e} arcsec',
          fontsize=16,
          bbox=dict(facecolor='lightgray', alpha=1))
 
@@ -165,10 +165,10 @@ plt.plot(avgu, ufit_line, color='gold', label='Weighted fitted line', linewidth=
 plt.axvline(x=0, lw=5, color='red', zorder=0)
 
 plt.xlabel(r'$\bar{c}_{U}$', fontsize=18)
-plt.ylabel('Azimuth [$^\circ$]', fontsize=18)
+plt.ylabel('$\gamma$ [$^\circ$]', fontsize=18)
 
 plt.text(-0.1, -70,
-         f'Intercept: {uint:.4f}$^\circ$ \n $\sigma_{{az}}$: {uint_stderror:.4e} arcsec',
+         f'Intercept: {uint:.4f}$^\circ$ \n $SE_{{\gamma}}$: {uint_stderror:.4e} arcsec',
          fontsize=16,
          bbox=dict(facecolor='lightgray', alpha=1))
 
@@ -187,8 +187,8 @@ im = plt.imshow(q,
                 interpolation='none',
                 extent=[vaz.min(), vaz.max(), vza.max(), vza.min()])
 
-plt.xlabel('Azimuth [$^\circ$]', fontsize=16)
-plt.ylabel('Zenith [$^\circ$]', fontsize=16)
+plt.xlabel('$\gamma$[$^\circ$]', fontsize=16)
+plt.ylabel('$\\theta$ [$^\circ$]', fontsize=16)
 plt.tick_params(axis='both', labelsize=15)
 plt.tight_layout()
 plt.show()
@@ -200,8 +200,8 @@ im = plt.imshow(u,
                 interpolation='none',
                 extent=[vaz.min(), vaz.max(), vza.max(), vza.min()])
 
-plt.xlabel('Azimuth [$^\circ$]', fontsize=16)
-plt.ylabel('Zenith [$^\circ$]', fontsize=16)
+plt.xlabel('$\gamma$ [$^\circ$]', fontsize=16)
+plt.ylabel('$\\theta$ [$^\circ$]', fontsize=16)
 plt.tick_params(axis='both', labelsize=15)
 plt.tight_layout()
 plt.show()

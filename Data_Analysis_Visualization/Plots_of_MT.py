@@ -32,8 +32,8 @@ colors = ['red','darkorange','yellow','green',
           'honeydew','palevioletred','tan','brown','mediumorchid']
 idx=-1
 # Load in JSON Files
-data_path = "C:/Users/ULTRASIP_1/OneDrive/Desktop/BNP_daily_v3_allfields"
-#data_path ="C:/Users/deleo/Downloads/BNP_daily_v3_allfields/BNP_daily_v3_allfields"
+#data_path = "C:/Users/ULTRASIP_1/OneDrive/Desktop/BNP_daily_v3_allfields"
+data_path ="C:/Users/deleo/Downloads/BNP_daily_v3_allfields/BNP_daily_v3_allfields"
 json_files = glob.glob(f'{data_path}/BNP*.json')
 
 # =========================
@@ -52,6 +52,7 @@ for file in json_files:
         sza= data["sun_zenith_deg"]
         delta_obs = data["ultrasip_delta"]
         delta_sim = data["GRASP_delta"]
+        aq_diff = 0.57*(np.array(data["acquisition"]))
         
         slope_obs, intercept_obs, r_value, p_value, std_err = linregress(sza, delta_obs)
         slope_sim, intercept_sim, r_value, p_value, std_err = linregress(sza, delta_sim)
@@ -60,6 +61,7 @@ for file in json_files:
             "sun_zenith": data["sun_zenith_deg"],
             "grasp_delta": data["GRASP_delta"],
             "ultrasip_delta": data["ultrasip_delta"],
+            "zenith_correction": 0.57*(np.array(data["acquisition"])),
             "sphericity": data["Sphericity_Factor(%)"],
             "ssa": data["Single_Scattering_Albedo[440nm]"],
             "aod": data["AOD_Extinction-Total[440nm]"],
@@ -78,8 +80,9 @@ for file in json_files:
 # ==========================================
 for day, values in data_dict.items():
     
+    zcorr = values["zenith_correction"]
     sun_zen = np.array(values["sun_zenith"])
-    delta_ultrasip = np.array(values["ultrasip_delta"])
+    delta_ultrasip = np.array(values["ultrasip_delta"])-zcorr
     delta_grasp = np.array(values["grasp_delta"])
     
     slope_obs = values["slope_obs"]
@@ -90,6 +93,8 @@ for day, values in data_dict.items():
     
     aod_val = np.average(values["aod"])
     color = values["marker_color"]
+    
+    
     
     # Create new figure for each day
     fig = plt.figure(figsize=(10,6))
