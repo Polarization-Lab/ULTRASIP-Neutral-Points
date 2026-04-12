@@ -18,20 +18,21 @@ from hex_stop_button import HexStopButton
 # Constants and Metadata
 uv_wavelength = '355 FWHM 10nm'
 angles = [0, 45, 90, 135]
-Location = 'Lubrecht'
+Location = 'MeinelRoof'
 #Get from Garmin GPS
-latitude = 46.892995#45.66487 #32.23134;
-longitude = -113.449814#-111.04800 #-110.94712;
+latitude = 32.23134 #46.892995#45.66487 #32.23134;
+longitude = -110.94712 #-113.449814#-111.04800 #-110.94712;
 
 # Offsets
 tilt_offset = 0
-pan_offset = 32
+pan_offset = -9
+
 start_tilt = 0
 step_tilt = 2
 # Exposure settings
 uv_exp_initial = 1e3
-outpath = 'D:/Data'
-
+#outpath = "D:/Data"
+outpath = "C:/Users/deleo/Documents/Data"
 def auto_exposure_all_angles(camera, axis, angles, 
                               target_median=2600, 
                               initial_exp=1e5, 
@@ -86,7 +87,7 @@ class DataCollectorApp:
 
         # --- Control Variables ---
         self.running = True
-        self.sun_targets = list(np.arange(10, 80, 0.5))  # Zenith angles to trigger at
+        self.sun_targets = list(np.arange(4, 90, 0.2))  # Zenith angles to trigger at
         self.tolerance = 0.1  # degrees
         self.completed_targets = set()
         self.aq_num = 0
@@ -145,7 +146,7 @@ class DataCollectorApp:
         # #Configure port connection
         moog = serial.Serial()
         moog.baudrate = 9600
-        moog.port = 'COM2'
+        moog.port = 'COM7'
         moog.open()
         mf.init_autobaud(moog);
         mf.get_status_jog(moog)
@@ -180,7 +181,7 @@ class DataCollectorApp:
         pan = np.degrees(sun_pos['azimuth'])
         tilt = np.degrees(sun_pos['altitude']) 
         
-        end_tilt = int(75-tilt)
+        end_tilt = int(88-tilt)
         print(end_tilt)
 
         #Move Moog to Sun Position
@@ -200,7 +201,7 @@ class DataCollectorApp:
             tilt = np.degrees(sun_pos['altitude']) + dtilt
 
             mf.mv_to_coord(moog, int((pan - pan_offset) * 10), int((tilt - tilt_offset) * 10))
-            time.sleep(0.1)
+            time.sleep(0.4)
 
             uvimage_data = []
             cam_id = uv.parse_args()
@@ -208,11 +209,10 @@ class DataCollectorApp:
                 with uv.get_camera(cam_id) as uvcam:
                     uv.setup_camera(uvcam, uv_exp_initial)
                     if dtilt <3:
-                        uv_exp = 7e2
+                        uv_exp = 8e2
                     else:
                         uv_exp = auto_exposure_all_angles(uvcam, axis, angles)
                     uv.setup_camera(uvcam, uv_exp)
-
                     handler = uv.Handler()
                     date_time = str(dt)
                     timestamp = date_time[11:19].replace(':', '_')
@@ -220,7 +220,7 @@ class DataCollectorApp:
                     for angle in angles:
                         axis.move_absolute(angle, Units.ANGLE_DEGREES)
                         axis.wait_until_idle()
-                        time.sleep(1)
+                        time.sleep(0.5)
                         frame = uvcam.get_frame()
                         data = np.frombuffer(frame.get_buffer(), dtype=np.uint16)
                         uvimage_data = np.append(uvimage_data, data)
@@ -228,7 +228,7 @@ class DataCollectorApp:
                     axis.home()
 
             aq = hdf5_file.create_group(f"Aquistion_{aq_num}")
-            aq.attrs['Timestamp MDT'] = timestamp
+            aq.attrs['Timestamp AZ'] = timestamp
             utc_time = str(dt.astimezone(pytz.utc))
             utc_timestamp = utc_time[11:19].replace(':','_')
             aq.attrs['Timestamp UTC'] = utc_timestamp
