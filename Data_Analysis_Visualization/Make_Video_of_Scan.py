@@ -31,13 +31,13 @@ colmap = ListedColormap(colmap)
 # =========================
 # Load observations
 # =========================
-date = '2025_07_10'
+date = '2025_10_22'
 basepath = 'D:/Data'
 
 folderdate = os.path.join(basepath, date)
 file = glob.glob(f'{folderdate}/*h5')
-
-f = h5py.File(file[5], 'r')
+idx = 14
+f = h5py.File(file[idx], 'r')
 
 # =========================
 # Create FIXED figure
@@ -53,11 +53,12 @@ ax1.set_autoscale_on(False)
 ax2.set_autoscale_on(False)
 
 writer = animation.FFMpegWriter(fps=0.5)
-video_path = os.path.join(folderdate, f'{date}_polarization_movie_adolp.mp4')
+video_path = os.path.join(folderdate, f'{date}_{idx}_polarization_movie_adolp.mp4')
 
 with writer.saving(fig, video_path,dpi=100):
 
-    for aqnum in range(0, 20):
+    for aqnum in range(0, len(f.keys()) - 3):
+
 
         print("Processing acquisition:", aqnum)
 
@@ -170,11 +171,11 @@ ax1.set_autoscale_on(False)
 ax2.set_autoscale_on(False)
 
 writer = animation.FFMpegWriter(fps=0.5)
-video_path = os.path.join(folderdate, f'{date}_polarization_movie_stokes.mp4')
+video_path = os.path.join(folderdate, f'{date}_{idx}_polarization_movie_stokes.mp4')
 
 with writer.saving(fig, video_path,dpi=100):
 
-    for aqnum in range(0, 20):
+    for aqnum in range(0, len(f.keys()) - 1):
 
         print("Processing acquisition:", aqnum)
 
@@ -296,11 +297,11 @@ ax1.set_autoscale_on(False)
 ax2.set_autoscale_on(False)
 
 writer = animation.FFMpegWriter(fps=0.5)
-video_path = os.path.join(folderdate, f'{date}_polarization_movie_stokesavg.mp4')
+video_path = os.path.join(folderdate, f'{date}_{idx}_polarization_movie_stokesavg.mp4')
 
 with writer.saving(fig, video_path, dpi=100):
 
-    for aqnum in range(0, 20):
+    for aqnum in range(0, len(f.keys()) - 1):
 
         print("Processing acquisition:", aqnum)
 
@@ -358,7 +359,7 @@ with writer.saving(fig, video_path, dpi=100):
         ax1.invert_yaxis()
         
 
-        ax2.set_xlabel(r'$\bar{r}_{U}$', fontsize=15)
+        ax2.set_xlabel(r'$\bar{c}_{U}$', fontsize=15)
         ax2.set_ylabel('Azimuth [$^\circ$]', fontsize=15)
         ax2.tick_params(axis='both', labelsize=25)
 

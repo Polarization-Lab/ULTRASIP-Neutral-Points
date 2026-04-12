@@ -231,3 +231,42 @@ ax.tick_params(labelsize=14)
 
 plt.tight_layout()
 plt.show()
+
+plt.figure(figsize=(8,8))
+plt.scatter(Q.flatten(), U.flatten(), s=5, alpha=0.5)
+
+plt.xlabel('Q/I', fontsize=16)
+plt.ylabel('U/I', fontsize=16)
+plt.title('Q/I vs U/I', fontsize=16)
+
+plt.axhline(0, color='gray', linestyle='--')
+plt.axvline(0, color='gray', linestyle='--')
+
+plt.grid()
+plt.tight_layout()
+plt.show()
+
+# ------------------------ Neutral Point Detection ------------------------
+# Minimize distance to (Q,U) = (0,0)
+r = np.sqrt(q**2 + u**2)
+
+idx = np.unravel_index(np.argmin(r), r.shape)
+row_np, col_np = idx
+
+# Convert to angles
+vza_np = vza[row_np]
+vaz_np = vaz[col_np]
+
+print("Neutral Point Pixel:", row_np, col_np)
+print(f"Neutral Point Angles → VZA: {vza_np:.2f}°, VAZ: {vaz_np:.2f}°")
+
+# ------------------------ Visualize NP ------------------------
+plt.figure(figsize=(8,6))
+plt.imshow(q, cmap=colmap, vmin=-0.02, vmax=0.02)
+
+plt.scatter(col_np, row_np, color='red', s=100, label='Neutral Point')
+
+plt.title('Neutral Point on Q/I')
+plt.colorbar()
+plt.legend()
+plt.show()

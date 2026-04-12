@@ -18,7 +18,7 @@ from scipy.optimize import curve_fit
 
 #Load observations 
 #Set Date of Measurements 
-date = '2025_10_24'
+date = '2026_03_13'
 
 #Datapath
 basepath = 'D:/Data'
@@ -51,7 +51,7 @@ for idx in range(i):
             if 'Neutral Point Estimation' in aq:
                 del aq['Neutral Point Estimation']
             
-            timestamp = aq.attrs['Timestamp MDT']
+            timestamp = aq.attrs['Timestamp UTC']
                 
             #Load geometry 
             view_az = aq['UV Image Data/view_az'][:]

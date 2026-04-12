@@ -119,8 +119,8 @@ im = ax.imshow(q,
                extent=[vaz.min(), vaz.max(), vza.max(), vza.min()],
                vmin=-0.02, vmax=0.02)
 
-ax.set_xlabel('Azimuth [$^\circ$]', fontsize=25)
-ax.set_ylabel('Zenith [$^\circ$]', fontsize=25)
+ax.set_xlabel('$\\gamma$ [$^\circ$]', fontsize=25)
+ax.set_ylabel('$\\theta$ [$^\circ$]', fontsize=25)
 ax.tick_params(axis='both', labelsize=23)
 ax = plt.gca()
 
@@ -140,8 +140,8 @@ im = ax.imshow(u,
                extent=[vaz.min(), vaz.max(), vza.max(), vza.min()],
                vmin=-0.02, vmax=0.02)
 
-ax.set_xlabel('Azimuth [$^\circ$]', fontsize=25)
-ax.set_ylabel('Zenith [$^\circ$]', fontsize=25)
+ax.set_xlabel('$\\gamma$ [$^\circ$]', fontsize=25)
+ax.set_ylabel('$\\theta$ [$^\circ$]', fontsize=25)
 ax.tick_params(axis='both', labelsize=23)
 ax = plt.gca()
 
@@ -215,12 +215,12 @@ plt.plot(avgq, qfit_line, color='gold', label='Weighted fitted line', linewidth=
 plt.axvline(x=0, lw=5, color='red', zorder=0)
 
 plt.text(-0.02, 38.5,
-          f'Sun Zenith: {sza:.2f}$^\circ$\nIntercept: {qint:.2f}$^\circ$ \n $\sigma_{{zen}}$: {qint_stderror:.2f} arcsec',
-          fontsize=20,
+          f'$\\theta_s$: {sza:.2f}$^\circ$\nIntercept: {qint:.2f}$^\circ$ \n $SE_{{\\theta}}$: {qint_stderror:.2f} arcsec',
+          fontsize=25,
           bbox=dict(facecolor='lightgray', alpha=1))
 
 # Add labels and legend
-plt.ylabel(r'Zenith [$\circ$]',fontsize=20)
+plt.ylabel(r'$\theta$ [$\circ$]',fontsize=20)
 plt.xlabel(r'$\bar{r_{Q}}$', fontsize = 20)
 plt.xlim(-0.025, 0.025)
 #plt.ylim([50.5, 54.5])
@@ -240,7 +240,7 @@ ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
 plt.show()
 
 
-# ---- Figure 2: U vs Zenith ----
+# ---- Figure 2: U vs Azimuth ----
 plt.figure(figsize=(12, 8))
 plt.scatter(avgu, vaz_crop, color='green')
 plt.plot(avgu, ufit_line, color='gold', label='Weighted fitted line', linewidth=5)
@@ -248,12 +248,12 @@ plt.axvline(x=0, lw=5, color='red', zorder=0)
 plt.axhline(y=saz,lw=5,color='orange')
 
 plt.text(0.007, 10,
-          f'Sun Azimuth: {saz:.2f}$^\circ$ \nIntercept: {uint:.2f}$^\circ$ \n $\sigma_{{az}}$: {uint_stderror:.2f} arcsec',
-          fontsize=20,
+          f'$\\gamma_s$: {saz:.2f}$^\circ$ \nIntercept: {uint:.2f}$^\circ$ \n $SE_{{\\gamma}}$: {uint_stderror:.2f} arcsec',
+          fontsize=25,
           bbox=dict(facecolor='lightgray', alpha=1))
 
 # Add labels and legend
-plt.ylabel(r'Azimuth [$\circ$]',fontsize=20)
+plt.ylabel(r'$\gamma$ [$\circ$]',fontsize=20)
 plt.xlabel(r'$\bar{c_{U}}$', fontsize = 20)
 plt.xlim(-0.025, 0.025)
 #plt.ylim([50.5, 54.5])
@@ -290,8 +290,8 @@ roi = Rectangle((vaz_crop.min(), vza_crop.min()),
 
 ax.add_patch(roi)
 
-ax.set_xlabel('Azimuth [$^\circ$]', fontsize=25)
-ax.set_ylabel('Zenith [$^\circ$]', fontsize=25)
+ax.set_xlabel('$\gamma$ [$^\circ$]', fontsize=25)
+ax.set_ylabel('$\\theta$ [$^\circ$]', fontsize=25)
 ax.tick_params(axis='both', labelsize=23)
 ax = plt.gca()
 
@@ -324,8 +324,8 @@ roi = Rectangle((vaz_crop.min(), vza_crop.min()),
 
 ax.add_patch(roi)
 
-ax.set_xlabel('Azimuth [$^\circ$]', fontsize=25)
-ax.set_ylabel('Zenith [$^\circ$]', fontsize=25)
+ax.set_xlabel('$\gamma$ [$^\circ$]', fontsize=25)
+ax.set_ylabel('$\\theta$ [$^\circ$]', fontsize=25)
 ax.tick_params(axis='both', labelsize=23)
 ax = plt.gca()
 
@@ -364,8 +364,8 @@ ax.scatter(uint, qint,
            linewidth=2,
            zorder=10)
 
-ax.set_xlabel('Azimuth [$^\circ$]', fontsize=25)
-ax.set_ylabel('Zenith [$^\circ$]', fontsize=25)
+ax.set_xlabel('$\gamma$ [$^\circ$]', fontsize=25)
+ax.set_ylabel('$\\theta$ [$^\circ$]', fontsize=25)
 ax.tick_params(axis='both', labelsize=23)
 ax = plt.gca()
 
@@ -406,8 +406,8 @@ ax.scatter(uint, qint,
            edgecolor='black',
            linewidth=2,
            zorder=10)
-ax.set_xlabel('Azimuth [$^\circ$]', fontsize=25)
-ax.set_ylabel('Zenith [$^\circ$]', fontsize=25)
+ax.set_xlabel('$\gamma$ [$^\circ$]', fontsize=25)
+ax.set_ylabel('$\\theta$ [$^\circ$]', fontsize=25)
 ax.tick_params(axis='both', labelsize=23)
 ax = plt.gca()
 

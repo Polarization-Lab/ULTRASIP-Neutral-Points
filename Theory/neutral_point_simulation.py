@@ -293,4 +293,16 @@ plt.minorticks_on()
 plt.legend()
 plt.show()
 
+plt.figure(figsize=(8,8))
+plt.scatter(Q, U, s=5, alpha=0.5)
 
+plt.xlabel('Q/I', fontsize=16)
+plt.ylabel('U/I', fontsize=16)
+plt.title('Q/I vs U/I', fontsize=16)
+
+plt.axhline(0, color='gray', linestyle='--')
+plt.axvline(0, color='gray', linestyle='--')
+
+plt.grid()
+plt.tight_layout()
+plt.show()
