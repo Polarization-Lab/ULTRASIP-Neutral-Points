@@ -27,32 +27,75 @@ import moog_functions as mf
 import uv_cam_functions as uv
 #import vis_cam_functions as vis
 
+def auto_exposure_all_angles(camera, axis, angles, 
+                              target_median=2600, 
+                              initial_exp=1e5, 
+                              max_exp=1e6,
+                              min_exp=500,
+                              saturation_thresh=0.97, 
+                              bit_depth=12):
+    from numpy import median, clip, array
+
+    max_pixel_value = 2**bit_depth - 1
+    saturation_limit = max_pixel_value * saturation_thresh
+    test_exp = initial_exp
+    uv.setup_camera(camera, test_exp)
+
+    medians = []
+    saturated = []
+
+    for angle in angles:
+        axis.move_absolute(angle, Units.ANGLE_DEGREES)
+        axis.wait_until_idle()
+        time.sleep(0.5)
+
+        frame = camera.get_frame()
+        data = np.frombuffer(frame.get_buffer(), dtype=np.uint16)
+        med = median(data)
+        medians.append(med)
+        saturated.append(med >= saturation_limit)
+
+    medians = array(medians)
+    avg_median = np.mean(medians)
+
+    if all(saturated):
+        print("[WARNING] All test angles are saturated. Falling back to minimum exposure.")
+        return min_exp
+
+    if avg_median == 0:
+        new_exp = min_exp
+    else:
+        scale = target_median / avg_median
+        new_exp = clip(test_exp * scale, min_exp, max_exp)
+
+    print(f"Angle medians: {medians.astype(int)} → Target: {target_median}, Adaptive Exp: {int(new_exp)} µs")
+    return new_exp
+
 #----------------Constants and Metadata: CHANGE AS NEEDED----------------#
 uv_wavelength = '355 FWHM 10nm'
 #vis_wavelengths = '470,525,635 nm; Bayer Fitler'
 aq_num = -1 #index for later
 angles = [0,45,90,135]
 #angles = [135,90,45,0]
-Location = 'Lubrecht_Test_smokenoscan'
+Location = 'MeinelRoof_'
 #Get from Garmin GPS
-latitude = 46.892995#45.66487 #32.23134;
-longitude = -113.449814#-111.04800 #-110.94712;
+latitude = 32.2314#46.892995#45.66487;
+longitude = -110.94712#-113.449814#-111.04800
+uv_exp_initial = 1e3
 
 #Offsets needed -- from homing procedure (subtracted from calculated sun position)
 tilt_offset = 0
-pan_offset = 32 #to set origin to sun azimuth
+pan_offset = -9.#to set origin to sun azimuth
 #Scan range from sun, 0 is sun
 start_tilt = 0
-end_tilt = 2
+end_tilt = 4
 step_tilt = 2
 
-#Exposures
-uv_exp_initial = 8e2
-uv_exp_mid =  1e4
-uv_exp_max = 1e6
+
 
 #Data main directory 
-outpath = 'D:/Data'
+#outpath = 'D:/Data'
+outpath = "C:/Users/deleo/Documents/Data"
 
 #Make new folder for today's date to save the data (if it doesn't exist)
 #Set filename for measurement using date/time
@@ -71,7 +114,7 @@ filename=os.path.join(datapath,filename)
 # #Configure port connection
 moog = serial.Serial()
 moog.baudrate = 9600
-moog.port = 'COM2'
+moog.port = 'COM7'
 moog.open()
 mf.init_autobaud(moog);
 mf.get_status_jog(moog)
@@ -116,15 +159,7 @@ measstart=time.time()
 for dtilt in range(start_tilt,end_tilt,step_tilt):
     
     aq_num = aq_num + 1
-    
-    if dtilt == 0:
-        uv_exp = uv_exp_max
-        
-    if dtilt > 4 or dtilt < 0:
-        uv_exp = uv_exp_max
-        
-    if dtilt > 12:
-        uv_exp = uv_exp_max
+
         
     mf.get_status_jog(moog)
     
@@ -142,34 +177,31 @@ for dtilt in range(start_tilt,end_tilt,step_tilt):
     mf.get_status_jog(moog)
     #time.sleep(0.1)
     
-    uvimage_data=[]
+    uvimage_data = []
     cam_id = uv.parse_args()
     with uv.VmbSystem.get_instance():
         with uv.get_camera(cam_id) as uvcam:
-            # setup general camera settings and the pixel format in which frames are recorded
-            uv.setup_camera(uvcam,uv_exp)
-            handler = uv.Handler()  # Placeholder handler
+            uv.setup_camera(uvcam, uv_exp_initial)
+            if dtilt < 3:
+                uv_exp = 8e2
+            else:
+                uv_exp = auto_exposure_all_angles(uvcam, axis, angles)
+            uv.setup_camera(uvcam, uv_exp)
 
-            try:
-                date_time = str(dt)
-                timestamp = date_time[11:19].replace(':','_')
-                time1 = time.time()
-                for angle in angles:
-                    axis.move_absolute(angle, Units.ANGLE_DEGREES)  
-                    #print(axis.get_position(Units.ANGLE_DEGREES))
-                    axis.wait_until_idle()
-                    time.sleep(1)
-                    # Capture a frame
-                    frame = uvcam.get_frame()
-                    # Directly save the frame data without using get_buffer_data_numpy
-                    data = np.frombuffer(frame.get_buffer(),dtype=np.uint16)
-                    uvimage_data = np.append(uvimage_data,data)
-                time2 = time.time()
-                uvmeastime = (time2-time1)
-                print('uvmeas =',uvmeastime)
+            handler = uv.Handler()
+            date_time = str(dt)
+            timestamp = date_time[11:19].replace(':', '_')
+            time1 = time.time()
+            for angle in angles:
+                axis.move_absolute(angle, Units.ANGLE_DEGREES)
+                axis.wait_until_idle()
+                time.sleep(1)
+                frame = uvcam.get_frame()
+                data = np.frombuffer(frame.get_buffer(), dtype=np.uint16)
+                uvimage_data = np.append(uvimage_data, data)
+                uvmeastime = time.time() - time1
                 axis.home()
-            finally: 
-                print('Saving')
+            
         
     aq = hdf5_file.create_group(f"Aquistion_{aq_num}")
     aq.attrs['Timestamp MDT'] = timestamp
@@ -203,7 +235,7 @@ tilt = np.degrees(sun_pos['altitude'])
 #Home and disconnect everything
 mf.get_status_jog(moog)
 mf.mv_to_coord(moog,int((pan- pan_offset)*10),int(tilt*10)) 
-time.sleep(4)
+time.sleep(2)
 axis.home()
 moog.close()
 connection.close()

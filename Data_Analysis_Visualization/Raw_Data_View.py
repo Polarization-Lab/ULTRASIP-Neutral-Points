@@ -25,15 +25,16 @@ W = 0.5*np.array([[1,1,0],[1,-1,0],[1,0,1],[1,0,-1]])
 
 #Load observations 
 #Set Date of Measurements 
-date = '2025_10_24'
+date = '2026_03_24'
 
 #Datapath
-basepath = 'D:/Data'
+#basepath = 'D:/Data'
 #basepath = 'C:/Users/ULTRASIP_1/OneDrive/Desktop'
+basepath = "C:/Users/deleo/Documents/Data"
 folderdate = os.path.join(basepath,date)
 files = glob.glob(f'{folderdate}/*.h5')
 idx = len(files)-1 # Set file index you want to view - default is set to the last one (len(files)-1)
-f = h5py.File(files[idx],'r+')
+f = h5py.File(files[10],'r+')
 print(files[idx])
 
 for aqnum in range(0,len(f.keys())-1):
@@ -76,7 +77,7 @@ for aqnum in range(0,len(f.keys())-1):
     #Polarized flux
     fig, axes = plt.subplots(1, 4, figsize=(16, 5), sharex=True, sharey=True)
 
-    vmin, vmax = 1000, 2200
+    vmin, vmax = 0, 2900
     cmap = 'gray'
 
     im = axes[0].imshow(P0, cmap=cmap, vmin=vmin, vmax=vmax, interpolation = 'None')
@@ -133,12 +134,12 @@ for aqnum in range(0,len(f.keys())-1):
     axes[0].scatter(avgQ,range(0,len(avgQ)),color='green')
     axes[0].set_title('$r_{Q}$',fontsize=20)
     axes[0].axvline(x=0,lw=5,color='red')
-    axes[0].set_xlim(-0.025, 0.025)
+    axes[0].set_xlim(-0.1, 0.1)
     
     axes[1].scatter(avgU,range(0,len(avgU)),color='green')
     axes[1].set_title('$c_{U}$',fontsize=20)
     axes[1].axvline(x=0,lw=5,color='red')
-    axes[1].set_xlim(-0.025, 0.025)
+    axes[1].set_xlim(-0.1, 0.1)
     
     plt.tight_layout()
     plt.show()
