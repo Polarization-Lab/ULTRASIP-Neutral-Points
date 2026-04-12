@@ -70,7 +70,7 @@ cbar = plt.colorbar(
 cbar.set_ticks([-1, 0, 1])
 cbar.set_ticklabels(['$I_\parallel > I_\perp$','$I_\parallel = I_\perp$','$I_\parallel < I_\perp$'])
 
-cbar.ax.tick_params(labelsize=20)
+cbar.ax.tick_params(labelsize=30)
 
 plt.tight_layout()
 plt.show()
@@ -94,7 +94,7 @@ cbar = plt.colorbar(
 cbar.set_ticks([-1, 0, 1])
 cbar.set_ticklabels(['-1', '0', '1'])
 
-cbar.ax.tick_params(labelsize=20)
+cbar.ax.tick_params(labelsize=25)
 
 plt.tight_layout()
 plt.show()
@@ -122,7 +122,7 @@ cbar.set_ticklabels([
     r'$I_{\nearrow} < I_{\searrow}$'
 ])
 
-cbar.ax.tick_params(labelsize=20)
+cbar.ax.tick_params(labelsize=30)
 
 plt.tight_layout()
 plt.show()

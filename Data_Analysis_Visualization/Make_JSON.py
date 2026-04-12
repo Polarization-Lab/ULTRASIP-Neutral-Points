@@ -30,10 +30,11 @@ def json_safe(x):
 # User settings
 # -----------------------------
 basepath = 'D:/Data'
-dates = ['2025_05_28','2025_06_04','2025_06_07','2025_06_09','2025_06_10','2025_06_13','2025_06_14',
-          '2025_06_18','2025_06_23','2025_06_24','2025_06_25','2025_06_26','2025_06_30','2025_07_01',
-          '2025_07_08','2025_07_09','2025_07_10','2025_07_13','2025_07_17','2025_07_18','2025_07_21',
-          '2025_10_22','2025_10_23','2025_10_24']
+dates = ['2025_10_24']
+# ['2025_05_28','2025_06_04','2025_06_07','2025_06_09','2025_06_10','2025_06_13','2025_06_14',
+#           '2025_06_18','2025_06_23','2025_06_24','2025_06_25','2025_06_26','2025_06_30','2025_07_01',
+#           '2025_07_08','2025_07_09','2025_07_10','2025_07_13','2025_07_17','2025_07_18','2025_07_21',
+#           '2025_10_22','2025_10_23','2025_10_24']
 
 
 output_dir = 'D:/Analyzed_Data_JSON'
@@ -84,18 +85,18 @@ for date in dates:
         try:
             with h5py.File(fname, 'r') as f:
 
-                if 'Neutral Point Estimation' not in f:
+                if 'Manual Neutral Point Estimation' not in f:
                     continue
 
-                np_est = f['Neutral Point Estimation']
+                np_est = f['Manual Neutral Point Estimation']
 
                 # ---- Required datasets ----
-                if ('Estimation NP Location (zen,az) [deg]' not in np_est or
+                if ('Manual Estimation NP Location (zen,az) [deg]' not in np_est or
                     'Sun Location (zen,az) [deg]' not in np_est):
                     continue
 
                 np_zen, np_az = np_est[
-                    'Estimation NP Location (zen,az) [deg]'
+                    'Manual Estimation NP Location (zen,az) [deg]'
                 ][()]
 
                 sun_zen, sun_az = np_est[
@@ -115,13 +116,13 @@ for date in dates:
                 data["np_azimuth_deg"].append(json_safe(np_az))
                 data["np_zenith_deg"].append(json_safe(np_zen))
 
-                data["np_az_error_arcsec"].append(
-                    json_safe(get_attr(np_est, 'Azimuth Error [arcseconds]'))
-                    )
+                # data["np_az_error_arcsec"].append(
+                #     json_safe(get_attr(np_est, 'Azimuth Error [arcseconds]'))
+                #     )
 
-                data["np_zen_error_arcsec"].append(
-                    json_safe(get_attr(np_est, 'Zenith Error [arcseconds]'))
-                    )
+                # data["np_zen_error_arcsec"].append(
+                #     json_safe(get_attr(np_est, 'Zenith Error [arcseconds]'))
+                #     )
 
         except Exception as e:
             print(f'    ERROR: {e}')
@@ -131,7 +132,7 @@ for date in dates:
     # -----------------------------
     outname = os.path.join(
         output_dir,
-        f'BNP_observations_{date}_v3.json'
+        f'BNP_observations_{date}_v3_Manual.json'
     )
 
     with open(outname, 'w') as f:
