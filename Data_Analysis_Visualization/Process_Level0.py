@@ -10,40 +10,53 @@ Process 0 - output corrected polarized data products
 # Import Libraries
 from multiprocessing.pool import ThreadPool
 from multiprocessing import cpu_count
+import matplotlib.pyplot as plt
+from matplotlib.ticker import MultipleLocator
+import cmocean.cm as cmo
 import numpy as np
 import h5py 
 import glob
 import os, time
 
-# Define W-matrix of ULTRASIP (rows = analyzer vectors P0, P90, P45, P135)
-W = 0.5 * np.array([[1, 1, 0],
-                    [1, -1, 0],
-                    [1, 0, 1],
-                    [1, 0, -1]])
+#Functions
+def pseudoinverse(matrix):
+    
+    # # --- Pixelwise pseudoinverse via SVD ---
+    # Compute SVD of each 4x3 matrix
+    U, S, Vt = np.linalg.svd(matrix, full_matrices=False)   # shapes:
+    # U:  (H, W, 4, 3)
+    # S:  (H, W, 3)
+    # Vt: (H, W, 3, 3)
 
-# Set Date of Measurements
-date = '2025_06_10'
+    # Invert singular values 
+    S_inv = np.zeros_like(S)
+    S_inv = np.where(S > 1e-12, 1/S, 0)                # avoids division by zero
 
-# Data path
+    # Reconstruct pseudoinverse:  pinv(W) = V * S^-1 * U^T
+    pseudoinv = np.matmul(Vt.transpose(0,1,3,2) * S_inv[...,None,:], 
+                      U.transpose(0,1,3,2))            # shape = (H,W,3,4)
+    return pseudoinv
+#Correct image
+def correct_img(Pij,Rij,Bij):
+    R_avg = np.mean(Rij)
+    B_avg = np.mean(Bij)
+    Cij = (R_avg / Rij) * (Pij - Bij) + B_avg
+    
+    return Cij
+
+#Load NUC and W-matrix Files 
+
+nuc_files = np.load('D:/NUC_0813.npz', allow_pickle=True)
+Rij = nuc_files['arr1'].item()   # convert array-object → Python dict
+Bij = nuc_files['arr2'].item()
+W_ULTRASIP = np.load('D:/ULTRASIP_AvgWmatrix_15.npy')
+pinvW_ULTRASIP = pseudoinverse(W_ULTRASIP)
+
+#Timer
 start_time = time.time()
 
-#Load Calibration Files 
-#Calibration path and file
-cal_path = 'D:/Data/2025_08_12/' #DO NOT CHANGE
-cal_file = glob.glob(f'{cal_path}/NUC*16_4*.h5')
-f = h5py.File(cal_file[0],'r+')
-Rij0 = f['NUC Images/P0 Rij'][:]
-Bij0 = f['NUC Images/P0 Bij'][:]
-
-Rij45 = f['NUC Images/P45 Rij'][:]
-Bij45 = f['NUC Images/P45 Bij'][:]
-
-Rij90 = f['NUC Images/P90 Rij'][:]
-Bij90 = f['NUC Images/P90 Bij'][:]
-
-Rij135 = f['NUC Images/P135 Rij'][:]
-Bij135 = f['NUC Images/P135 Bij'][:]
-
+#Load Observations 
+date = '2026_03_17'
 #basepath = 'C:/Users/ULTRASIP_1/OneDrive/Desktop/'
 basepath = 'D:/Data/'
 folderdate = os.path.join(basepath, date)
@@ -67,41 +80,20 @@ def process0(idx):
                 uv_imgs = uv_data['UV Raw Images'][:].reshape(4, 2848, 2848)
                 P0, P45, P90, P135 = uv_imgs
                 
-                # Get global slope/intercept
-                R_avg0 = np.mean(Rij0)
-                B_avg0 = np.mean(Bij0)
-
-                # Apply NUC correction
-                P0_corrected = (R_avg0 / Rij0) * (P0 - Bij0) + B_avg0
+                # --- apply correction ---
+                C0   = correct_img(P0,   Rij[0], Bij[0])
+                C90  = correct_img(P90,  Rij[90], Bij[90])
+                C45  = correct_img(P45,  Rij[45], Bij[45])
+                C135 = correct_img(P135, Rij[135], Bij[135])
                 
-                # Get global slope/intercept
-                R_avg45 = np.mean(Rij45)
-                B_avg45 = np.mean(Bij45)
+                P_corrected = np.stack([C0, C90, C45, C135], axis=-1)
+                Stokes_meas = np.matmul(pinvW_ULTRASIP, P_corrected[...,None])[...,0]       # shape = (H, W, 3)
+               # Stokes_meas = Stokes_meas.reshape(3, 2848, 2848)
 
-                # Apply NUC correction
-                P45_corrected = (R_avg45 / Rij45) * (P45 - Bij45) + B_avg45
+                I_corrected = Stokes_meas[:,:,0]
+                Q_corrected = Stokes_meas[:,:,1]
+                U_corrected = Stokes_meas[:,:,2]
                 
-                # Get global slope/intercept
-                R_avg90 = np.mean(Rij90)
-                B_avg90 = np.mean(Bij90)
-
-                # Apply NUC correction
-                P90_corrected = (R_avg90 / Rij90) * (P90 - Bij90) + B_avg90
-                
-                # Get global slope/intercept
-                R_avg135 = np.mean(Rij135)
-                B_avg135 = np.mean(Bij135)
-
-                # Apply NUC correction
-                P135_corrected = (R_avg135 / Rij135) * (P135  - Bij135 ) + B_avg135 
-                
-                P_corrected = np.array([P0_corrected, P90_corrected, P45_corrected, P135_corrected])
-                Stokes_meas = np.linalg.pinv(W)@(P_corrected.reshape(4,2848*2848))
-                Stokes_meas = Stokes_meas.reshape(3, 2848, 2848)
-
-                I_corrected, Q_corrected, U_corrected = Stokes_meas
-
-
                 # Overwrite or create datasets
                 for name in ['I_corrected', 'Q_corrected', 'U_corrected']:
                     if name in uv_data:
@@ -110,21 +102,21 @@ def process0(idx):
                 uv_data.create_dataset('I_corrected', data=I_corrected)
                 uv_data.create_dataset('Q_corrected', data=Q_corrected)
                 uv_data.create_dataset('U_corrected', data=U_corrected)
-
-            
+                
+         
             except KeyError as e:
-                print(f'Skipping Acquisition {aqnum} in file {idx} — {e}')
-                continue
+                    print(f'Skipping Acquisition {aqnum} in file {idx} — {e}')
+                    continue
     finally: 
+            
+            f['Measurement_Metadata'].attrs['Processed Level'] = 'Level 0'
+            f.close()
         
-        f['Measurement_Metadata'].attrs['Processed Level'] = 'Level 0'
-        f.close()
-    
 threads = cpu_count()
 
 with ThreadPool(threads) as p:
-    p.map(process0, idx_array)
-       
+        p.map(process0, idx_array)
+           
 end_time = time.time()
 elapsed_time = end_time - start_time
 print(f"Execution time: {elapsed_time:.4f} seconds")
