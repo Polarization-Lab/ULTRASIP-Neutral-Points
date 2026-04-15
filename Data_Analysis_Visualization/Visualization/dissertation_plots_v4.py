@@ -165,19 +165,21 @@ def plot_dd_vs_parameterstd(x, dd_obs, dd_sim,
     # Scatter
     # ==========================================
     ax.scatter(x_plot, dd_obs_plot, s=100, color='green', edgecolor='black',
-               label='Obs')
+               label='ULTRASIP')
+    
+    ax.plot(x_plot, fit_obs, color='lime', linewidth=3,
+            label='Linear Fit')
 
     ax.scatter(x_plot, dd_sim_plot, s=100, color='purple', marker='s',
-               edgecolor='black', label='Sim')
+               edgecolor='black', label='GRASP (AERONET)')
 
     # ==========================================
     # Fit lines
     # ==========================================
     ax.plot(x_plot, fit_sim, color='magenta', linewidth=4, 
-            label='Sim Fit')
+            label='Linear Fit')
 
-    ax.plot(x_plot, fit_obs, color='lime', linewidth=3,
-            linestyle= 'dotted', label='Obs Fit')
+
 
     # ==========================================
     # Axes styling
@@ -203,19 +205,19 @@ def plot_dd_vs_parameterstd(x, dd_obs, dd_sim,
     colw = 10
 
     textstr = (
-    f"{'':4s}{'Slope':>{colw}s}{'Intercept':>{colw+4}s}{'R²':>{colw}s}\n"
-    f"{'-'*(12+2*colw)}\n"
-    f"{'Obs':4s}{slope_obs:{colw}.3f}{intercept_obs:{colw}.3f}{r_obs**2:{colw}.3f}\n"
-    f"{'Sim':4s}{slope_sim:{colw}.3f}{intercept_sim:{colw}.3f}{r_sim**2:{colw}.3f}"
+    f"{'':27s}{'Slope':>{colw}s}{'Intercept':>{colw+4}s}{'R²':>{colw}s}\n"
+    f"{'-'*(14+5*colw)}\n"
+    f"{'ULTRASIP':22s}{slope_obs:{colw}.3f}{intercept_obs:{colw}.3f}$^\circ${r_obs**2:{colw}.3f}\n"
+    f"{'GRASP (AERONET)':4s}{slope_sim:{colw}.3f}{intercept_sim:{colw}.3f}$^\circ${r_sim**2:{colw}.3f}"
 )
-    ax.text(0.65, 0.98, textstr, 
+    ax.text(0.5, 0.98, textstr, 
             transform=ax.transAxes, fontsize=17, 
             verticalalignment='top', family='Sans Serif', 
             bbox=dict(boxstyle='round', facecolor='white', alpha=0.85))
 
     # ==========================================
     # Legend ABOVE plot
-    # ==========================================
+    # # ==========================================
     # ax.legend(loc='lower center',
     #           bbox_to_anchor=(0.5, 1.5),
     #           ncol=4,
@@ -437,9 +439,9 @@ fig, axs = plt.subplots(2, 1, figsize=(12, 6), sharex=True)
 # ==========================================
 # TOP PLOT: delta_obs
 # ==========================================
-axs[0].scatter(sza_all, d_obs_corr, s=100, color='green', zorder=2,edgecolor='black',label="Obs (ULTRASIP)")
-axs[0].scatter(sza_all, d_sim, s=100, color='purple', zorder=2,marker='s',edgecolor='black',label="Sim (GRASP-AERONET)")
-axs[0].scatter(sza_all, d_sim, s=100, color='skyblue', zorder=2,marker='^',edgecolor='black',label="Sim (GRASP-Molecular)")
+axs[0].scatter(sza_all, d_obs_corr, s=100, color='green', zorder=2,edgecolor='black',label="ULTRASIP")
+axs[0].scatter(sza_all, d_sim, s=100, color='purple', zorder=2,marker='s',edgecolor='black',label="GRASP (AERONET)")
+axs[0].scatter(sza_all, d_sim, s=100, color='skyblue', zorder=2,marker='^',edgecolor='black',label=" GRASP (Molecular)")
 
 axs[0].set_ylim([-30, -5])
 axs[0].set_ylabel('$\\delta$ [$^\\circ$]', fontsize=20)
@@ -448,14 +450,14 @@ axs[0].yaxis.set_major_locator(MultipleLocator(5))
 axs[0].tick_params(axis='both', which='major', labelsize=16)
 
 axs[0].grid(True, linestyle='--', alpha=0.6)
-# axs[0].legend(
-#     fontsize=20,
-#     ncol=3,
-#     loc='upper center',
-#     bbox_to_anchor=(0.5, 1.5),
-#     markerscale=2,
-#     frameon=False
-# )
+axs[0].legend(
+    fontsize=20,
+    ncol=3,
+    loc='upper center',
+    bbox_to_anchor=(0.5, 1.5),
+    markerscale=2,
+    frameon=False
+)
 # Correlation textbox
 axs[0].text(0.05, 0.15,
             f'$\sigma_{{obs}}:{SDObsc:.2f}^\\circ$,$\sigma_{{sim}}:{SDSim:.2f}^\\circ$',
@@ -810,6 +812,49 @@ ax.grid(True, linestyle='--', alpha=0.6)
 # LEGEND
 # ==========================================
 ax.legend(fontsize=16, frameon=True)
+
+# ------------------------------------------
+# FINAL LAYOUT
+# ------------------------------------------
+plt.tight_layout()
+plt.show()
+
+# ------------------------------------------
+# CREATE SINGLE PLOT (Δδ ONLY)
+# ------------------------------------------
+fig, ax = plt.subplots(1, 1, figsize=(12, 6))
+
+# ==========================================
+# SCATTER PLOTS
+# ==========================================
+ax.scatter(sza_all, dd_sim-dd_obs, s=200, color='black',
+           zorder=2, edgecolor='gray',marker='d', label="Obs (ULTRASIP)")
+
+# Zero reference line
+ax.axhline(0, color="royalblue", zorder=1)
+
+
+# ==========================================
+# AXIS FORMATTING
+# ==========================================
+#ax.set_ylim([-4, 4])
+ax.set_xlim([20, 90])
+
+ax.set_xlabel('$\\theta_s$ [$^\\circ$]', fontsize=20)
+ax.set_ylabel('$\\Delta\\delta_{diff}$ [$^\\circ$]', fontsize=20)
+
+ax.xaxis.set_major_locator(MultipleLocator(5))
+ax.yaxis.set_major_locator(MultipleLocator(1))
+
+ax.tick_params(axis='both', which='major', labelsize=16)
+ax.grid(True, linestyle='--', alpha=0.6)
+
+
+
+# ==========================================
+# LEGEND
+# ==========================================
+#ax.legend(fontsize=16, frameon=True)
 
 # ------------------------------------------
 # FINAL LAYOUT
