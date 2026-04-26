@@ -43,13 +43,13 @@ aolp_vert = np.zeros((xsize, ysize))
 dolp_vert = aolp_vert.copy()
 
 for xx in range(0, xsize, 1): # for loop over x pixel index
-    for yy in range(1024, 1724, 1): # for loop over y pixel index
+    for yy in range(1324, 1524, 1): # for loop over y pixel index #three lines 1724
         xidx = (xx - (xsize / 2)) / xsize
         yidx = (yy - (ysize / 2)) / ysize
         aolp_vert[xx, yy] = np.pi / 2
-        dolp_vert[xx, yy] = 0.15
+        dolp_vert[xx, yy] = 0.2  5
 
-I_vert = np.zeros((ysize, xsize))
+I_vert = np.zeros((ysize, xsize)) 
 Q_vert = I * dolp_vert * np.cos(2 * aolp_vert)
 U_vert = I * dolp_vert * np.sin(2 * aolp_vert)
 

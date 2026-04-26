@@ -18,7 +18,7 @@ import matplotlib as mpl
 
 
 #Custom colormap for Q and U
-#Blue to Red Color scale for S1 and S2
+#Blue to Red Color scale for Q and U
 colmap = np.zeros((255,3));
 # Red
 colmap[126:183,0]= np.linspace(0,1,57);
@@ -133,19 +133,24 @@ uint_stderror = uresults.bse[0]*3600
 
 
 # ---- Figure 1: Q vs Zenith ----
-plt.figure(figsize=(6,5))
+plt.figure(figsize=(8,5))
 
 plt.scatter(avgq, vza, color='green')
 plt.plot(avgq, qfit_line, color='gold', label='Weighted fitted line', linewidth=3)
 plt.axvline(x=0, lw=5, color='red', zorder=0)
 
 plt.xlabel(r'$\bar{r}_{Q}$', fontsize=18)
-plt.ylabel('$\\theta$ [$^\circ$]', fontsize=18)
+plt.ylabel('Zenith Angle [$^\circ$]', fontsize=18)
 
 plt.text(-0.65, 60,
-         f'Intercept: {qint:.4f}$^\circ$ \n $SE_{{\\theta}}$: {qint_stderror:.4e} arcsec',
+         f'Intercept: {qint:.4f}$^\circ$',
          fontsize=16,
          bbox=dict(facecolor='lightgray', alpha=1))
+
+# plt.text(-0.65, 60,
+#          f'Intercept: {qint:.4f}$^\circ$ \n $SE_{{\\theta}}$: {qint_stderror:.4e} arcsec',
+#          fontsize=16,
+#          bbox=dict(facecolor='lightgray', alpha=1))
 
 plt.xlim(-0.7, 0.7)
 plt.ylim(59, 65.2)
@@ -158,19 +163,21 @@ plt.show()
 
 
 # ---- Figure 2: U vs Azimuth ----
-plt.figure(figsize=(6,5))
+plt.figure(figsize=(8,5))
 
 plt.scatter(avgu, vaz, color='green')
 plt.plot(avgu, ufit_line, color='gold', label='Weighted fitted line', linewidth=3)
 plt.axvline(x=0, lw=5, color='red', zorder=0)
 
 plt.xlabel(r'$\bar{c}_{U}$', fontsize=18)
-plt.ylabel('$\gamma$ [$^\circ$]', fontsize=18)
+plt.ylabel('Azimuth Angle [$^\circ$]', fontsize=18)
 
 plt.text(-0.1, -70,
-         f'Intercept: {uint:.4f}$^\circ$ \n $SE_{{\gamma}}$: {uint_stderror:.4e} arcsec',
+         f'Intercept: {uint:.4f}$^\circ$',
          fontsize=16,
          bbox=dict(facecolor='lightgray', alpha=1))
+
+#\n $SE_{{\gamma}}$: {uint_stderror:.4e} arcsec'
 
 plt.xlim(-0.7, 0.7)
 plt.ylim(-75.2, -69)
@@ -191,6 +198,34 @@ plt.xlabel('$\gamma$[$^\circ$]', fontsize=16)
 plt.ylabel('$\\theta$ [$^\circ$]', fontsize=16)
 plt.tick_params(axis='both', labelsize=15)
 plt.tight_layout()
+plt.show()
+
+plt.figure()
+im = plt.imshow(
+    dolp * 100,
+    cmap='Blues_r',
+    interpolation='none',
+    extent=[vaz.min(), vaz.max(), vza.min(), vza.max()]
+)
+# # Create colorbar on top
+# cbar = plt.colorbar(im, orientation='horizontal', location='top', pad=0.1)
+
+# # Put ticks/label BELOW the colorbar
+# cbar.ax.xaxis.set_ticks_position('bottom')
+# cbar.ax.xaxis.set_label_position('bottom')
+plt.show()
+
+
+plt.figure()
+im = plt.imshow(
+    aolp,
+    cmap=cmo.phase,
+    interpolation='none',
+    extent=[vaz.min(), vaz.max(), vza.min(), vza.max()]
+)
+ax = plt.gca()
+ax.invert_yaxis()
+
 plt.show()
 
 plt.figure(figsize=(6,5))

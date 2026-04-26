@@ -42,10 +42,10 @@ for file in json_files:
     idx += 1
     
     day = data["date"]
-    time = np.array(data["LocalTime(hh:mm:ss)"])
+    #time = np.array(data["LocalTime(hh:mm:ss)"])
     sza = np.array(data["sun_zenith_deg"])
     saz = np.array(data["sun_azimuth_deg"])
-    gza = np.array(data["grasp_np_za_355nm"])
+    #gza = np.array(data["grasp_np_za_355nm"])
     aqnum = np.array(data["acquisition"])
 
     
@@ -54,17 +54,17 @@ for file in json_files:
     ray_zen = np.array(data["rayleigh_np_za_355nm"])
 
     data_dict[day] = {
-        "time": time,
+        #"time": time,
         "sun_zenith": sza,
         "ultra_zen": uza,
         "ray_zen": ray_zen,
-        "grasp_zen": gza,
+        #"grasp_zen": gza,
         "aqnum": aqnum,
-        "sphericity": data["Sphericity_Factor(%)"],
-        "ssa": data["Single_Scattering_Albedo[440nm]"],
-        "aod": data["AOD_Extinction-Total[440nm]"],
-        "g": data["Asymmetry_Factor-Total[440nm]"],
-        "ae": data["Extinction_Angstrom_Exponent_440-870nm-Total"],
+        # "sphericity": data["Sphericity_Factor(%)"],
+        # "ssa": data["Single_Scattering_Albedo[440nm]"],
+        # "aod": data["AOD_Extinction-Total[440nm]"],
+        # "g": data["Asymmetry_Factor-Total[440nm]"],
+        # "ae": data["Extinction_Angstrom_Exponent_440-870nm-Total"],
         "marker_color": colors[idx]
     }
 
@@ -73,8 +73,7 @@ for file in json_files:
 
 selected_days = [
     "2025_10_22",
-    "2025_10_23",
-    "2025_10_24"
+    "2025_10_23"
 ]
 
 # --------------------------------
