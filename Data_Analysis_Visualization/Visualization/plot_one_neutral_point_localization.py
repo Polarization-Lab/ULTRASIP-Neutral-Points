@@ -198,7 +198,9 @@ avg_u_with_intercept = sm.add_constant(avgu)
 # Weighted least squares regression
 model = sm.WLS(vaz_crop, avg_u_with_intercept, weights=weights)
 uresults = model.fit()
-               
+print(qresults.summary())
+print(uresults.summary())
+
 # Get the fitted values and residuals
 ufit_line = uresults.fittedvalues
 residuals = vaz_crop - ufit_line
