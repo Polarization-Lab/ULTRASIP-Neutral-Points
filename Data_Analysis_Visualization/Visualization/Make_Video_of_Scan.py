@@ -36,7 +36,7 @@ basepath = 'D:/Data'
 
 folderdate = os.path.join(basepath, date)
 file = glob.glob(f'{folderdate}/*h5')
-idx = 14
+idx = 7
 f = h5py.File(file[idx], 'r')
 
 # =========================
@@ -170,7 +170,7 @@ ax2 = fig.add_axes([0.57, 0.12, 0.38, 0.78])   # right panel
 ax1.set_autoscale_on(False)
 ax2.set_autoscale_on(False)
 
-writer = animation.FFMpegWriter(fps=0.5)
+writer = animation.FFMpegWriter(fps=0.25)
 video_path = os.path.join(folderdate, f'{date}_{idx}_polarization_movie_stokes.mp4')
 
 with writer.saving(fig, video_path,dpi=100):
@@ -205,8 +205,8 @@ with writer.saving(fig, video_path,dpi=100):
         im1 = ax1.imshow(
                 q,
                 cmap=colmap,
-                vmin=-0.1,
-                vmax=0.1,
+                vmin=-0.02,
+                vmax=0.02,
                 extent=[view_az.min(), view_az.max(),
                         view_zen.max(), view_zen.min()],
                 interpolation='none'
@@ -215,8 +215,8 @@ with writer.saving(fig, video_path,dpi=100):
         im2 = ax2.imshow(
                 u,
                 cmap=colmap,
-                vmin=-0.1,
-                vmax=0.1,
+                vmin=-0.02,
+                vmax=0.02,
                 extent=[view_az.min(), view_az.max(),
                         view_zen.max(), view_zen.min()],
                 interpolation='none'

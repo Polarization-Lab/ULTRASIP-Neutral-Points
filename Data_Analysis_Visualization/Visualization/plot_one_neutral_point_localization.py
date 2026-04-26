@@ -119,13 +119,13 @@ im = ax.imshow(q,
                extent=[vaz.min(), vaz.max(), vza.max(), vza.min()],
                vmin=-0.02, vmax=0.02)
 
-ax.set_xlabel('$\\gamma$ [$^\circ$]', fontsize=25)
-ax.set_ylabel('$\\theta$ [$^\circ$]', fontsize=25)
-ax.tick_params(axis='both', labelsize=23)
+ax.set_xlabel('$\\gamma$ [$^\circ$]', fontsize=30)
+ax.set_ylabel('$\\theta$ [$^\circ$]', fontsize=30)
+ax.tick_params(axis='both', labelsize=30)
 ax = plt.gca()
 
-ax.yaxis.set_major_locator(MultipleLocator(0.5))   # or 0.25
-ax.xaxis.set_major_locator(MultipleLocator(0.5))
+ax.yaxis.set_major_locator(MultipleLocator(1))   
+ax.xaxis.set_major_locator(MultipleLocator(1))
 
 ax.xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
 ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
@@ -140,13 +140,13 @@ im = ax.imshow(u,
                extent=[vaz.min(), vaz.max(), vza.max(), vza.min()],
                vmin=-0.02, vmax=0.02)
 
-ax.set_xlabel('$\\gamma$ [$^\circ$]', fontsize=25)
-ax.set_ylabel('$\\theta$ [$^\circ$]', fontsize=25)
-ax.tick_params(axis='both', labelsize=23)
+ax.set_xlabel('$\\gamma$ [$^\circ$]', fontsize=30)
+ax.set_ylabel('$\\theta$ [$^\circ$]', fontsize=30)
+ax.tick_params(axis='both', labelsize=30)
 ax = plt.gca()
 
-ax.yaxis.set_major_locator(MultipleLocator(0.5))   # or 0.25
-ax.xaxis.set_major_locator(MultipleLocator(0.5))
+ax.yaxis.set_major_locator(MultipleLocator(1))   
+ax.xaxis.set_major_locator(MultipleLocator(1))
 
 ax.xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
 ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
@@ -220,19 +220,19 @@ plt.text(-0.02, 38.5,
           bbox=dict(facecolor='lightgray', alpha=1))
 
 # Add labels and legend
-plt.ylabel(r'$\theta$ [$\circ$]',fontsize=20)
-plt.xlabel(r'$\bar{r_{Q}}$', fontsize = 20)
+plt.ylabel(r'$\theta$ [$\circ$]',fontsize=30)
+plt.xlabel(r'$\bar{r_{Q}}$', fontsize = 30)
 plt.xlim(-0.025, 0.025)
 #plt.ylim([50.5, 54.5])
-plt.yticks(fontsize=18)
-plt.xticks(fontsize=18)
+plt.yticks(fontsize=25)
+plt.xticks(fontsize=25)
 plt.gca().invert_yaxis() 
 #plt.title('Weighted Linear Regression with Fit Error')
 plt.grid(True)
 
 ax = plt.gca()
 
-ax.yaxis.set_major_locator(MultipleLocator(0.5))   # or 0.25
+ax.yaxis.set_major_locator(MultipleLocator(1))   # or 0.25
 
 ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
@@ -245,7 +245,7 @@ plt.figure(figsize=(12, 8))
 plt.scatter(avgu, vaz_crop, color='green')
 plt.plot(avgu, ufit_line, color='gold', label='Weighted fitted line', linewidth=5)
 plt.axvline(x=0, lw=5, color='red', zorder=0)
-plt.axhline(y=saz,lw=5,color='orange')
+#plt.axhline(y=saz,lw=5,color='orange')
 
 plt.text(0.007, 10,
           f'$\\gamma_s$: {saz:.2f}$^\circ$ \nIntercept: {uint:.2f}$^\circ$ \n $SE_{{\\gamma}}$: {uint_stderror:.2f} arcsec',
@@ -253,17 +253,17 @@ plt.text(0.007, 10,
           bbox=dict(facecolor='lightgray', alpha=1))
 
 # Add labels and legend
-plt.ylabel(r'$\gamma$ [$\circ$]',fontsize=20)
-plt.xlabel(r'$\bar{c_{U}}$', fontsize = 20)
+plt.ylabel(r'$\gamma$ [$\circ$]',fontsize=30)
+plt.xlabel(r'$\bar{c_{U}}$', fontsize = 30)
 plt.xlim(-0.025, 0.025)
 #plt.ylim([50.5, 54.5])
-plt.yticks(fontsize=18)
-plt.xticks(fontsize=18)
+plt.yticks(fontsize=25)
+plt.xticks(fontsize=25)
 #plt.title('Weighted Linear Regression with Fit Error')
 plt.grid(True)
 ax = plt.gca()
 
-ax.yaxis.set_major_locator(MultipleLocator(0.5))   # or 0.25
+ax.yaxis.set_major_locator(MultipleLocator(1))   # or 0.25
 
 ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
@@ -292,11 +292,11 @@ ax.add_patch(roi)
 
 ax.set_xlabel('$\gamma$ [$^\circ$]', fontsize=25)
 ax.set_ylabel('$\\theta$ [$^\circ$]', fontsize=25)
-ax.tick_params(axis='both', labelsize=23)
+ax.tick_params(axis='both', labelsize=25)
 ax = plt.gca()
 
-ax.yaxis.set_major_locator(MultipleLocator(0.5))   # or 0.25
-ax.xaxis.set_major_locator(MultipleLocator(0.5))
+ax.yaxis.set_major_locator(MultipleLocator(1))   # or 0.25
+ax.xaxis.set_major_locator(MultipleLocator(1))
 
 ax.xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
 ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
@@ -326,11 +326,11 @@ ax.add_patch(roi)
 
 ax.set_xlabel('$\gamma$ [$^\circ$]', fontsize=25)
 ax.set_ylabel('$\\theta$ [$^\circ$]', fontsize=25)
-ax.tick_params(axis='both', labelsize=23)
+ax.tick_params(axis='both', labelsize=25)
 ax = plt.gca()
 
-ax.yaxis.set_major_locator(MultipleLocator(0.5))   # or 0.25
-ax.xaxis.set_major_locator(MultipleLocator(0.5))
+ax.yaxis.set_major_locator(MultipleLocator(1))   # or 0.25
+ax.xaxis.set_major_locator(MultipleLocator(1))
 
 ax.xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
 ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
@@ -369,12 +369,11 @@ ax.set_ylabel('$\\theta$ [$^\circ$]', fontsize=25)
 ax.tick_params(axis='both', labelsize=23)
 ax = plt.gca()
 
-ax.yaxis.set_major_locator(MultipleLocator(0.5))   # or 0.25
-ax.xaxis.set_major_locator(MultipleLocator(0.5))
+ax.yaxis.set_major_locator(MultipleLocator(1))   # or 0.25
+ax.xaxis.set_major_locator(MultipleLocator(1))
 
 ax.xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
 ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
-
 plt.tight_layout()
 plt.show()
 

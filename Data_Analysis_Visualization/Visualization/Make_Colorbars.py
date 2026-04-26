@@ -68,7 +68,12 @@ cbar = plt.colorbar(
 
 # Set ONLY desired ticks
 cbar.set_ticks([-1, 0, 1])
-cbar.set_ticklabels(['$I_\parallel > I_\perp$','$I_\parallel = I_\perp$','$I_\parallel < I_\perp$'])
+# cbar.set_ticklabels(['$I_\parallel > I_\perp$','$I_\parallel = I_\perp$','$I_\parallel < I_\perp$'])
+cbar.set_ticklabels([
+    r'$P_{90} > P_{0}$',
+    r'$P_{90} = P_{0}$',
+    r'$P_{90} < P_{0}$'
+])
 
 cbar.ax.tick_params(labelsize=30)
 
@@ -116,10 +121,16 @@ cbar = plt.colorbar(
 
 # Set ONLY desired ticks
 cbar.set_ticks([-1, 0, 1])
+# cbar.set_ticklabels([
+#     r'$I_{\nearrow} > I_{\searrow}$',
+#     r'$I_{\nearrow} = I_{\searrow}$',
+#     r'$I_{\nearrow} < I_{\searrow}$'
+# ])
+
 cbar.set_ticklabels([
-    r'$I_{\nearrow} > I_{\searrow}$',
-    r'$I_{\nearrow} = I_{\searrow}$',
-    r'$I_{\nearrow} < I_{\searrow}$'
+    r'$P_{45} > P_{135}$',
+    r'$P_{45} = P_{135}$',
+    r'$P_{45} < P_{135}$'
 ])
 
 cbar.ax.tick_params(labelsize=30)
