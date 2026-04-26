@@ -41,10 +41,10 @@ basepath = 'D:/Data'
 folderdate = os.path.join(basepath, date)
 
 files = glob.glob(f'{folderdate}/*.h5')
-f = h5py.File(files[42], 'r+')
+f = h5py.File(files[13], 'r+')
 print(f)
 
-aqnum = 15
+aqnum = 6
 aq = f[f'Aquistion_{aqnum}']
 
 timestamp = aq.attrs['Timestamp UTC']
@@ -94,6 +94,7 @@ avg_q_with_intercept = sm.add_constant(avgq)
 # Weighted least squares regression
 model = sm.WLS(vza_crop, avg_q_with_intercept, weights=weights)
 qresults = model.fit()
+print(qresults.summary())
                
 # Get the fitted values and residuals
 qfit_line = qresults.fittedvalues
@@ -112,6 +113,8 @@ avg_u_with_intercept = sm.add_constant(avgu)
 # Weighted least squares regression
 model = sm.WLS(vaz_crop, avg_u_with_intercept, weights=weights)
 uresults = model.fit()
+print(uresults.summary())
+
                
 # Get the fitted values and residuals
 ufit_line = uresults.fittedvalues
@@ -378,3 +381,192 @@ plt.show()
 #     print("Manual Neutral point estimation saved.")
 #     f['Measurement_Metadata'].attrs['Processed Level'] = 'Level 3'
 
+# ---------------- Q image ----------------
+fig, ax = plt.subplots(figsize=(16, 10))
+
+im = ax.imshow(np.flipud(q),
+               cmap=colmap,
+               interpolation='none',
+               extent=[vaz.min(), vaz.max(), vza.max(), vza.min()],
+               vmin=-0.02, vmax=0.02)
+
+
+ax.scatter(vaz[col_np], vza[row_np],
+           s=400,
+           color='red',
+           edgecolor='black',
+           linewidth=2,
+           zorder=10)
+
+ax.set_xlabel('$\gamma$ [$^\circ$]', fontsize=25)
+ax.set_ylabel('$\\theta$ [$^\circ$]', fontsize=25)
+ax.tick_params(axis='both', labelsize=25)
+ax = plt.gca()
+plt.gca().invert_yaxis()
+
+ax.yaxis.set_major_locator(MultipleLocator(1))   # or 0.25
+ax.xaxis.set_major_locator(MultipleLocator(1))
+
+ax.xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+
+plt.tight_layout()
+plt.show()
+
+
+# ---------------- Q image ----------------
+fig, ax = plt.subplots(figsize=(16, 10))
+
+im = ax.imshow(np.flipud(u),
+               cmap=colmap,
+               interpolation='none',
+               extent=[vaz.min(), vaz.max(), vza.max(), vza.min()],
+               vmin=-0.02, vmax=0.02)
+
+
+ax.scatter(vaz[col_np], vza[row_np],
+           s=400,
+           color='red',
+           edgecolor='black',
+           linewidth=2,
+           zorder=10)
+
+ax.set_xlabel('$\gamma$ [$^\circ$]', fontsize=25)
+ax.set_ylabel('$\\theta$ [$^\circ$]', fontsize=25)
+ax.tick_params(axis='both', labelsize=25)
+ax = plt.gca()
+plt.gca().invert_yaxis()
+
+ax.yaxis.set_major_locator(MultipleLocator(1))   # or 0.25
+ax.xaxis.set_major_locator(MultipleLocator(1))
+
+ax.xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+
+plt.tight_layout()
+plt.show()
+
+# ---------------- AoLP image ----------------
+fig, ax = plt.subplots(figsize=(16,10))
+
+im = ax.imshow(np.flipud(aolp),
+               cmap=cmo.phase,
+               interpolation='none',
+               extent=[vaz.min(), vaz.max(), vza.max(), vza.min()],
+               vmin=0, vmax=180)
+
+
+ax.scatter(vaz[col_np], vza[row_np],
+           s=400,
+           color='red',
+           edgecolor='black',
+           linewidth=2,
+           zorder=10)
+
+ax.set_xlabel('$\gamma$ [$^\circ$]', fontsize=25)
+ax.set_ylabel('$\\theta$ [$^\circ$]', fontsize=25)
+ax.tick_params(axis='both', labelsize=23)
+ax = plt.gca()
+plt.gca().invert_yaxis()
+
+ax.yaxis.set_major_locator(MultipleLocator(1))   # or 0.25
+ax.xaxis.set_major_locator(MultipleLocator(1))
+
+ax.xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+plt.tight_layout()
+plt.show()
+
+# ---------------- DoLP image ----------------
+fig, ax = plt.subplots(figsize=(16,10))
+
+im = ax.imshow(np.flipud(np.log(dolp)),
+               cmap='Blues_r',
+               interpolation='none',
+               extent=[vaz.min(), vaz.max(), vza.max(), vza.min()],
+               vmin=-1, vmax=1)
+
+cbar = fig.colorbar(im, ax=ax,shrink=1,pad=0.01)
+cbar.ax.tick_params(labelsize=20)
+
+
+
+
+ax.scatter(vaz[col_np], vza[row_np],
+           s=400,
+           color='red',
+           edgecolor='black',
+           linewidth=2,
+           zorder=10)
+
+ax.set_xlabel('$\gamma$ [$^\circ$]', fontsize=25)
+ax.set_ylabel('$\\theta$ [$^\circ$]', fontsize=25)
+ax.tick_params(axis='both', labelsize=23)
+plt.gca()
+plt.gca().invert_yaxis()
+
+
+ax.yaxis.set_major_locator(MultipleLocator(1))   # or 0.25
+ax.xaxis.set_major_locator(MultipleLocator(1))
+
+ax.xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+plt.tight_layout()
+plt.show()
+
+
+
+
+# ---- Figure 1: Q vs Zenith ----
+plt.figure(figsize=(12, 8))
+plt.scatter(avgq, vza_crop, color='green')
+plt.plot(avgq, qfit_line, color='gold', label='Weighted fitted line', linewidth=5)
+plt.axvline(x=0, lw=5, color='red', zorder=0)
+
+
+# Add labels and legend
+plt.ylabel(r'$\theta$ [$\circ$]',fontsize=30)
+plt.xlabel(r'$\bar{r_{Q}}$', fontsize = 30)
+plt.xlim(-0.025, 0.025)
+#plt.ylim([50.5, 54.5])
+plt.yticks(fontsize=25)
+plt.xticks(fontsize=25)
+plt.gca().invert_yaxis() 
+#plt.title('Weighted Linear Regression with Fit Error')
+plt.grid(True)
+
+ax = plt.gca()
+
+ax.yaxis.set_major_locator(MultipleLocator(1))   # or 0.25
+
+ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+#plt.legend(fontsize=20,loc='upper left')
+plt.show()
+
+
+# ---- Figure 2: U vs Azimuth ----
+plt.figure(figsize=(12, 8))
+plt.scatter(avgu, vaz_crop, color='green')
+plt.plot(avgu, ufit_line, color='gold', label='Weighted fitted line', linewidth=5)
+plt.axvline(x=0, lw=5, color='red', zorder=0)
+#plt.axhline(y=saz,lw=5,color='orange')
+
+
+# Add labels and legend
+plt.ylabel(r'$\gamma$ [$\circ$]',fontsize=30)
+plt.xlabel(r'$\bar{c_{U}}$', fontsize = 30)
+plt.xlim(-0.025, 0.025)
+#plt.ylim([50.5, 54.5])
+plt.yticks(fontsize=25)
+plt.xticks(fontsize=25)
+#plt.title('Weighted Linear Regression with Fit Error')
+plt.grid(True)
+ax = plt.gca()
+
+ax.yaxis.set_major_locator(MultipleLocator(1))   # or 0.25
+
+ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+#plt.legend(fontsize=20,loc='upper left')
+plt.show()
