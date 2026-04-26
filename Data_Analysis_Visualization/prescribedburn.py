@@ -30,7 +30,7 @@ data_dict = {}
 #           'silver','cyan','gray','blue',
 #           'honeydew','palevioletred','tan','brown','mediumorchid']
 
-colors = ['tan','brown','mediumorchid']
+colors = ['tan','brown','magenta',"lime"]
 
 idx = -1
 
@@ -40,40 +40,36 @@ json_files = glob.glob(f'{data_path}/BNP*.json')
 oct22 = json_files[15]
 oct23 = json_files[16]
 oct24 = json_files[0]
+oct24_reg = json_files[17]
 
 oct_files = [oct22,oct23,oct24]
 
-for file in oct_files:
+labels = ["2025_10_22", "2025_10_23", "2025_10_24", "2025_10_24_B"]
+
+for i, file in enumerate(oct_files):
 
     with open(file, "r") as f:
         data = json.load(f)
 
-    idx += 1
-    
-    day = data["date"]
-    #time = np.array(data["LocalTime(hh:mm:ss)"])
-    sza = np.array(data["sun_zenith_deg"])
-    saz = np.array(data["sun_azimuth_deg"])
-    aqnum = np.array(data["acquisition"])
+    day = labels[i]   # ← force unique label
 
-    
+    sza = np.array(data["sun_zenith_deg"])
     uza = np.array(data["np_zenith_deg"]) - 3.16
-    uaz = np.array(data["np_azimuth_deg"])
     ray_zen = np.array(data["rayleigh_np_za_355nm"])
 
     data_dict[day] = {
         "sun_zenith": sza,
         "ultra_zen": uza,
         "ray_zen": ray_zen,
-        "aqnum": aqnum,
-        "marker_color": colors[idx]
+        "marker_color": colors[i]
     }
+
     
     
 # ==========================================
 # PLOT: (rayleigh - ultra) vs sun zenith
 # ==========================================
-fig, ax = plt.subplots(figsize=(8,6))
+fig, ax = plt.subplots(figsize=(12,6))
 
 for day, d in data_dict.items():
     
@@ -81,16 +77,18 @@ for day, d in data_dict.items():
     delta = d["ray_zen"] - d["ultra_zen"]
     color = d["marker_color"]
     
+    print(len(sza))
+    
     # --------------------------------------
     # SPECIAL CASE: Oct 24 → last 2 are stars
     # --------------------------------------
-    if day == "2025_10_24":   # make sure this matches your JSON
+    if labels == "2025_10_24_B":   # make sure this matches your JSON
         
         # First points (circles)
         ax.scatter(sza[:-2], delta[:-2],
                    color=color,
                    marker='o',
-                   s=80,
+                   s=100,
                    edgecolor='black',
                    label=day)
         
@@ -104,19 +102,24 @@ for day, d in data_dict.items():
         ax.scatter(sza, delta,
                    color=color,
                    marker='o',
-                   s=80,
+                   s=100,
                    edgecolor='black',
                    label=day)
 
 # ==========================================
 # FORMAT
 # ==========================================
-ax.set_xlabel("Sun Zenith Angle (deg)")
-ax.set_ylabel("$\Delta\delta$ (deg)")
+ax.set_xlabel("$\\theta_s [\\circ]$",fontsize=20)
+ax.set_ylabel("$\Delta\delta [\\circ]$ ",fontsize=20)
+ax.set_ylim([-1.5,1.5])
+ax.set_xlim([55,80])
+ax.xaxis.set_major_locator(MultipleLocator(5))
+ax.yaxis.set_major_locator(MultipleLocator(0.5))
+ax.tick_params(axis='both', which='major', labelsize=20)
 
-ax.axhline(0, linestyle='--', color='black', linewidth=1)
+ax.axhline(0,color="royalblue",zorder=0)
 ax.grid(True, linestyle='--', alpha=0.5)
 
-ax.legend()
+ax.legend(fontsize=18)
 plt.tight_layout()
 plt.show()

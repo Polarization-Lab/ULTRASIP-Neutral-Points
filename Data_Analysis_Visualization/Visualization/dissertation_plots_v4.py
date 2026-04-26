@@ -150,12 +150,14 @@ def plot_dd_vs_parameterstd(x, dd_obs, dd_sim,
     # ==========================================
     # Linear fits
     # ==========================================
-    slope_sim, intercept_sim, r_sim, _, _ = linregress(x_plot, dd_sim_plot)
-    slope_obs, intercept_obs, r_obs, _, _ = linregress(x_plot, dd_obs_plot)
+    slope_sim, intercept_sim, r_sim, p_sim, _ = linregress(x_plot, dd_sim_plot)
+    slope_obs, intercept_obs, r_obs, p_obs, _ = linregress(x_plot, dd_obs_plot)
 
     fit_sim = intercept_sim + slope_sim * x_plot
     fit_obs = intercept_obs + slope_obs * x_plot
 
+    print(p_sim)
+    print(p_obs)
     # ==========================================
     # Plot
     # ==========================================
@@ -205,10 +207,10 @@ def plot_dd_vs_parameterstd(x, dd_obs, dd_sim,
     colw = 10
 
     textstr = (
-    f"{'':27s}{'Slope':>{colw}s}{'Intercept':>{colw+4}s}{'R²':>{colw}s}\n"
+    f"{'':27s}{'Slope':>{colw}s}{'Intercept':>{colw+4}s}{'R²':>{colw}s}{'p-value':>{colw}s}\n"
     f"{'-'*(14+5*colw)}\n"
-    f"{'ULTRASIP':22s}{slope_obs:{colw}.3f}{intercept_obs:{colw}.3f}$^\circ${r_obs**2:{colw}.3f}\n"
-    f"{'GRASP (AERONET)':4s}{slope_sim:{colw}.3f}{intercept_sim:{colw}.3f}$^\circ${r_sim**2:{colw}.3f}"
+    f"{'ULTRASIP':22s}{slope_obs:{colw}.3f}{intercept_obs:{colw}.3f}$^\circ${r_obs**2:{colw}.3f}{p_obs:{colw}.2f}\n"
+    f"{'GRASP (AERONET)':4s}{slope_sim:{colw}.3f}{intercept_sim:{colw}.3f}$^\circ${r_sim**2:{colw}.3f}{p_sim:{colw}.2f}"
 )
     ax.text(0.5, 0.98, textstr, 
             transform=ax.transAxes, fontsize=17, 
@@ -244,7 +246,7 @@ colors = ['red','darkorange','yellow','green',
 idx = -1
 
 data_path = "C:/Users/deleo/Documents/BNP_daily_v3_allfields_with_rayleigh"
-json_files = glob.glob(f'{data_path}/BNP*.json')
+json_files = glob.glob(f'{data_path}/BNP*v3.json')
 
 for file in json_files:
 
@@ -499,6 +501,58 @@ axs[1].text(0.55, 0.12,
 # FINAL LAYOUT
 # ------------------------------------------
 #plt.suptitle('Corrected',fontsize=16)
+plt.tight_layout()
+plt.show()
+
+# ------------------------------------------
+# SINGLE FIGURE: delta_obs (TOP PLOT ONLY)
+# ------------------------------------------
+fig, ax = plt.subplots(figsize=(12, 8))
+
+# Scatter plots
+ax.scatter(sza_all, d_obs_corr,
+           s=100, color='green', edgecolor='black',
+           zorder=2, label="ULTRASIP")
+
+ax.scatter(sza_all, d_sim,
+           s=100, color='purple', marker='s',
+           edgecolor='black', zorder=2,
+           label="GRASP (AERONET)")
+
+
+# Axes formatting
+ax.set_ylim([-30, -5])
+ax.set_xlim([20, 90])
+
+ax.set_xlabel('Sun Zenith Angle [$^\\circ$]', fontsize=20)
+ax.set_ylabel('$\\delta$ [$^\\circ$]', fontsize=20)
+
+ax.yaxis.set_major_locator(MultipleLocator(5))
+ax.xaxis.set_major_locator(MultipleLocator(5))
+
+ax.tick_params(axis='both', which='major', labelsize=16)
+
+# Grid
+ax.grid(True, linestyle='--', alpha=0.6)
+
+# Legend
+ax.legend(
+    fontsize=20,
+    ncol=3,
+    loc='upper center',
+    bbox_to_anchor=(0.5, 1.25),
+    markerscale=2,
+    frameon=False
+)
+
+# # Text box
+# ax.text(0.05, 0.15,
+#         f'$\sigma_{{obs}}:{SDObsc:.2f}^\\circ$,$\sigma_{{sim}}:{SDSim:.2f}^\\circ$',
+#         transform=ax.transAxes,
+#         fontsize=16,
+#         verticalalignment='top',
+#         bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+
 plt.tight_layout()
 plt.show()
 
@@ -761,14 +815,14 @@ fig, ax = plt.subplots(1, 1, figsize=(12, 6))
 # SCATTER PLOTS
 # ==========================================
 ax.scatter(sza_all, dd_obs_corr, s=100, color='green',
-           zorder=2, edgecolor='black', label="Obs (ULTRASIP)")
+           zorder=2, edgecolor='black', label="ULTRASIP")
 
 ax.scatter(sza_all, dd_sim, s=100, color='purple',
            zorder=2, marker='s', edgecolor='black',
-           label="Sim (GRASP-AERONET)")
+           label="GRASP (AERONET)")
 
 # Zero reference line
-ax.axhline(0, color="royalblue", zorder=1)
+ax.axhline(0, color="royalblue", zorder=1) #,label="GRASP (Molecular)")
 
 # ==========================================
 # SHADED REGION (mean ± 2σ)
@@ -806,8 +860,6 @@ ax.yaxis.set_major_locator(MultipleLocator(1))
 ax.tick_params(axis='both', which='major', labelsize=16)
 ax.grid(True, linestyle='--', alpha=0.6)
 
-
-
 # ==========================================
 # LEGEND
 # ==========================================
@@ -827,8 +879,56 @@ fig, ax = plt.subplots(1, 1, figsize=(12, 6))
 # ==========================================
 # SCATTER PLOTS
 # ==========================================
+
+
+ax.scatter(dd_sim, dd_obs_corr, s=100, color='black',
+           zorder=2, edgecolor='black')
+
+slope_sim, intercept_sim, r_sim, p_sim, _ = linregress(dd_sim, dd_obs)
+slope_obs, intercept_obs, r_obs, p_obs, _ = linregress(dd_sim, dd_obs)
+
+fit_sim = intercept_sim + slope_sim * dd_sim
+fit_obs = intercept_obs + slope_obs * dd_obs
+
+# Zero reference line
+ax.axhline(0, color="royalblue", zorder=1) #,label="GRASP (Molecular)")
+
+# ==========================================
+# AXIS FORMATTING
+# ==========================================
+ax.set_ylim([-4, 4])
+ax.set_xlim([-2, 1])
+
+ax.set_xlabel('$\\Delta\\delta_{sim}$ [$^\\circ$]', fontsize=20)
+ax.set_ylabel('$\\Delta\\delta_{obs}$ [$^\\circ$]', fontsize=20)
+
+ax.xaxis.set_major_locator(MultipleLocator(0.5))
+ax.yaxis.set_major_locator(MultipleLocator(1))
+
+ax.tick_params(axis='both', which='major', labelsize=16)
+ax.grid(True, linestyle='--', alpha=0.6)
+
+# ==========================================
+# LEGEND
+# ==========================================
+ax.legend(fontsize=16, frameon=True)
+
+# ------------------------------------------
+# FINAL LAYOUT
+# ------------------------------------------
+plt.tight_layout()
+plt.show()
+
+# ------------------------------------------
+# DIFFERENCE PLOT
+# ------------------------------------------
+fig, ax = plt.subplots(1, 1, figsize=(12, 6))
+
+# ==========================================
+# SCATTER PLOTS
+# ==========================================
 ax.scatter(sza_all, dd_sim-dd_obs, s=200, color='black',
-           zorder=2, edgecolor='gray',marker='d', label="Obs (ULTRASIP)")
+           zorder=2, edgecolor='gray',marker='d')
 
 # Zero reference line
 ax.axhline(0, color="royalblue", zorder=1)
@@ -849,8 +949,6 @@ ax.yaxis.set_major_locator(MultipleLocator(1))
 ax.tick_params(axis='both', which='major', labelsize=16)
 ax.grid(True, linestyle='--', alpha=0.6)
 
-
-
 # ==========================================
 # LEGEND
 # ==========================================
@@ -861,3 +959,277 @@ ax.grid(True, linestyle='--', alpha=0.6)
 # ------------------------------------------
 plt.tight_layout()
 plt.show()
+
+# def plot_param_vs_param_dd(
+#     x_param,
+#     y_param,
+#     dd_obs,
+#     aod,
+#     xlabel="Parameter 2",
+#     ylabel="Parameter 1",
+#     title=None,
+#     filter_outliers=True,
+#     n_std=2
+# ):
+#     import numpy as np
+#     import matplotlib.pyplot as plt
+
+#     x = np.asarray(x_param)
+#     y = np.asarray(y_param)
+#     dd = np.asarray(dd_obs)
+#     aod = np.asarray(aod)
+
+#     # ------------------------------------------
+#     # 2σ FILTER (based on ΔΔ)
+#     # ------------------------------------------
+#     if filter_outliers:
+#         mean = np.mean(dd)
+#         std = np.std(dd)
+
+#         lower = mean - n_std * std
+#         upper = mean + n_std * std
+
+#         mask = (dd >= lower) & (dd <= upper)
+
+#         x = x[mask]
+#         y = y[mask]
+#         dd = dd[mask]
+#         aod = aod[mask]
+
+#         print(f"Filtering: removed {np.sum(~mask)} points "
+#               f"outside ±{n_std}σ (range = [{lower:.2f}, {upper:.2f}])")
+
+#     # ------------------------------------------
+#     # Normalize AOD → marker size
+#     # ------------------------------------------
+#     aod_norm = (aod - np.min(aod)) / (np.max(aod) - np.min(aod))
+#     sizes = 40 + 260 * aod_norm
+
+#     # ------------------------------------------
+#     # FIXED COLOR SCALE (ΔΔ)
+#     # ------------------------------------------
+#     vmin, vmax = -3, 3
+
+#     # ------------------------------------------
+#     # Plot
+#     # ------------------------------------------
+#     fig, ax = plt.subplots(figsize=(10, 8))
+
+#     sc = ax.scatter(
+#         x, y,
+#         c=dd,
+#         s=sizes,
+#         cmap='seismic',
+#         vmin=vmin,
+#         vmax=vmax,
+#         edgecolor='black'
+#     )
+
+#     # ------------------------------------------
+#     # Colorbar
+#     # ------------------------------------------
+#     cbar = plt.colorbar(sc, ax=ax)
+#     cbar.set_label(r'$\Delta\delta$ [$^\circ$]', fontsize=16)
+#     cbar.set_ticks([-3, -2, -1, 0, 1, 2, 3])
+
+#     # ------------------------------------------
+#     # Labels
+#     # ------------------------------------------
+#     ax.set_xlabel(xlabel, fontsize=18)
+#     ax.set_ylabel(ylabel, fontsize=18)
+
+#     ax.grid(True, linestyle='--', alpha=0.6)
+
+#     if title:
+#         ax.set_title(title, fontsize=16)
+
+#     # ------------------------------------------
+#     # Optional: show filtering info on plot
+#     # ------------------------------------------
+#     ax.text(
+#         0.02, 0.95,
+#         f'Filtered ±{n_std}σ\nN={len(dd)}',
+#         transform=ax.transAxes,
+#         fontsize=12,
+#         verticalalignment='top',
+#         bbox=dict(boxstyle='round', facecolor='white', alpha=0.8)
+#     )
+
+#     plt.tight_layout()
+#     plt.show()
+    
+# plot_param_vs_param_dd(
+#     x_param=ssas_f,
+#     y_param=gs_f,
+#     dd_obs=dd_obs_corr_f,
+#     aod=aods_f,
+#     ylabel="Asymmetry Parameter (g)",
+#     xlabel="SSA (440 nm)",
+#     title = 'Size of circle indicates AOD'
+# )
+
+# plot_param_vs_param_dd(
+#     x_param=ssas_f,
+#     y_param=aes_f,
+#     dd_obs=dd_obs_corr_f,
+#     aod=aods_f,
+#     ylabel="AE",
+#     xlabel="SSA (440 nm)",
+#     title = 'Size of circle indicates AOD'
+# )
+
+# plot_param_vs_param_dd(
+#     x_param=gs_f,
+#     y_param=aes_f,
+#     dd_obs=dd_obs_corr_f,
+#     aod=aods_f,
+#     ylabel="AE",
+#     xlabel="g",
+#     title = 'Size of circle indicates AOD'
+# )
+
+# plot_param_vs_param_dd(
+#     x_param=aods_f,
+#     y_param=aes_f,
+#     dd_obs=dd_obs_corr_f,
+#     aod=aods_f,
+#     ylabel="AE",
+#     xlabel="AOD",
+#     title = 'Size of circle indicates AOD'
+# )
+
+# plot_param_vs_param_dd(
+#     x_param=aods_f,
+#     y_param=ssas_f,
+#     dd_obs=dd_obs_corr_f,
+#     aod=aods_f,
+#     ylabel="SSA",
+#     xlabel="AOD",
+#     title = 'Size of circle indicates AOD'
+# )
+
+# plot_param_vs_param_dd(
+#     x_param=aods_f,
+#     y_param=gs_f,
+#     dd_obs=dd_obs_corr_f,
+#     aod=aods_f,
+#     ylabel="g",
+#     xlabel="AOD",
+#     title = 'Size of circle indicates AOD'
+# )
+
+# plot_param_vs_param_dd(
+#     x_param=aods_f,
+#     y_param=sphers_f,
+#     dd_obs=dd_obs_corr_f,
+#     aod=aods_f,
+#     ylabel="Spher %",
+#     xlabel="AOD",
+#     title = 'Size of circle indicates AOD'
+# )
+
+# def plot_dd_vs_param_aod(
+#     x_param,
+#     dd_obs,
+#     aod,
+#     xlabel="Parameter",
+#     ylabel=r'$\Delta\delta$ [$^\circ$]',
+#     title=None,
+#     cmap='viridis',
+#     filter_outliers=True,
+#     n_std=2
+# ):
+#     import numpy as np
+#     import matplotlib.pyplot as plt
+
+#     x = np.asarray(x_param)
+#     dd = np.asarray(dd_obs)
+#     aod = np.asarray(aod)
+
+#     # ------------------------------------------
+#     # 2σ FILTER (based on ΔΔ)
+#     # ------------------------------------------
+#     if filter_outliers:
+#         mean = np.mean(dd)
+#         std = np.std(dd)
+
+#         lower = mean - n_std * std
+#         upper = mean + n_std * std
+
+#         mask = (dd >= lower) & (dd <= upper)
+
+#         x = x[mask]
+#         dd = dd[mask]
+#         aod = aod[mask]
+
+#         print(f"Filtering: removed {np.sum(~mask)} points "
+#               f"outside ±{n_std}σ (range = [{lower:.2f}, {upper:.2f}])")
+
+#     # ------------------------------------------
+#     # Normalize AOD → size
+#     # ------------------------------------------
+#     aod_norm = (aod - np.min(aod)) / (np.max(aod) - np.min(aod))
+#     sizes = 40 + 260 * aod_norm
+
+#     # ------------------------------------------
+#     # Plot
+#     # ------------------------------------------
+#     fig, ax = plt.subplots(figsize=(10, 8))
+
+#     sc = ax.scatter(
+#         x, dd,
+#         c=aod,
+#         s=sizes,
+#         cmap=cmap,
+#         edgecolor='black'
+#     )
+
+#     # ------------------------------------------
+#     # Colorbar (AOD)
+#     # ------------------------------------------
+#     cbar = plt.colorbar(sc, ax=ax)
+#     cbar.set_label("AOD (440 nm)", fontsize=16)
+
+#     # ------------------------------------------
+#     # Reference line
+#     # ------------------------------------------
+#     ax.axhline(0, color='royalblue', linewidth=2)
+
+#     # ------------------------------------------
+#     # Labels
+#     # ------------------------------------------
+#     ax.set_xlabel(xlabel, fontsize=18)
+#     ax.set_ylabel(ylabel, fontsize=18)
+#     ax.set_ylim([-3,1])
+
+#     ax.grid(True, linestyle='--', alpha=0.6)
+
+#     if title:
+#         ax.set_title(title, fontsize=16)
+
+#     plt.tight_layout()
+#     plt.show()
+    
+# plot_dd_vs_param_aod(
+#     ssas_f,
+#     dd_obs_corr_f,
+#     aods_f,
+#     xlabel="SSA (440 nm)",
+#     title="Δδ vs SSA (AOD = size + color)"
+# )
+
+# plot_dd_vs_param_aod(
+#     gs_f,
+#     dd_obs_corr_f,
+#     aods_f,
+#     xlabel="g",
+#     title="Δδ vs g (AOD = size + color)"
+# )
+
+# plot_dd_vs_param_aod(
+#     gs_f,
+#     dd_obs_corr_f,
+#     aods_f,
+#     xlabel="AE",
+#     title="Δδdiff vs AE (AOD = size + color)"
+# )
