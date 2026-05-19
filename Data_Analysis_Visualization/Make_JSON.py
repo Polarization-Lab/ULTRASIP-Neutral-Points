@@ -30,14 +30,13 @@ def json_safe(x):
 # User settings
 # -----------------------------
 basepath = 'D:/Data'
-dates = ['2025_10_24']
-# ['2025_05_28','2025_06_04','2025_06_07','2025_06_09','2025_06_10','2025_06_13','2025_06_14',
-#           '2025_06_18','2025_06_23','2025_06_24','2025_06_25','2025_06_26','2025_06_30','2025_07_01',
-#           '2025_07_08','2025_07_09','2025_07_10','2025_07_13','2025_07_17','2025_07_18','2025_07_21',
-#           '2025_10_22','2025_10_23','2025_10_24']
+dates = ['2025_06_04','2025_06_09','2025_06_10','2025_06_13','2025_06_14',
+           '2025_06_18','2025_06_23','2025_06_24','2025_06_25','2025_06_26','2025_06_30','2025_07_01',
+           '2025_07_08','2025_07_09','2025_07_10','2025_07_13','2025_07_17','2025_07_18','2025_07_21',
+           '2025_10_22','2025_10_23']
 
 
-output_dir = 'D:/Analyzed_Data_JSON'
+output_dir = 'D:/Analyzed_Data_JSON_Corrected'
 os.makedirs(output_dir, exist_ok=True)
 
 # -----------------------------
@@ -61,7 +60,6 @@ for date in dates:
     
     data = {
         "date": date,
-        "timestamp": [],
         "acquisition": [],
         "sun_azimuth_deg": [],
         "sun_zenith_deg": [],
@@ -85,26 +83,23 @@ for date in dates:
         try:
             with h5py.File(fname, 'r') as f:
 
-                if 'Manual Neutral Point Estimation' not in f:
+                if 'Corrected Neutral Point Localization' not in f:
                     continue
 
-                np_est = f['Manual Neutral Point Estimation']
+                np_est = f['Corrected Neutral Point Localization']
 
                 # ---- Required datasets ----
-                if ('Manual Estimation NP Location (zen,az) [deg]' not in np_est or
+                if ('Corrected Estimation NP Location (zen,az) [deg]' not in np_est or
                     'Sun Location (zen,az) [deg]' not in np_est):
                     continue
 
                 np_zen, np_az = np_est[
-                    'Manual Estimation NP Location (zen,az) [deg]'
+                    'Corrected Estimation NP Location (zen,az) [deg]'
                 ][()]
 
                 sun_zen, sun_az = np_est[
                     'Sun Location (zen,az) [deg]'
                 ][()]
-                data["timestamp"].append(
-                    json_safe(get_attr(np_est, 'Time Stamp'))
-                    )
 
                 data["acquisition"].append(
                     json_safe(get_attr(np_est, 'Aquisition Number'))
@@ -132,12 +127,12 @@ for date in dates:
     # -----------------------------
     outname = os.path.join(
         output_dir,
-        f'BNP_observations_{date}_v3_Manual.json'
+        f'BNP_observations_{date}_v4_Corrected.json'
     )
 
     with open(outname, 'w') as f:
         json.dump(data, f, indent=2)
 
     print(
-        f'  Saved {len(data["timestamp"])} NP entries → {outname}'
+        f'  Saved {len(data["acquisition"])} NP entries → {outname}'
     )

@@ -45,6 +45,17 @@ f = h5py.File(files[13], 'r+')
 print(f)
 
 aqnum = 6
+
+# date = '2025_07_10'
+
+# basepath = 'D:/Data'
+# folderdate = os.path.join(basepath, date)
+
+# files = glob.glob(f'{folderdate}/*.h5')
+# f = h5py.File(files[5], 'r+')
+# print(f)
+
+# aqnum = 9
 aq = f[f'Aquistion_{aqnum}']
 
 timestamp = aq.attrs['Timestamp UTC']
@@ -54,11 +65,11 @@ I = aq["UV Image Data/I_corrected"][:]
 Q = aq["UV Image Data/Q_corrected"][:]
 U = aq["UV Image Data/U_corrected"][:]
 
-saz = aq['UV Image Data/sun_az'][()]
-sza = aq['UV Image Data/sun_zen'][()]
+saz = aq['UV Image Data/sun_az_corrected'][()]
+sza = aq['UV Image Data/sun_zen_corrected'][()]
 
-vza = aq["UV Image Data/view_zen"][:]
-vaz = aq["UV Image Data/view_az"][:]
+vza = aq["UV Image Data/view_zen_corrected"][:]
+vaz = aq["UV Image Data/view_az_corrected"][:]
 
 # Convert to 1D axes
 vza = vza[:,0]
@@ -76,7 +87,7 @@ q_start, q_stop = [0,2500]
 u_start, u_stop = [0,2500]
 
 
-avgq = np.flip(np.average(q,axis=1))
+avgq = np.average(q,axis=1)
 avgu = np.average(u,axis=0)
 
 avgq = avgq[q_start:q_stop]
@@ -124,6 +135,11 @@ uslope = uresults.params[1]
 uint = uresults.params[0]
 uint_stderror = uresults.bse[0]*3600
 
+plt.figure()
+plt.imshow(I,cmap='gray')
+plt.colorbar()
+plt.show()
+
 
 # ---- Figure 1: Q vs Zenith ----
 plt.figure(figsize=(12, 8))
@@ -148,6 +164,9 @@ plt.gca().invert_yaxis()
 plt.grid(True)
 
 ax = plt.gca()
+
+# plt.gca().invert_xaxis()
+# plt.gca().invert_yaxis()
 
 ax.yaxis.set_major_locator(MultipleLocator(0.5))   # or 0.25
 
@@ -216,7 +235,7 @@ fig, ax = plt.subplots(figsize=(8,8))
 im = ax.imshow(q,
                cmap=colmap,
                interpolation='none',
-               extent=[vaz.min(), vaz.max(), vza.max(), vza.min()],
+               extent=[vaz.min(), vaz.max(), vza.min(), vza.max()],
                vmin=-0.02, vmax=0.02)
 
 ax.set_xlabel('$\\gamma$ [$^\circ$]', fontsize=25)
@@ -253,7 +272,6 @@ ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
 
 plt.tight_layout()
 plt.show()
-
 
 # ------------------------ Plot Q/I ------------------------
 v = np.nanmax(np.abs(q))
@@ -316,7 +334,17 @@ vaz_np = vaz[col_np]
 
 print("Neutral Point Pixel:", row_np, col_np)
 print(f"Neutral Point Angles → VZA: {vza_np:.2f}°, VAZ: {vaz_np:.2f}°")
-print(saz)
+print("sun az",saz)
+print("sun zen",sza)
+
+# Average DoLP over the region that was not masked 
+avg_dolp = np.nanmean(dolp[mask])
+
+print(f"Average DoLP in masked region: {avg_dolp}")
+# Average DoLP over the region that was masked OUT
+avg_dolp_outside = np.nanmean(dolp[~mask])
+
+print(f"Average DoLP outside masked region: {avg_dolp_outside}")
 
 # ------------------------ Visualize mask ------------------------
 plt.figure(figsize=(8,6))
@@ -384,7 +412,7 @@ plt.show()
 # ---------------- Q image ----------------
 fig, ax = plt.subplots(figsize=(16, 10))
 
-im = ax.imshow(np.flipud(q),
+im = ax.imshow(q,
                cmap=colmap,
                interpolation='none',
                extent=[vaz.min(), vaz.max(), vza.max(), vza.min()],
@@ -402,7 +430,6 @@ ax.set_xlabel('$\gamma$ [$^\circ$]', fontsize=25)
 ax.set_ylabel('$\\theta$ [$^\circ$]', fontsize=25)
 ax.tick_params(axis='both', labelsize=25)
 ax = plt.gca()
-plt.gca().invert_yaxis()
 
 ax.yaxis.set_major_locator(MultipleLocator(1))   # or 0.25
 ax.xaxis.set_major_locator(MultipleLocator(1))
@@ -417,7 +444,7 @@ plt.show()
 # ---------------- Q image ----------------
 fig, ax = plt.subplots(figsize=(16, 10))
 
-im = ax.imshow(np.flipud(u),
+im = ax.imshow(u,
                cmap=colmap,
                interpolation='none',
                extent=[vaz.min(), vaz.max(), vza.max(), vza.min()],
@@ -435,7 +462,6 @@ ax.set_xlabel('$\gamma$ [$^\circ$]', fontsize=25)
 ax.set_ylabel('$\\theta$ [$^\circ$]', fontsize=25)
 ax.tick_params(axis='both', labelsize=25)
 ax = plt.gca()
-plt.gca().invert_yaxis()
 
 ax.yaxis.set_major_locator(MultipleLocator(1))   # or 0.25
 ax.xaxis.set_major_locator(MultipleLocator(1))
@@ -449,7 +475,7 @@ plt.show()
 # ---------------- AoLP image ----------------
 fig, ax = plt.subplots(figsize=(16,10))
 
-im = ax.imshow(np.flipud(aolp),
+im = ax.imshow(aolp,
                cmap=cmo.phase,
                interpolation='none',
                extent=[vaz.min(), vaz.max(), vza.max(), vza.min()],
@@ -467,7 +493,6 @@ ax.set_xlabel('$\gamma$ [$^\circ$]', fontsize=25)
 ax.set_ylabel('$\\theta$ [$^\circ$]', fontsize=25)
 ax.tick_params(axis='both', labelsize=23)
 ax = plt.gca()
-plt.gca().invert_yaxis()
 
 ax.yaxis.set_major_locator(MultipleLocator(1))   # or 0.25
 ax.xaxis.set_major_locator(MultipleLocator(1))
@@ -480,16 +505,15 @@ plt.show()
 # ---------------- DoLP image ----------------
 fig, ax = plt.subplots(figsize=(16,10))
 
-im = ax.imshow(np.flipud(np.log(dolp)),
+im = ax.imshow(np.log(dolp),
                cmap='Blues_r',
                interpolation='none',
                extent=[vaz.min(), vaz.max(), vza.max(), vza.min()],
-               vmin=-1, vmax=1)
+               vmin = -0.2, vmax = 1.00
+               )
 
 cbar = fig.colorbar(im, ax=ax,shrink=1,pad=0.01)
 cbar.ax.tick_params(labelsize=20)
-
-
 
 
 ax.scatter(vaz[col_np], vza[row_np],
@@ -503,8 +527,6 @@ ax.set_xlabel('$\gamma$ [$^\circ$]', fontsize=25)
 ax.set_ylabel('$\\theta$ [$^\circ$]', fontsize=25)
 ax.tick_params(axis='both', labelsize=23)
 plt.gca()
-plt.gca().invert_yaxis()
-
 
 ax.yaxis.set_major_locator(MultipleLocator(1))   # or 0.25
 ax.xaxis.set_major_locator(MultipleLocator(1))
@@ -531,7 +553,6 @@ plt.xlim(-0.025, 0.025)
 #plt.ylim([50.5, 54.5])
 plt.yticks(fontsize=25)
 plt.xticks(fontsize=25)
-plt.gca().invert_yaxis() 
 #plt.title('Weighted Linear Regression with Fit Error')
 plt.grid(True)
 

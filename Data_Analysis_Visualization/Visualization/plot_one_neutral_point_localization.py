@@ -47,7 +47,7 @@ basepath = 'D:/Data'
 folderdate = os.path.join(basepath,date)
 files = glob.glob(f'{folderdate}/*.h5')
 f = h5py.File(files[7],'r+')
-np_est = f['Neutral Point Estimation']
+np_est = f['Corrected Neutral Point Localization']
 
 # Convert attributes to variables
 for name, value in np_est.attrs.items():
@@ -61,18 +61,19 @@ for name, value in np_est.attrs.items():
     print(f"{var_name} = {value}")
     
 aq = f[f'Aquistion_{aquisition_number}']
+print(aquisition_number)
 
 I = aq["UV Image Data/I_corrected"][:]
 Q = aq["UV Image Data/Q_corrected"][:]
 U = aq["UV Image Data/U_corrected"][:]
 
-saz = aq['UV Image Data/sun_az'][()]
+saz = aq['UV Image Data/sun_az_corrected'][()]
 sza = aq['UV Image Data/sun_zen'][()]
 
 
-
-vza = aq["UV Image Data/view_zen"][:]
-vaz = aq["UV Image Data/view_az"][:]
+vza_og = aq["UV Image Data/view_zen"][:]
+vza = aq["UV Image Data/view_zen_corrected"][:]
+vaz = aq["UV Image Data/view_az_corrected"][:]
 
 vza = vza[:,0]
 vaz = vaz[0,:]
@@ -85,7 +86,7 @@ dolp = np.sqrt((q**2)+(u**2))*100
 aolp = 0.5*np.arctan2(U,Q)
 aolp = np.mod(np.degrees(aolp),180)
 
-
+print(q_cropped_region)
 
 #-------------------------------------------------------------------------------
 
@@ -162,7 +163,7 @@ plt.show()
 q_start, q_stop = map(int, q_cropped_region.split(':'))
 u_start, u_stop = map(int, u_cropped_region.split(':'))
 
-avgq = np.flip(np.average(q,axis=1))
+avgq = np.average(q,axis=1)
 avgu = np.average(u,axis=0)
 
 avgq = avgq[q_start:q_stop]
@@ -217,7 +218,7 @@ plt.plot(avgq, qfit_line, color='gold', label='Weighted fitted line', linewidth=
 plt.axvline(x=0, lw=5, color='red', zorder=0)
 
 plt.text(-0.02, 38.5,
-          f'$\\theta_s$: {sza:.2f}$^\circ$\nIntercept: {qint:.2f}$^\circ$ \n $SE_{{\\theta}}$: {qint_stderror:.2f} arcsec',
+          f'$\\theta_s$: {sza:.2f}$^\circ$\nIntercept: {qint:.2f}$^\circ$ \n $SE_{{\\theta}}$: {qint_stderror:.2f} $^{{\prime\prime}}$',
           fontsize=25,
           bbox=dict(facecolor='lightgray', alpha=1))
 
@@ -228,12 +229,12 @@ plt.xlim(-0.025, 0.025)
 #plt.ylim([50.5, 54.5])
 plt.yticks(fontsize=25)
 plt.xticks(fontsize=25)
-plt.gca().invert_yaxis() 
+
 #plt.title('Weighted Linear Regression with Fit Error')
 plt.grid(True)
-
 ax = plt.gca()
 
+plt.gca().invert_yaxis()
 ax.yaxis.set_major_locator(MultipleLocator(1))   # or 0.25
 
 ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
@@ -247,10 +248,10 @@ plt.figure(figsize=(12, 8))
 plt.scatter(avgu, vaz_crop, color='green')
 plt.plot(avgu, ufit_line, color='gold', label='Weighted fitted line', linewidth=5)
 plt.axvline(x=0, lw=5, color='red', zorder=0)
-#plt.axhline(y=saz,lw=5,color='orange')
+plt.axhline(y=saz,lw=5,color='orange')
 
 plt.text(0.007, 10,
-          f'$\\gamma_s$: {saz:.2f}$^\circ$ \nIntercept: {uint:.2f}$^\circ$ \n $SE_{{\\gamma}}$: {uint_stderror:.2f} arcsec',
+          f'$\\gamma_s$: {saz:.2f}$^\circ$ \nIntercept: {uint:.2f}$^\circ$ \n $SE_{{\\gamma}}$: {uint_stderror:.2f} $^{{\prime\prime}}$',
           fontsize=25,
           bbox=dict(facecolor='lightgray', alpha=1))
 
@@ -282,15 +283,15 @@ im = ax.imshow(q,
                extent=[vaz.min(), vaz.max(), vza.max(), vza.min()],
                vmin=-0.02, vmax=0.02)
 
-# ROI box
-roi = Rectangle((vaz_crop.min(), vza_crop.min()),
-                vaz_crop.max() - vaz_crop.min(),
-                vza_crop.max() - vza_crop.min(),
-                linewidth=3,
-                edgecolor='white',
-                facecolor='none')
+# # ROI box
+# roi = Rectangle((vaz_crop.min(), vza_crop.min()),
+#                 vaz_crop.max() - vaz_crop.min(),
+#                 vza_crop.max() - vza_crop.min(),
+#                 linewidth=3,
+#                 edgecolor='white',
+#                 facecolor='none')
 
-ax.add_patch(roi)
+# ax.add_patch(roi)
 
 ax.set_xlabel('$\gamma$ [$^\circ$]', fontsize=25)
 ax.set_ylabel('$\\theta$ [$^\circ$]', fontsize=25)
@@ -316,20 +317,19 @@ im = ax.imshow(u,
                extent=[vaz.min(), vaz.max(), vza.max(), vza.min()],
                vmin=-0.02, vmax=0.02)
 
-# ROI box
-roi = Rectangle((vaz_crop.min(), vza_crop.min()),
-                vaz_crop.max() - vaz_crop.min(),
-                vza_crop.max() - vza_crop.min(),
-                linewidth=3,
-                edgecolor='white',
-                facecolor='none')
+# # ROI box
+# roi = Rectangle((vaz_crop.min(), vza_crop.min()),
+#                 vaz_crop.max() - vaz_crop.min(),
+#                 vza_crop.max() - vza_crop.min(),
+#                 linewidth=3,
+#                 edgecolor='white',
+#                 facecolor='none')
 
-ax.add_patch(roi)
+# ax.add_patch(roi)
 
 ax.set_xlabel('$\gamma$ [$^\circ$]', fontsize=25)
 ax.set_ylabel('$\\theta$ [$^\circ$]', fontsize=25)
 ax.tick_params(axis='both', labelsize=25)
-ax = plt.gca()
 
 ax.yaxis.set_major_locator(MultipleLocator(1))   # or 0.25
 ax.xaxis.set_major_locator(MultipleLocator(1))
@@ -349,15 +349,15 @@ im = ax.imshow(aolp,
                extent=[vaz.min(), vaz.max(), vza.max(), vza.min()],
                vmin=0, vmax=180)
 
-# ROI box
-roi = Rectangle((vaz_crop.min(), vza_crop.min()),
-                vaz_crop.max() - vaz_crop.min(),
-                vza_crop.max() - vza_crop.min(),
-                linewidth=3,
-                edgecolor='white',
-                facecolor='none')
+# # ROI box
+# roi = Rectangle((vaz_crop.min(), vza_crop.min()),
+#                 vaz_crop.max() - vaz_crop.min(),
+#                 vza_crop.max() - vza_crop.min(),
+#                 linewidth=3,
+#                 edgecolor='white',
+#                 facecolor='none')
 
-ax.add_patch(roi)
+# ax.add_patch(roi)
 
 ax.scatter(uint, qint,
            s=400,
@@ -391,15 +391,15 @@ im = ax.imshow(np.log(dolp),
 cbar = fig.colorbar(im, ax=ax,shrink=1,pad=0.01)
 cbar.ax.tick_params(labelsize=20)
 
-# ROI box
-roi = Rectangle((vaz_crop.min(), vza_crop.min()),
-                vaz_crop.max() - vaz_crop.min(),
-                vza_crop.max() - vza_crop.min(),
-                linewidth=3,
-                edgecolor='white',
-                facecolor='none')
+# # ROI box
+# roi = Rectangle((vaz_crop.min(), vza_crop.min()),
+#                 vaz_crop.max() - vaz_crop.min(),
+#                 vza_crop.max() - vza_crop.min(),
+#                 linewidth=3,
+#                 edgecolor='white',
+#                 facecolor='none')
 
-ax.add_patch(roi)
+# ax.add_patch(roi)
 
 ax.scatter(uint, qint,
            s=400,
@@ -412,8 +412,8 @@ ax.set_ylabel('$\\theta$ [$^\circ$]', fontsize=25)
 ax.tick_params(axis='both', labelsize=23)
 ax = plt.gca()
 
-ax.yaxis.set_major_locator(MultipleLocator(0.5))   # or 0.25
-ax.xaxis.set_major_locator(MultipleLocator(0.5))
+ax.yaxis.set_major_locator(MultipleLocator(1))   # or 0.25
+ax.xaxis.set_major_locator(MultipleLocator(1))
 
 ax.xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
 ax.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
