@@ -47,9 +47,9 @@ dolp = aolp.copy()
 
 for xx in range(0, xsize, 1):  # for loop over x pixel index
     for yy in range(0, ysize, 1):  # for loop over y pixel index
-        xidx = (xx - (xsize/2)) / xsize
-        yidx = (yy - (ysize/2)) / ysize
-        aolp[xx, yy] = -0.5*np.arctan2(yidx, -xidx)
+        xidx = (xx - (xsize/3)) / xsize
+        yidx = (yy - (ysize/3)) / ysize
+        aolp[xx, yy] = 0.5*np.arctan2(yidx, xidx) + np.pi/2
         dolp[xx, yy] = np.sqrt((xidx**2) + (yidx**2))  # define DoLP with radial distance from singularity    
 
 I = np.ones((xsize, ysize))
@@ -198,6 +198,7 @@ plt.xlabel('$\gamma$[$^\circ$]', fontsize=16)
 plt.ylabel('$\\theta$ [$^\circ$]', fontsize=16)
 plt.tick_params(axis='both', labelsize=15)
 plt.tight_layout()
+plt.colorbar()
 plt.show()
 
 plt.figure()
@@ -205,8 +206,9 @@ im = plt.imshow(
     dolp * 100,
     cmap='Blues_r',
     interpolation='none',
-    extent=[vaz.min(), vaz.max(), vza.min(), vza.max()]
+    extent=[vaz.min(), vaz.max(), vza.max(), vza.min()]
 )
+plt.colorbar()
 # # Create colorbar on top
 # cbar = plt.colorbar(im, orientation='horizontal', location='top', pad=0.1)
 
@@ -218,14 +220,13 @@ plt.show()
 
 plt.figure()
 im = plt.imshow(
-    aolp,
+    np.mod(np.degrees(aolp),180),
     cmap=cmo.phase,
     interpolation='none',
-    extent=[vaz.min(), vaz.max(), vza.min(), vza.max()]
+    extent=[vaz.min(), vaz.max(), vza.max(), vza.min()]
 )
 ax = plt.gca()
-ax.invert_yaxis()
-
+plt.colorbar()
 plt.show()
 
 plt.figure(figsize=(6,5))
@@ -239,6 +240,7 @@ plt.xlabel('$\gamma$ [$^\circ$]', fontsize=16)
 plt.ylabel('$\\theta$ [$^\circ$]', fontsize=16)
 plt.tick_params(axis='both', labelsize=15)
 plt.tight_layout()
+plt.colorbar()
 plt.show()
 
 fig = plt.figure(figsize=(6,1))

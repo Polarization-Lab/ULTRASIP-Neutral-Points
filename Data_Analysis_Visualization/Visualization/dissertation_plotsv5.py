@@ -307,11 +307,11 @@ plt.show()
 
 #------------------NO COLORBAR-----------------------------------#
 
-parameter = ssas_f
-xaxlabel = 'SSA at 440 nm'
-uncert=0.01
-xmin= 0.88
-xmax = 0.97
+parameter = sphers_f
+xaxlabel = 'Sphericity'
+uncert = 10
+xmin = 0
+xmax = 100
 
 
 # ------------------------------------------
@@ -420,11 +420,11 @@ plt.show()
 
 # ------------------ less stats ------------------ #
 
-parameter = aods_f
-xaxlabel = 'AOD at 440 nm'
-uncert = 0.02
-xmin = 0.04
-xmax = .24
+parameter = sphers_f
+xaxlabel = 'Sphericity'
+uncert = 10
+xmin = 0
+xmax = 100
 
 # ------------------------------------------
 # CREATE PLOT
