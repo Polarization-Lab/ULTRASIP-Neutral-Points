@@ -31,12 +31,12 @@ colmap = ListedColormap(colmap)
 # =========================
 # Load observations
 # =========================
-date = '2025_10_22'
+date = '2025_10_24'
 basepath = 'D:/Data'
 
 folderdate = os.path.join(basepath, date)
 file = glob.glob(f'{folderdate}/*h5')
-idx = 7
+idx = 13
 f = h5py.File(file[idx], 'r')
 
 # =========================

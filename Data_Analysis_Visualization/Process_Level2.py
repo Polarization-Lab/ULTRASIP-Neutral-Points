@@ -74,8 +74,6 @@ for idx in range(i):
             avgq = np.flip(np.average(q,axis=1)) #row avg
             avgu = np.average(u,axis=0)#col avg
             
-
-            #HI :)
             
             vza = view_zen[:,0]
             vaz = view_az[0,:]

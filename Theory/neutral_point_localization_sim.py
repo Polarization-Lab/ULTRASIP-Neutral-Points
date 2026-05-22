@@ -133,18 +133,18 @@ uint_stderror = uresults.bse[0]*3600
 
 
 # ---- Figure 1: Q vs Zenith ----
-plt.figure(figsize=(8,5))
+plt.figure(figsize=(7,5))
 
 plt.scatter(avgq, vza, color='green')
 plt.plot(avgq, qfit_line, color='gold', label='Weighted fitted line', linewidth=3)
 plt.axvline(x=0, lw=5, color='red', zorder=0)
 
 plt.xlabel(r'$\bar{r}_{Q}$', fontsize=18)
-plt.ylabel('Zenith Angle [$^\circ$]', fontsize=18)
+plt.ylabel('$\\theta$ [$^\circ$]', fontsize=18)
 
 plt.text(-0.65, 60,
-         f'Intercept: {qint:.4f}$^\circ$',
-         fontsize=16,
+         f'Intercept: {qint:.2f}$^\circ$\n $SE_{{\\theta}}$: {qint_stderror:.4e} arcsec',
+         fontsize=18,
          bbox=dict(facecolor='lightgray', alpha=1))
 
 # plt.text(-0.65, 60,
@@ -163,18 +163,18 @@ plt.show()
 
 
 # ---- Figure 2: U vs Azimuth ----
-plt.figure(figsize=(8,5))
+plt.figure(figsize=(7,5))
 
 plt.scatter(avgu, vaz, color='green')
 plt.plot(avgu, ufit_line, color='gold', label='Weighted fitted line', linewidth=3)
 plt.axvline(x=0, lw=5, color='red', zorder=0)
 
 plt.xlabel(r'$\bar{c}_{U}$', fontsize=18)
-plt.ylabel('Azimuth Angle [$^\circ$]', fontsize=18)
+plt.ylabel('$\gamma$ [$^\circ$]', fontsize=18)
 
 plt.text(-0.1, -70,
-         f'Intercept: {uint:.4f}$^\circ$',
-         fontsize=16,
+         f'Intercept: {uint:.2f}$^\circ$\n $SE_{{\gamma}}$: {uint_stderror:.4e} arcsec',
+         fontsize=18,
          bbox=dict(facecolor='lightgray', alpha=1))
 
 #\n $SE_{{\gamma}}$: {uint_stderror:.4e} arcsec'

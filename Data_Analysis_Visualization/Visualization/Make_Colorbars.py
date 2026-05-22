@@ -84,6 +84,28 @@ plt.show()
 fig, ax = plt.subplots(figsize=(8, 1))
 
 # Normalization
+norm = mpl.colors.Normalize(vmin=-0.02, vmax=0.02)
+sm = mpl.cm.ScalarMappable(cmap=colmap, norm=norm)
+sm.set_array([])
+
+# Horizontal colorbar
+cbar = plt.colorbar(
+    sm,
+    cax=ax,
+    orientation = 'horizontal'
+)
+
+
+cbar.ax.tick_params(labelsize=30)
+
+plt.tight_layout()
+plt.show()
+
+
+# Create figure
+fig, ax = plt.subplots(figsize=(8, 1))
+
+# Normalization
 norm = mpl.colors.Normalize(vmin=-1, vmax=1)
 sm = mpl.cm.ScalarMappable(cmap='Blues_r', norm=norm)
 sm.set_array([])
@@ -96,8 +118,8 @@ cbar = plt.colorbar(
 )
 
 # Set ONLY desired ticks
-cbar.set_ticks([-1, 0, 1])
-cbar.set_ticklabels(['-1', '0', '1'])
+cbar.set_ticks([-1, -0.5, 0,0.5, 1])
+cbar.set_ticklabels(['-1','-0.5', '0','0.5', '1'])
 
 cbar.ax.tick_params(labelsize=25)
 
