@@ -32,7 +32,7 @@ colors = ['red','darkorange','yellow','green',
 idx = -1
 
 data_path = "C:/Users/deleo/Documents/BNP_daily_v3_allfields_with_rayleigh"
-json_files = glob.glob(f'{data_path}/BNP*.json')
+json_files = glob.glob(f'{data_path}/BNP*_v3.json')
 
 for file in json_files:
 

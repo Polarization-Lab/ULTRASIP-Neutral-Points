@@ -37,10 +37,10 @@ idx = -1
 data_path = "C:/Users/deleo/Documents/BNP_daily_v3_allfields_with_rayleigh"
 json_files = glob.glob(f'{data_path}/BNP*.json')
 
-oct22 = json_files[15]
-oct23 = json_files[16]
-oct24 = json_files[0]
-oct24_reg = json_files[17]
+oct22 = json_files[36]
+oct23 = json_files[37]
+oct24 = json_files[21]
+oct24_reg = json_files[38]
 
 oct_files = [oct22,oct23,oct24]
 
@@ -54,7 +54,7 @@ for i, file in enumerate(oct_files):
     day = labels[i]   # ← force unique label
 
     sza = np.array(data["sun_zenith_deg"])
-    uza = np.array(data["np_zenith_deg"]) - 3.16
+    uza = np.array(data["np_zenith_deg"]) - 3.29
     ray_zen = np.array(data["rayleigh_np_za_355nm"])
 
     data_dict[day] = {
