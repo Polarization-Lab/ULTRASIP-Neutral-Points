@@ -39,7 +39,7 @@ colmap = ListedColormap(colmap)
 #------------------------Load Observation---------------------------------------
 #Load observations 
 #Set Date of Measurements 
-date = '2025_10_23'
+date = '2025_07_18'
 
 #Datapath
 basepath = 'D:/Data'
