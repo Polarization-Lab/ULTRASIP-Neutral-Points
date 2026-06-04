@@ -32,7 +32,7 @@ colors = ['red','darkorange','yellow','green',
 
 idx = -1
 
-data_path = "C:/Users/deleo/Documents/BNP_daily_v3_allfields_with_rayleigh"
+data_path = "C:/Users/deleo/Documents/JSON_Files"
 
 json_files = glob.glob(f'{data_path}/BNP*v3.json')
 corrected_json_files = glob.glob(f'{data_path}/BNP*v4_Corrected.json')
@@ -206,7 +206,7 @@ for day in selected_days:
     values = data_dict[day]
 
     sza = np.array(values["sun_zenith"])
-    dd = np.array(values["ray_zen"])-(np.array(values["ultra_zen"])-3.29)
+    dd = np.array(values["ray_zen"])-(np.array(values["ultra_zen"])-2.53)
     #ray = np.array(values["ray_delta"])
     print("obs og",len(dd))
     print("sza range og",np.max(sza)-np.min(sza))
